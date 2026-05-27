@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Department Form</title>
+</head>
+<body>
+
+<h1>Department Form</h1>
+
+<form th:action="@{/departments/save}"
+      th:object="${department}"
+      method="post">
+
+    <input type="hidden" th:field="*{id}">
+
+    <div>
+        <label>Code:</label>
+
+        <input type="text" th:field="*{code}">
+    </div>
+
+    <br>
+
+    <div>
+        <label>Name:</label>
+
+        <input type="text" th:field="*{name}">
+    </div>
+
+    <br>
+
+    <button type="submit">
+        Save
+    </button>
+
+</form>
+
+<br>
+
+<a th:href="@{/departments}">
+    Back
+</a>
+
+</body>
+</html>

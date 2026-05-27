@@ -6,42 +6,43 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
 @Entity
-@Table(name = "users")
+@Table(name = "system_accounts")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLDelete(sql = "UPDATE users SET deleted_at = NOW(), is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE system_accounts SET deleted_at = CURRENT_TIMESTAMP, is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
 public class User implements UserDetails {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String username;
-    
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(name = "email", nullable = false, length = 100)
     private String email;
-    
-    @Column(nullable = false, length = 255)
-    private String fullName;
 
-    // ========== NEW: AUTHENTICATION FIELDS FOR LOGIN ==========
-    @Column(nullable = false, length = 255)
+    @Column(name = "username", nullable = false, length = 100)
+    private String username;
+
+    @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
-    @Column(length = 50)
+    @Column(name = "full_name", length = 255)
+    private String fullName;
+
+    @Column(name = "phone", length = 50)
     private String phone;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "avatar_url", columnDefinition = "TEXT")
     private String avatarUrl;
 
     @Column(name = "department_id")
@@ -50,31 +51,33 @@ public class User implements UserDetails {
     @Column(name = "role_id")
     private Long roleId;
 
-    // ========== NEW: ACCOUNT SECURITY FIELDS ==========
-    @Column(nullable = false, length = 20)
-    private String status = "ACTIVE"; // PENDING, ACTIVE, LOCKED, DISABLED
+    @Column(name = "status", nullable = false, length = 20)
+    @Builder.Default
+    private String status = "ACTIVE";
 
-    @Column(nullable = false)
-    private Integer failedAttempts = 0;  // Track failed login attempts
+    @Column(name = "failed_attempts")
+    @Builder.Default
+    private Integer failedAttempts = 0;
 
-    @Column
-    private LocalDateTime lockedUntil;   // Account lock timestamp
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
 
-    @Column
-    private LocalDateTime lastLoginAt;   // Last successful login
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
 
-    // ========== NEW: TIMESTAMPS ==========
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // ========== EXISTING: SOFT DELETE ==========
+    @Column(name = "is_deleted")
+    @Builder.Default
     private boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    // ========== JPA LIFECYCLE CALLBACKS ==========
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -86,7 +89,6 @@ public class User implements UserDetails {
         updatedAt = LocalDateTime.now();
     }
 
-    // ========== USERDETAILS IMPLEMENTATION (SPRING SECURITY) ==========
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList();
@@ -104,8 +106,8 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return "ACTIVE".equals(this.status) && 
-               (this.lockedUntil == null || LocalDateTime.now().isAfter(this.lockedUntil));
+        return !"LOCKED".equals(this.status)
+                && (this.lockedUntil == null || LocalDateTime.now().isAfter(this.lockedUntil));
     }
 
     @Override

@@ -8,30 +8,25 @@
 
 <h2>Add New User</h2>
 
-<form th:action="@{/users/save}" th:object="${user}" method="post">
+<p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+
+<form th:action="@{/users/save}" th:object="${userForm}" method="post">
     <table>
         <tr>
             <td><label>Username:</label></td>
-            <td>
-                <input type="text" th:field="*{username}" required placeholder="Enter username">
-            </td>
+            <td><input type="text" th:field="*{username}" required></td>
         </tr>
         <tr>
-            <td><label>Full Name:</label></td>
-            <td>
-                <input type="text" th:field="*{fullName}" placeholder="Enter full name">
-            </td>
+            <td><label>Password:</label></td>
+            <td><input type="password" th:field="*{password}" required></td>
         </tr>
         <tr>
             <td><label>Email:</label></td>
-            <td>
-                <input type="email" th:field="*{email}" placeholder="example@domain.com">
-            </td>
+            <td><input type="email" th:field="*{email}" required></td>
         </tr>
     </table>
 
     <br>
-
     <div>
         <a th:href="@{/users}">Back to List</a>
         <button type="submit">Create User</button>

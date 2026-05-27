@@ -2,12 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>User List - Company Management</title>
+    <title>User List - System Accounts</title>
 </head>
 <body>
 
-<h2>User Management</h2>
-<a th:href="@{/users/add}">Add New User</a>
+<h2>Account Management</h2>
+<a th:href="@{/users/add}">Add New Account</a>
 
 <br><br>
 
@@ -16,8 +16,8 @@
     <tr>
         <th>ID</th>
         <th>Username</th>
-        <th>Full Name</th>
         <th>Email</th>
+        <th>Status</th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -25,17 +25,28 @@
     <tr th:each="user : ${users}">
         <td th:text="${user.id}"></td>
         <td th:text="${user.username}"></td>
-        <td th:text="${user.fullName}"></td>
         <td th:text="${user.email}"></td>
+
+        <td>
+            <form th:action="@{/users/update-status}" method="post" style="margin: 0;">
+                <input type="hidden" name="id" th:value="${user.id}">
+
+                <select name="status" onchange="this.form.submit()">
+                    <option value="ACTIVE" th:selected="${user.status.toString() == 'ACTIVE'}">ACTIVE</option>
+                    <option value="INACTIVE" th:selected="${user.status.toString() == 'INACTIVE'}">INACTIVE</option>
+                </select>
+            </form>
+        </td>
+
         <td>
             <a th:href="@{/users/delete/{id}(id=${user.id})}"
-               onclick="return confirm('confirm delete this user?')">
+               onclick="return confirm('Delete this account?')">
                 Delete
             </a>
         </td>
     </tr>
     <tr th:if="${#lists.isEmpty(users)}">
-        <td colspan="5">No users found.</td>
+        <td colspan="5">No accounts found.</td>
     </tr>
     </tbody>
 </table>
