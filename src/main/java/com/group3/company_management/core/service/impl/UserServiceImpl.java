@@ -41,6 +41,7 @@ public class UserServiceImpl implements UserService {
         String username = normalizeRequired(request.getUsername(), "Username is required");
         String email = normalizeRequired(request.getEmail(), "Email is required");
         String password = normalizeRequired(request.getPassword(), "Password is required");
+        Long roleId = normalizeRequired(request.getRoleId(), "Role is required");
 
         validateUniqueUsername(username, null);
         validateUniqueEmail(email, null);
@@ -49,6 +50,7 @@ public class UserServiceImpl implements UserService {
         user.setUsername(username);
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(password));
+        user.setRoleId(roleId);
         user.setStatus("ACTIVE");
         userRepository.save(user);
     }
@@ -128,5 +130,12 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException(message);
         }
         return normalized;
+    }
+
+    private Long normalizeRequired(Long value, String message) {
+        if (value == null) {
+            throw new IllegalArgumentException(message);
+        }
+        return value;
     }
 }
