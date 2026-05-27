@@ -1,7 +1,9 @@
 package com.group3.company_management.core.controller;
 
+import com.group3.company_management.core.dto.DepartmentDTO;
 import com.group3.company_management.core.entity.Department;
 import com.group3.company_management.core.service.DepartmentService;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,12 +26,20 @@ public class DepartmentController {
 
     @GetMapping("/add")
     public String showAddForm(Model model) {
-        model.addAttribute("department", new Department());
+        model.addAttribute("department", new DepartmentDTO());
         return "departments/form";
     }
 
     @PostMapping("/save")
-    public String saveDepartment(@ModelAttribute("department") Department department) {
+    public String saveDepartment(@ModelAttribute("department") DepartmentDTO departmentdto) {
+        Department department;
+        if(departmentdto.getId()!= null){
+            department = departmentService.getDepartmentById(departmentdto.getId());
+        }else {
+            department  = new Department();
+        }
+        department.setCode(departmentdto.getCode());
+        department.setName(departmentdto.getName());
         departmentService.saveDepartment(department);
         return "redirect:/departments";
     }

@@ -7,8 +7,7 @@ import lombok.*;
 @Table(name = "departments")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class Department {
 
     @Id
@@ -18,4 +17,14 @@ public class Department {
     private String code;
 
     private String name;
+
+    public Department() {
+
+    }
+
+    public Department(Long id, String code, String name) {
+        this.id = id;
+        this.code = code;
+        this.name = name;
+    }
 }
