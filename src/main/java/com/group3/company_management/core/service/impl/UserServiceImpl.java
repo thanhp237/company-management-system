@@ -2,10 +2,13 @@ package com.group3.company_management.core.service.impl;
 
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
+import com.group3.company_management.core.entity.Role;
 import com.group3.company_management.core.entity.User;
+import com.group3.company_management.core.repository.RoleRepository;
 import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,8 @@ import java.util.Locale;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final JdbcTemplate jdbcTemplate;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
@@ -41,7 +46,7 @@ public class UserServiceImpl implements UserService {
         String username = normalizeRequired(request.getUsername(), "Username is required");
         String email = normalizeRequired(request.getEmail(), "Email is required");
         String password = normalizeRequired(request.getPassword(), "Password is required");
-        Long roleId = normalizeRequired(request.getRoleId(), "Role is required");
+        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Role is required"));
 
         validateUniqueUsername(username, null);
         validateUniqueEmail(email, null);
@@ -50,9 +55,14 @@ public class UserServiceImpl implements UserService {
         user.setUsername(username);
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(password));
-        user.setRoleId(roleId);
+        user.setFullName(normalizeOptional(request.getFullName()));
+        user.setPhone(normalizeOptional(request.getPhone()));
+        user.setDepartmentId(request.getDepartmentId());
+        user.setGroupId(request.getGroupId());
+        user.setRole(role);
         user.setStatus("ACTIVE");
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
+        createRoleProfile(user, role);
     }
 
     @Override
@@ -71,10 +81,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found with ID: " + id);
-        }
-        userRepository.deleteById(id);
+        User user = findActiveUserById(id);
+        user.setDeleted(true);
+        user.setDeletedAt(java.time.LocalDateTime.now());
+        userRepository.save(user);
     }
 
     @Override
@@ -89,9 +99,62 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getAllRoles() {
+        return roleRepository.findAll();
+    }
+
     private User findActiveUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+    }
+
+    private Role findRoleById(Long id) {
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Role not found with ID: " + id));
+    }
+
+    private void createRoleProfile(User user, Role role) {
+        String roleCode = normalizeRequired(role.getRoleCode(), "Role code is required").toUpperCase(Locale.ROOT);
+        String employeeCode = buildEmployeeCode(roleCode, user.getId());
+
+        switch (roleCode) {
+            case "ADMIN" -> jdbcTemplate.update(
+                    "INSERT INTO admins (account_id, employee_code) VALUES (?, ?)",
+                    user.getId(), employeeCode
+            );
+            case "ADMIN_OFFICER" -> jdbcTemplate.update(
+                    "INSERT INTO admin_officers (account_id, employee_code) VALUES (?, ?)",
+                    user.getId(), employeeCode
+            );
+            case "ACCOUNTANT" -> jdbcTemplate.update(
+                    "INSERT INTO accountants (account_id, employee_code) VALUES (?, ?)",
+                    user.getId(), employeeCode
+            );
+            case "MARKETING" -> jdbcTemplate.update(
+                    "INSERT INTO marketing_staffs (account_id, employee_code) VALUES (?, ?)",
+                    user.getId(), employeeCode
+            );
+            case "SALES" -> jdbcTemplate.update(
+                    "INSERT INTO sales_staffs (account_id, employee_code) VALUES (?, ?)",
+                    user.getId(), employeeCode
+            );
+            default -> throw new IllegalArgumentException("Unsupported role code: " + roleCode);
+        }
+    }
+
+    private String buildEmployeeCode(String roleCode, Long accountId) {
+        String prefix = switch (roleCode) {
+            case "ADMIN" -> "ADM";
+            case "ADMIN_OFFICER" -> "AOF";
+            case "ACCOUNTANT" -> "ACC";
+            case "MARKETING" -> "MKT";
+            case "SALES" -> "SAL";
+            default -> throw new IllegalArgumentException("Unsupported role code: " + roleCode);
+        };
+
+        return "%s%06d".formatted(prefix, accountId);
     }
 
     private void validateUniqueUsername(String username, Long currentUserId) {
@@ -137,5 +200,14 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException(message);
         }
         return value;
+    }
+
+    private String normalizeOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 }

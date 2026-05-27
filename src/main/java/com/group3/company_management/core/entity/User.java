@@ -48,8 +48,12 @@ public class User implements UserDetails {
     @Column(name = "department_id")
     private Long departmentId;
 
-    @Column(name = "role_id")
-    private Long roleId;
+    @Column(name = "group_id")
+    private Long groupId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
