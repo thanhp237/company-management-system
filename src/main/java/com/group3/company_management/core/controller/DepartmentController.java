@@ -46,7 +46,17 @@ public class DepartmentController {
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
-        model.addAttribute("department", departmentService.getDepartmentById(id));
+
+        Department department = departmentService.getDepartmentById(id);
+
+        DepartmentDTO dto = new DepartmentDTO(
+                department.getId(),
+                department.getCode(),
+                department.getName()
+        );
+
+        model.addAttribute("department", dto);
+
         return "departments/form";
     }
 
