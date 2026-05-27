@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - Company Management</title>
+
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- ICON -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            font-family:'Inter',sans-serif;
+            height:100vh;
+            overflow:hidden;
+            background:#f4f8fb;
+        }
+
+        .container{
+            display:flex;
+            width:100%;
+            height:100vh;
+        }
+
+        /* =========================================================
+           LEFT SIDE
+        ========================================================= */
+
+        .left-side{
+            width:55%;
+            position:relative;
+            overflow:hidden;
+
+            background:
+                    linear-gradient(
+                            135deg,
+                            #00b894 0%,
+                            #00cec9 45%,
+                            #0984e3 100%
+                    );
+
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:70px;
+            color:white;
+        }
+
+        .left-overlay{
+            position:absolute;
+            inset:0;
+            background:rgba(0,0,0,0.08);
+            z-index:1;
+        }
+
+        /* Floating background circles */
+
+        .circle{
+            position:absolute;
+            border-radius:50%;
+            background:rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .circle1{
+            width:280px;
+            height:280px;
+            top:-60px;
+            left:-60px;
+        }
+
+        .circle2{
+            width:220px;
+            height:220px;
+            bottom:-50px;
+            right:40px;
+        }
+
+        .circle3{
+            width:140px;
+            height:140px;
+            top:120px;
+            right:100px;
+        }
+
+        .left-content{
+            position:relative;
+            z-index:2;
+            max-width:560px;
+        }
+
+        .logo{
+            font-size:20px;
+            font-weight:700;
+            margin-bottom:45px;
+            letter-spacing:1px;
+        }
+
+        .hero-title{
+            font-size:58px;
+            font-weight:800;
+            line-height:1.15;
+            margin-bottom:28px;
+        }
+
+        .hero-subtitle{
+            font-size:18px;
+            line-height:1.9;
+            opacity:0.95;
+            margin-bottom:45px;
+        }
+
+        .feature-list{
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+        }
+
+        .feature-item{
+            display:flex;
+            align-items:center;
+            gap:16px;
+            font-size:16px;
+        }
+
+        .feature-icon{
+            width:42px;
+            height:42px;
+            border-radius:14px;
+
+            background:rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+
+            display:flex;
+            justify-content:center;
+            align-items:center;
+
+            font-size:16px;
+        }
+
+        /* =========================================================
+           MOCK DASHBOARD
+        ========================================================= */
+
+        .mock-dashboard{
+            margin-top:45px;
+            width:100%;
+            max-width:520px;
+
+            background:rgba(255,255,255,0.13);
+            border:1px solid rgba(255,255,255,0.18);
+
+            backdrop-filter: blur(18px);
+
+            border-radius:28px;
+            padding:24px;
+
+            box-shadow:
+                    0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .mock-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:24px;
+        }
+
+        .mock-title{
+            font-size:18px;
+            font-weight:700;
+        }
+
+        .mock-badge{
+            padding:8px 14px;
+            border-radius:999px;
+            background:rgba(255,255,255,0.15);
+            font-size:13px;
+        }
+
+        .mock-cards{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:16px;
+        }
+
+        .mock-card{
+            background:rgba(255,255,255,0.12);
+            border-radius:18px;
+            padding:18px;
+        }
+
+        .mock-card h4{
+            font-size:14px;
+            margin-bottom:12px;
+            opacity:0.9;
+        }
+
+        .mock-value{
+            font-size:28px;
+            font-weight:700;
+        }
+
+        /* =========================================================
+           RIGHT SIDE
+        ========================================================= */
+
+        .right-side{
+            width:45%;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:40px;
+            background:#f8fbff;
+        }
+
+        .login-wrapper{
+            width:100%;
+            max-width:450px;
+        }
+
+        .login-card{
+
+            background:rgba(255,255,255,0.75);
+
+            backdrop-filter: blur(18px);
+
+            border:1px solid rgba(255,255,255,0.7);
+
+            border-radius:30px;
+
+            padding:42px;
+
+            box-shadow:
+                    0 12px 40px rgba(15,23,42,0.08);
+        }
+
+        .login-title{
+            font-size:38px;
+            font-weight:800;
+            color:#111827;
+            margin-bottom:12px;
+        }
+
+        .login-subtitle{
+            color:#6b7280;
+            line-height:1.8;
+            margin-bottom:34px;
+            font-size:15px;
+        }
+
+        /* =========================================================
+           ALERTS
+        ========================================================= */
+
+        .alert{
+            padding:14px 16px;
+            border-radius:14px;
+            margin-bottom:20px;
+            font-size:14px;
+            font-weight:500;
+        }
+
+        .alert-error{
+            background:#fee2e2;
+            color:#dc2626;
+        }
+
+        .alert-success{
+            background:#dcfce7;
+            color:#166534;
+        }
+
+        /* =========================================================
+           FORM
+        ========================================================= */
+
+        .form-group{
+            margin-bottom:22px;
+        }
+
+        .form-label{
+            display:block;
+            margin-bottom:10px;
+            font-size:14px;
+            font-weight:600;
+            color:#374151;
+        }
+
+        .input-wrapper{
+            position:relative;
+        }
+
+        .input-icon{
+            position:absolute;
+            top:50%;
+            left:18px;
+            transform:translateY(-50%);
+            color:#9ca3af;
+            font-size:15px;
+        }
+
+        .form-input{
+            width:100%;
+            height:56px;
+
+            padding-left:50px;
+            padding-right:16px;
+
+            border-radius:16px;
+            border:1px solid #dbe3ea;
+
+            background:white;
+
+            font-size:15px;
+
+            transition:all 0.25s ease;
+        }
+
+        .form-input:focus{
+            outline:none;
+
+            border-color:#00b894;
+
+            box-shadow:
+                    0 0 0 5px rgba(0,184,148,0.12);
+        }
+
+        .forgot-row{
+            display:flex;
+            justify-content:flex-end;
+            margin-top:-10px;
+            margin-bottom:24px;
+        }
+
+        .forgot-row a{
+            text-decoration:none;
+            color:#00a86b;
+            font-size:14px;
+            font-weight:600;
+        }
+
+        /* =========================================================
+           BUTTON
+        ========================================================= */
+
+        .login-btn{
+            width:100%;
+            height:58px;
+
+            border:none;
+            border-radius:18px;
+
+            background:
+                    linear-gradient(
+                            135deg,
+                            #00b894,
+                            #00cec9
+                    );
+
+            color:white;
+            font-size:16px;
+            font-weight:700;
+
+            cursor:pointer;
+
+            transition:all 0.25s ease;
+
+            box-shadow:
+                    0 10px 25px rgba(0,184,148,0.25);
+        }
+
+        .login-btn:hover{
+
+            transform:translateY(-2px);
+
+            box-shadow:
+                    0 16px 30px rgba(0,184,148,0.35);
+        }
+
+        .bottom-text{
+            text-align:center;
+            margin-top:28px;
+            color:#6b7280;
+            font-size:14px;
+            line-height:1.7;
+        }
+
+        .bottom-text span{
+            color:#00a86b;
+            font-weight:700;
+        }
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
+
+        @media(max-width:1100px){
+
+            .left-side{
+                display:none;
+            }
+
+            .right-side{
+                width:100%;
+            }
+
+            body{
+                overflow:auto;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- =====================================================
+         LEFT
+    ====================================================== -->
+
+    <div class="left-side">
+
+        <div class="left-overlay"></div>
+
+        <!-- circles -->
+        <div class="circle circle1"></div>
+        <div class="circle circle2"></div>
+        <div class="circle circle3"></div>
+
+        <div class="left-content">
+
+            <div class="logo">
+                COMPANY MANAGEMENT SYSTEM
+            </div>
+
+            <div class="hero-title">
+                Manage Contracts.
+                <br>
+                Track Customers.
+                <br>
+                Grow Business.
+            </div>
+
+            <div class="hero-subtitle">
+                A modern CRM & Contract Management platform
+                designed for sales teams, internal operations,
+                customer relationships, and enterprise workflows.
+            </div>
+
+            <div class="feature-list">
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-file-contract"></i>
+                    </div>
+
+                    Contract & document workflow management
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+
+                    Customer relationship & sales tracking
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    Secure JWT authentication & RBAC system
+                </div>
+
+            </div>
+
+            <!-- MOCK DASHBOARD -->
+
+            <div class="mock-dashboard">
+
+                <div class="mock-header">
+
+                    <div class="mock-title">
+                        Business Overview
+                    </div>
+
+                    <div class="mock-badge">
+                        Live Dashboard
+                    </div>
+
+                </div>
+
+                <div class="mock-cards">
+
+                    <div class="mock-card">
+
+                        <h4>
+                            Active Contracts
+                        </h4>
+
+                        <div class="mock-value">
+                            148
+                        </div>
+
+                    </div>
+
+                    <div class="mock-card">
+
+                        <h4>
+                            Customers
+                        </h4>
+
+                        <div class="mock-value">
+                            1.2K
+                        </div>
+
+                    </div>
+
+                    <div class="mock-card">
+
+                        <h4>
+                            Revenue
+                        </h4>
+
+                        <div class="mock-value">
+                            $84K
+                        </div>
+
+                    </div>
+
+                    <div class="mock-card">
+
+                        <h4>
+                            Team Members
+                        </h4>
+
+                        <div class="mock-value">
+                            24
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         RIGHT
+    ====================================================== -->
+
+    <div class="right-side">
+
+        <div class="login-wrapper">
+
+            <div class="login-card">
+
+                <div class="login-title">
+                    Welcome Back 👋
+                </div>
+
+                <div class="login-subtitle">
+                    Sign in to access your workspace,
+                    contracts, customers, and internal dashboards.
+                </div>
+
+                <!-- ERRORS -->
+
+                <div th:if="${error}" class="alert alert-error">
+                    Invalid username or password.
+                </div>
+
+                <div th:if="${locked}" class="alert alert-error">
+                    Your account has been temporarily locked.
+                </div>
+
+                <div th:if="${inactive}" class="alert alert-error">
+                    Your account is inactive.
+                </div>
+
+                <!-- FORM -->
+
+                <form method="post" action="/api/v1/auth/login">
+
+                    <!-- USERNAME -->
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Username
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-regular fa-user input-icon"></i>
+
+                            <input
+                                    type="text"
+                                    name="username"
+                                    class="form-input"
+                                    placeholder="Enter your username"
+                                    required
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <!-- PASSWORD -->
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock input-icon"></i>
+
+                            <input
+                                    type="password"
+                                    name="password"
+                                    class="form-input"
+                                    placeholder="Enter your password"
+                                    required
+                            >
+
+                        </div>
+
+                    </div>
+
+                    <div class="forgot-row">
+                        <a href="/forgot-password">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <!-- BUTTON -->
+
+                    <button type="submit" class="login-btn">
+                        Sign In
+                    </button>
+
+                </form>
+
+                <div class="bottom-text">
+
+                    Secure internal platform for
+                    <span>
+                        CRM, Sales & Contract Management
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

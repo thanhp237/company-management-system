@@ -1,8 +1,5 @@
 package com.group3.company_management.core.config;
 
-import com.group3.company_management.core.security.JwtAuthenticationEntryPoint;
-import com.group3.company_management.core.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.group3.company_management.core.security.JwtAuthenticationEntryPoint;
+import com.group3.company_management.core.security.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Spring Security configuration for JWT-based authentication
@@ -54,27 +56,64 @@ public class SecurityConfig {
      * - JWT filter for token validation
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf()
-                .disable()
-                .exceptionHandling()
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+    http
+
+            // Disable CSRF for JWT/API usage
+            .csrf(csrf -> csrf.disable())
+
+            // Disable default Spring login page
+            .formLogin(form -> form.disable())
+
+            // Disable HTTP Basic auth popup
+            .httpBasic(httpBasic -> httpBasic.disable())
+
+            // JWT unauthorized handler
+            .exceptionHandling(exception -> exception
                     .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                .and()
-                .sessionManagement()
+            )
+
+            // Stateless session for JWT
+            .sessionManagement(session -> session
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeHttpRequests(authz -> authz
-                        // Public endpoints - no authentication required
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/health").permitAll()
-                        // Allow Thymeleaf UI endpoints
-                        .requestMatchers("/", "/users/**", "/templates/**").permitAll()
-                        // All other endpoints require authentication
-                        .anyRequest().authenticated()
-                )
-                // Add JWT filter before default username/password filter
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        
-        return http.build();
-    }
+            )
+
+            // Route permissions
+            .authorizeHttpRequests(authz -> authz
+
+                    // Public API endpoints
+                    .requestMatchers(
+                            HttpMethod.POST,
+                            "/api/v1/auth/login"
+                    ).permitAll()
+
+                    .requestMatchers(
+                            HttpMethod.GET,
+                            "/api/v1/auth/health"
+                    ).permitAll()
+
+                    // Public UI pages
+                    .requestMatchers(
+                            "/",
+                            "/login",
+                            "/auth",
+                            "/forgot-password",
+                            "/css/**",
+                            "/js/**",
+                            "/images/**"
+                    ).permitAll()
+
+                    // Everything else requires auth
+                    .anyRequest().authenticated()
+            )
+
+            // JWT filter
+            .addFilterBefore(
+                    jwtAuthenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class
+            );
+
+    return http.build();
+}
 }

@@ -40,7 +40,7 @@ public class LoginController {
      * GET /
      * Redirect root to dashboard or login
      */
-    @GetMapping("/")
+    @GetMapping("/auth")
     public String redirectRoot(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
             return "redirect:/dashboard";
