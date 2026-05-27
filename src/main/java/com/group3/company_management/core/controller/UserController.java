@@ -28,6 +28,7 @@ public class UserController {
     @GetMapping("/add")
     public String showAddForm(Model model){
         model.addAttribute("userForm", new UserRequest());
+        model.addAttribute("roles", userService.getAllRoles());
         return "users/add-form";
     }
 
@@ -44,6 +45,7 @@ public class UserController {
             return "redirect:/users";
         } catch (IllegalArgumentException exception) {
             model.addAttribute("errorMessage", exception.getMessage());
+            model.addAttribute("roles", userService.getAllRoles());
             return "users/add-form";
         }
     }

@@ -24,6 +24,25 @@
             <td><label>Email:</label></td>
             <td><input type="email" th:field="*{email}" required></td>
         </tr>
+        <tr>
+            <td><label>Full name:</label></td>
+            <td><input type="text" th:field="*{fullName}"></td>
+        </tr>
+        <tr>
+            <td><label>Phone:</label></td>
+            <td><input type="text" th:field="*{phone}"></td>
+        </tr>
+        <tr>
+            <td><label>Role:</label></td>
+            <td>
+                <select th:field="*{roleId}" required>
+                    <option value="">-- Select Role --</option>
+                    <option th:each="role : ${roles}"
+                            th:value="${role.id}"
+                            th:text="${role.roleName}"></option>
+                </select>
+            </td>
+        </tr>
     </table>
 
     <br>
