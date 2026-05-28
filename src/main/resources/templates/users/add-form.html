@@ -2,39 +2,55 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Add User</title>
+    <title th:text="${isEdit} ? 'Edit User' : 'Add User'">Add User</title>
 </head>
 <body>
 
-<h2>Add New User</h2>
+<h2 th:text="${isEdit} ? 'Edit User' : 'Add New User'">Add New User</h2>
 
-<form th:action="@{/users/save}" th:object="${user}" method="post">
+<p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+
+<form th:action="@{/users/save}" th:object="${userForm}" method="post">
+    <input type="hidden" th:field="*{id}">
     <table>
         <tr>
             <td><label>Username:</label></td>
-            <td>
-                <input type="text" th:field="*{username}" required placeholder="Enter username">
-            </td>
+            <td><input type="text" th:field="*{username}" required></td>
         </tr>
-        <tr>
-            <td><label>Full Name:</label></td>
-            <td>
-                <input type="text" th:field="*{fullName}" placeholder="Enter full name">
-            </td>
+        <tr th:if="${!isEdit}">
+            <td><label>Password:</label></td>
+            <td><input type="password" th:field="*{password}" required></td>
         </tr>
         <tr>
             <td><label>Email:</label></td>
+            <td><input type="email" th:field="*{email}" required></td>
+        </tr>
+        <tr>
+            <td><label>Full name:</label></td>
+            <td><input type="text" th:field="*{fullName}"></td>
+        </tr>
+        <tr>
+            <td><label>Phone:</label></td>
+            <td><input type="text" th:field="*{phone}"></td>
+        </tr>
+        <tr>
+            <td><label>Role:</label></td>
             <td>
-                <input type="email" th:field="*{email}" placeholder="example@domain.com">
+                <select th:field="*{roleId}" required>
+                    <option value="">-- Select Role --</option>
+                    <option th:each="role : ${roles}"
+                            th:value="${role.id}"
+                            th:text="${role.roleName}"></option>
+                </select>
             </td>
         </tr>
     </table>
 
     <br>
-
     <div>
         <a th:href="@{/users}">Back to List</a>
-        <button type="submit">Create User</button>
+        <button type="submit" th:formaction="@{/users/save}" th:disabled="${isEdit}">Create User</button>
+        <button type="submit" th:formaction="@{/users/update}" th:disabled="${!isEdit}">Edit User</button>
     </div>
 </form>
 
