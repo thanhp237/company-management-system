@@ -118,7 +118,7 @@ public class AuthenticationService {
                     .fullName(user.getFullName())
                     .avatarUrl(user.getAvatarUrl())
                     .departmentId(user.getDepartmentId())
-                    .roleId(user.getRoleId())
+                    .roleId(user.getRole() == null ? null : user.getRole().getId())
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .tokenType("Bearer")

@@ -19,12 +19,16 @@ public class LoginController {
     @GetMapping("/login")
     public String showLoginPage(Model model, 
                                 @RequestParam(required = false) String error,
+                                @RequestParam(required = false) String logout,
                                 @RequestParam(required = false) String locked,
                                 @RequestParam(required = false) String inactive) {
         model.addAttribute("title", "Login");
         
         if (error != null) {
             model.addAttribute("error", true);
+        }
+        if (logout != null) {
+            model.addAttribute("logout", true);
         }
         if (locked != null) {
             model.addAttribute("locked", true);

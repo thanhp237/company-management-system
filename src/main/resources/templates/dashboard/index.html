@@ -338,8 +338,8 @@
                             <span sec:authentication="name"></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                            <li><a class="dropdown-item" href="/dashboard/profile">Profile</a></li>
-                            <li><a class="dropdown-item" href="/dashboard/settings">Settings</a></li>
+                            <li><a class="dropdown-item" href="/dashboard">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/users">Users</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="/logout">
@@ -364,23 +364,18 @@
                     </a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a class="nav-link text-light" href="/customers" data-bs-toggle="collapse">
-                        <i class="fas fa-users me-2"></i>Customers
+                    <a class="nav-link text-light" href="/users">
+                        <i class="fas fa-users me-2"></i>Users
                     </a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a class="nav-link text-light" href="/opportunities" data-bs-toggle="collapse">
-                        <i class="fas fa-chart-bar me-2"></i>Opportunities
+                    <a class="nav-link text-light" href="/departments">
+                        <i class="fas fa-building me-2"></i>Departments
                     </a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a class="nav-link text-light" href="/contracts" data-bs-toggle="collapse">
-                        <i class="fas fa-file-contract me-2"></i>Contracts
-                    </a>
-                </li>
-                <li class="nav-item mb-2">
-                    <a class="nav-link text-light" href="/invoices" data-bs-toggle="collapse">
-                        <i class="fas fa-file-invoice-dollar me-2"></i>Invoices
+                    <a class="nav-link text-light" href="/login">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
                     </a>
                 </li>
             </ul>
@@ -460,7 +455,7 @@
             <div class="col-lg-6">
                 <div class="section-header">
                     <h2>Recent Activities</h2>
-                    <a href="/activities" class="view-all-link">View All →</a>
+                    <a href="/users" class="view-all-link">View Users</a>
                 </div>
                 
                 <div class="metric-card" style="padding: 0; border: 1px solid var(--border-color);">
@@ -504,7 +499,7 @@
             <div class="col-lg-6">
                 <div class="section-header">
                     <h2>Top Performers</h2>
-                    <a href="/team" class="view-all-link">View Team →</a>
+                    <a href="/departments" class="view-all-link">View Departments</a>
                 </div>
                 
                 <div class="data-table">

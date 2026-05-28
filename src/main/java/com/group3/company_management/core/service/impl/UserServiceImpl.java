@@ -72,10 +72,6 @@ public class UserServiceImpl implements UserService {
         String username = normalizeRequired(request.getUsername(), "Username is required");
         String email = normalizeRequired(request.getEmail(), "Email is required");
         Role role = findRoleById(normalizeRequired(request.getRoleId(), "Role is required"));
-    public User updateUser(Long id, User userDetails) {
-        User user = findActiveUserById(id);
-        String username = normalizeRequired(userDetails.getUsername(), "Username is required");
-        String email = normalizeRequired(userDetails.getEmail(), "Email is required");
 
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
@@ -88,8 +84,25 @@ public class UserServiceImpl implements UserService {
         user.setGroupId(request.getGroupId());
         user.setRole(role);
         userRepository.save(user);
+    }
+
+    @Override
+    public User updateUser(Long id, User userDetails) {
+        User user = findActiveUserById(id);
+        String username = normalizeRequired(userDetails.getUsername(), "Username is required");
+        String email = normalizeRequired(userDetails.getEmail(), "Email is required");
+
+        validateUniqueUsername(username, id);
+        validateUniqueEmail(email, id);
+
         user.setEmail(email);
         user.setUsername(username);
+        user.setFullName(normalizeOptional(userDetails.getFullName()));
+        user.setPhone(normalizeOptional(userDetails.getPhone()));
+        user.setDepartmentId(userDetails.getDepartmentId());
+        user.setGroupId(userDetails.getGroupId());
+        user.setRole(userDetails.getRole());
+        user.setStatus(normalizeOptional(userDetails.getStatus()));
         return userRepository.save(user);
     }
 

@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.group3.company_management.core.security.JwtAuthenticationEntryPoint;
 import com.group3.company_management.core.security.JwtAuthenticationFilter;
@@ -19,16 +20,16 @@ import com.group3.company_management.core.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Spring Security configuration for JWT-based authentication
+ * Spring Security configuration for UI form login and JWT-based API authentication
  */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    
+
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    
+
     /**
      * Password encoder using BCrypt algorithm
      * Hashes passwords securely before storing in database
@@ -37,7 +38,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
+
     /**
      * Authentication manager for validating credentials
      */
@@ -45,84 +46,99 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
-    
+
     /**
      * HTTP security filter chain
      * Configures:
-     * - CSRF disabled (stateless REST API)
-     * - Session management (stateless with JWT)
-     * - Public endpoints (login, health check)
-     * - Protected endpoints (require JWT token)
-     * - JWT filter for token validation
+     * - CSRF disabled for simple HTML forms and JWT API requests
+     * - Form login for Thymeleaf UI pages
+     * - Public endpoints (login, static assets, auth API)
+     * - Protected UI pages (require session authentication)
+     * - JWT filter for API token validation
      */
     @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    http
+        http
 
-            // Disable CSRF for JWT/API usage
-            .csrf(csrf -> csrf.disable())
+                // Disable CSRF for simple HTML forms and JWT/API usage
+                .csrf(csrf -> csrf.disable())
 
-            // Disable default Spring login page
-            .formLogin(form -> form.disable())
+                // Use the custom Thymeleaf login page for browser users
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/dashboard", true)
+                        .failureUrl("/login?error")
+                        .permitAll()
+                )
 
-            // Disable HTTP Basic auth popup
-            .httpBasic(httpBasic -> httpBasic.disable())
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
+                )
 
-            // JWT unauthorized handler
-            .exceptionHandling(exception -> exception
-                    .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-            )
+                // Disable HTTP Basic auth popup
+                .httpBasic(httpBasic -> httpBasic.disable())
 
-            // Stateless session for JWT
-            .sessionManagement(session -> session
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+                // Return API-style unauthorized responses for API calls only
+                .exceptionHandling(exception -> exception
+                        .defaultAuthenticationEntryPointFor(
+                                jwtAuthenticationEntryPoint,
+                                new AntPathRequestMatcher("/api/**")
+                        )
+                )
 
-            // Route permissions
-            .authorizeHttpRequests(authz -> authz
+                // UI login needs a session; JWT API requests still authenticate via token
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
 
-                    // Public API endpoints
-                    .requestMatchers(
-                            HttpMethod.POST,
-                            "/api/v1/auth/login"
-                    ).permitAll()
+                // Route permissions
+                .authorizeHttpRequests(authz -> authz
 
-                    .requestMatchers(
-                            HttpMethod.GET,
-                            "/api/v1/auth/health"
-                    ).permitAll()
+                        // Public API endpoints
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/auth/login"
+                        ).permitAll()
 
-                    // Public UI pages
-                    .requestMatchers(
-                            "/",
-                            "/login",
-                            "/auth",
-                            "/forgot-password",
-                            "/css/**",
-                            "/js/**",
-                            "/images/**"
-                    ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/auth/health"
+                        ).permitAll()
 
-                    // Everything else requires auth
-                    .anyRequest().authenticated()
-            )
+                        // Public UI pages
+                        .requestMatchers(
+                                "/",
+                                "/login",
+                                "/auth",
+                                "/forgot-password",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/webjars/**",
+                                "/main.css"
+                        ).permitAll()
 
-            // JWT filter
-            .addFilterBefore(
-                    jwtAuthenticationFilter,
-                    UsernamePasswordAuthenticationFilter.class
-            );
+                        .requestMatchers(
+                                "/dashboard/**",
+                                "/users/**",
+                                "/departments/**"
+                        ).authenticated()
 
-    return http.build();
-}
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+                        .anyRequest().authenticated()
+                )
 
-@Configuration
-public class SecurityConfig {
+                // JWT filter
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return http.build();
     }
 }

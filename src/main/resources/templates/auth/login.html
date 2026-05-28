@@ -601,9 +601,13 @@
                     Your account is inactive.
                 </div>
 
+                <div th:if="${logout}" class="alert alert-success">
+                    You have been logged out successfully.
+                </div>
+
                 <!-- FORM -->
 
-                <form method="post" action="/api/v1/auth/login">
+                <form method="post" th:action="@{/login}">
 
                     <!-- USERNAME -->
 
