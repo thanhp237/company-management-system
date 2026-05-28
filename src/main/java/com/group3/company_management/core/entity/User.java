@@ -22,6 +22,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Table(name = "system_accounts")
@@ -60,14 +63,18 @@ public class User implements UserDetails {
     @Column(name = "department_id")
     private Long departmentId;
 
-    @Column(name = "role_id")
-    private Long roleId;
+    @Column(name = "group_id")
+    private Long groupId;
 
     /**
      * Status: ACTIVE or INACTIVE (only 2 statuses)
      * - ACTIVE: User can log in
      * - INACTIVE: User cannot log in
      */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private Role role;
+
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
     private String status = "ACTIVE";
@@ -91,6 +98,9 @@ public class User implements UserDetails {
     /**
      * Last successful login timestamp
      */
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
@@ -142,6 +152,8 @@ public class User implements UserDetails {
     @Override
     public boolean isAccountNonLocked() {
         return this.lockedUntil == null || LocalDateTime.now().isAfter(this.lockedUntil);
+        return !"LOCKED".equals(this.status)
+                && (this.lockedUntil == null || LocalDateTime.now().isAfter(this.lockedUntil));
     }
 
     @Override
