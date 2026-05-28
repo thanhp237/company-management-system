@@ -1,12 +1,27 @@
 package com.group3.company_management.core.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,6 +66,11 @@ public class User implements UserDetails {
     @Column(name = "group_id")
     private Long groupId;
 
+    /**
+     * Status: ACTIVE or INACTIVE (only 2 statuses)
+     * - ACTIVE: User can log in
+     * - INACTIVE: User cannot log in
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private Role role;
@@ -59,10 +79,25 @@ public class User implements UserDetails {
     @Builder.Default
     private String status = "ACTIVE";
 
+    /**
+     * Track failed login attempts
+     * Used for account security and temporary locking via lockedUntil timestamp
+     */
     @Column(name = "failed_attempts")
     @Builder.Default
     private Integer failedAttempts = 0;
 
+    /**
+     * Temporary account lock timestamp
+     * Account is locked if current time is before this timestamp
+     * Automatically unlocks after lock duration expires
+     */
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
+    /**
+     * Last successful login timestamp
+     */
     @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
 
@@ -108,8 +143,15 @@ public class User implements UserDetails {
         return true;
     }
 
+    /**
+     * Check if account is not locked (can log in)
+     * Returns true if:
+     * - lockedUntil is null OR
+     * - current time is after lockedUntil (lock has expired)
+     */
     @Override
     public boolean isAccountNonLocked() {
+        return this.lockedUntil == null || LocalDateTime.now().isAfter(this.lockedUntil);
         return !"LOCKED".equals(this.status)
                 && (this.lockedUntil == null || LocalDateTime.now().isAfter(this.lockedUntil));
     }
@@ -119,6 +161,12 @@ public class User implements UserDetails {
         return true;
     }
 
+    /**
+     * Check if user is enabled (can log in)
+     * Returns true if:
+     * - status is ACTIVE AND
+     * - not soft-deleted
+     */
     @Override
     public boolean isEnabled() {
         return "ACTIVE".equals(this.status) && !this.isDeleted;

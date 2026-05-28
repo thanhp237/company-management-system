@@ -24,3 +24,7 @@ public class LoginResponse {
     private String refreshToken;     // JWT token for refreshing access token
     private String tokenType;        // "Bearer"
 }
+
+
+
+

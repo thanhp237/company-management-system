@@ -1,0 +1,60 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top" 
+     xmlns:th="http://www.thymeleaf.org" 
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <div class="container-fluid px-4">
+        <!-- Brand/Logo -->
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+            <i class="fas fa-briefcase text-success me-2" style="font-size: 1.5rem;"></i>
+            <span>CompanyMS</span>
+        </a>
+        
+        <!-- Mobile Toggler -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Navbar Content -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <!-- User is not authenticated -->
+                <li sec:authorize="!isAuthenticated()" class="nav-item">
+                    <a class="nav-link" href="/login">
+                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                    </a>
+                </li>
+                
+                <!-- User is authenticated -->
+                <li sec:authorize="isAuthenticated()" class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" 
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- User Avatar -->
+                        <img src="https://via.placeholder.com/32" alt="User" 
+                             class="rounded-circle me-2" width="32" height="32">
+                        <span sec:authentication="name"></span>
+                    </a>
+                    
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li>
+                            <a class="dropdown-item" href="/dashboard/profile">
+                                <i class="fas fa-user me-2"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="/dashboard/settings">
+                                <i class="fas fa-cog me-2"></i> Settings
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="/logout" class="d-inline">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
