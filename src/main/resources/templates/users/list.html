@@ -47,6 +47,8 @@
         </td>
 
         <td>
+            <a th:href="@{/users/add(id=${user.id})}">Edit</a>
+            |
             <a th:href="@{/users/delete/{id}(id=${user.id})}"
                onclick="return confirm('Delete this account?')">
                 Delete

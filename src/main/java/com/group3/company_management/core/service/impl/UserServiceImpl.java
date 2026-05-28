@@ -66,6 +66,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateUser(UserRequest request) {
+        Long id = normalizeRequired(request.getId(), "User ID is required");
+        User user = findActiveUserById(id);
+        String username = normalizeRequired(request.getUsername(), "Username is required");
+        String email = normalizeRequired(request.getEmail(), "Email is required");
+        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Role is required"));
     public User updateUser(Long id, User userDetails) {
         User user = findActiveUserById(id);
         String username = normalizeRequired(userDetails.getUsername(), "Username is required");
@@ -74,6 +80,14 @@ public class UserServiceImpl implements UserService {
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
 
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setFullName(normalizeOptional(request.getFullName()));
+        user.setPhone(normalizeOptional(request.getPhone()));
+        user.setDepartmentId(request.getDepartmentId());
+        user.setGroupId(request.getGroupId());
+        user.setRole(role);
+        userRepository.save(user);
         user.setEmail(email);
         user.setUsername(username);
         return userRepository.save(user);
