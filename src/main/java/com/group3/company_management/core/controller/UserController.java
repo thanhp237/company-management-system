@@ -2,6 +2,7 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
+import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -30,6 +31,9 @@ public class UserController {
         model.addAttribute("userForm", id == null ? new UserRequest() : toRequest(userService.getUserById(id)));
         model.addAttribute("roles", userService.getAllRoles());
         model.addAttribute("isEdit", id != null);
+    public String showAddForm(Model model){
+        model.addAttribute("userForm", new UserRequest());
+        model.addAttribute("roles", userService.getAllRoles());
         return "users/add-form";
     }
 

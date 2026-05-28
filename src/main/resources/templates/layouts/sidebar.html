@@ -1,0 +1,129 @@
+<aside class="sidebar bg-dark border-end" 
+       xmlns:th="http://www.thymeleaf.org"
+       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    
+    <div class="sidebar-menu">
+        <!-- Main Menu Items -->
+        <ul class="nav flex-column px-3 py-4">
+            <!-- Dashboard -->
+            <li class="nav-item mb-2">
+                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
+                   href="/dashboard">
+                    <i class="fas fa-chart-line me-3 text-success"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            
+            <!-- CRM Section -->
+            <li class="nav-item">
+                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
+                   data-bs-toggle="collapse" href="#crmMenu" role="button">
+                    <i class="fas fa-users me-3 text-success"></i>
+                    <span>CRM</span>
+                    <i class="fas fa-chevron-down ms-auto"></i>
+                </a>
+                <div class="collapse" id="crmMenu">
+                    <ul class="nav flex-column ps-5 py-2">
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/customers">
+                                Customers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/opportunities">
+                                Opportunities
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/interactions">
+                                Interactions
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- Sales Section -->
+            <li class="nav-item">
+                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
+                   data-bs-toggle="collapse" href="#salesMenu" role="button">
+                    <i class="fas fa-chart-bar me-3 text-success"></i>
+                    <span>Sales</span>
+                    <i class="fas fa-chevron-down ms-auto"></i>
+                </a>
+                <div class="collapse" id="salesMenu">
+                    <ul class="nav flex-column ps-5 py-2">
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/quotations">
+                                Quotations
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/contracts">
+                                Contracts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/invoices">
+                                Invoices
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- Accounting Section -->
+            <li class="nav-item">
+                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
+                   data-bs-toggle="collapse" href="#accountingMenu" role="button">
+                    <i class="fas fa-file-invoice-dollar me-3 text-success"></i>
+                    <span>Accounting</span>
+                    <i class="fas fa-chevron-down ms-auto"></i>
+                </a>
+                <div class="collapse" id="accountingMenu">
+                    <ul class="nav flex-column ps-5 py-2">
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/payments">
+                                Payments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/reports">
+                                Reports
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            
+            <!-- Settings (Admin only) -->
+            <li sec:authorize="hasRole('ADMIN')" class="nav-item mt-4 border-top pt-4">
+                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
+                   data-bs-toggle="collapse" href="#settingsMenu" role="button">
+                    <i class="fas fa-cog me-3 text-success"></i>
+                    <span>Settings</span>
+                    <i class="fas fa-chevron-down ms-auto"></i>
+                </a>
+                <div class="collapse" id="settingsMenu">
+                    <ul class="nav flex-column ps-5 py-2">
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/admin/users">
+                                Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/admin/departments">
+                                Departments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/admin/audit-logs">
+                                Audit Logs
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</aside>

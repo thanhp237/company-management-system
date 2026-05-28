@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Company Management System</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #22c55e;
+            --primary-dark: #16a34a;
+            --primary-light: #86efac;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-light: #f9fafb;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-light);
+        }
+        
+        /* Navbar Styling */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-dark) !important;
+            font-size: 20px;
+        }
+        
+        /* Sidebar Styling */
+        .sidebar {
+            background: #1f2937;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 56px;
+            width: 250px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            margin-top: 56px;
+            padding: 30px 20px;
+            min-height: calc(100vh - 56px);
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+        }
+        
+        .page-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        
+        .page-header p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        /* Dashboard Cards */
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        .metric-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .metric-card-icon.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .metric-card-icon.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .metric-card-icon.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        
+        .metric-card-icon.danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+        
+        .metric-label {
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .metric-change {
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .metric-change.positive {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .metric-change.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+        
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 0;
+        }
+        
+        .view-all-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .view-all-link:hover {
+            color: var(--primary-dark);
+        }
+        
+        /* Activity Section */
+        .activity-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: var(--bg-light);
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+        
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .activity-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+        
+        .activity-description {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        /* Table Styling */
+        .data-table {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        
+        .data-table table {
+            margin-bottom: 0;
+        }
+        
+        .data-table thead {
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table th {
+            font-weight: 600;
+            color: var(--text-dark);
+            padding: 16px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table td {
+            padding: 16px;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table tbody tr:hover {
+            background: var(--bg-light);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-badge.active {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        
+        .status-badge.completed {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 200px;
+                transition: all 0.3s ease;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-briefcase text-success me-2"></i>CompanyMS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" 
+                           data-bs-toggle="dropdown">
+                            <img src="https://via.placeholder.com/32" alt="User" 
+                                 class="rounded-circle me-2" width="32" height="32">
+                            <span sec:authentication="name"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                            <li><a class="dropdown-item" href="/dashboard/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/dashboard/settings">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="/logout">
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar bg-dark">
+        <div class="p-3">
+            <h6 class="text-white mb-3">MENU</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-light active" href="/dashboard">
+                        <i class="fas fa-chart-line me-2"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-light" href="/customers" data-bs-toggle="collapse">
+                        <i class="fas fa-users me-2"></i>Customers
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-light" href="/opportunities" data-bs-toggle="collapse">
+                        <i class="fas fa-chart-bar me-2"></i>Opportunities
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-light" href="/contracts" data-bs-toggle="collapse">
+                        <i class="fas fa-file-contract me-2"></i>Contracts
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-light" href="/invoices" data-bs-toggle="collapse">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Invoices
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Welcome back, <span sec:authentication="name"></span>!</h1>
+            <p>Here's what's happening with your business today.</p>
+        </div>
+        
+        <!-- Metrics Row -->
+        <div class="row">
+            <!-- Total Customers -->
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card">
+                    <div class="metric-card-icon success">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="metric-value" th:text="${totalCustomers ?: 0}">1,234</div>
+                    <div class="metric-label">Total Customers</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up me-1"></i>12% this month
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Active Contracts -->
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card">
+                    <div class="metric-card-icon info">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div class="metric-value" th:text="${activeContracts ?: 0}">245</div>
+                    <div class="metric-label">Active Contracts</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up me-1"></i>8% last month
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pending Approvals -->
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card">
+                    <div class="metric-card-icon warning">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div class="metric-value" th:text="${pendingApprovals ?: 0}">18</div>
+                    <div class="metric-label">Pending Approvals</div>
+                    <div class="metric-change negative">
+                        <i class="fas fa-arrow-down me-1"></i>5% from yesterday
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Monthly Revenue -->
+            <div class="col-lg-3 col-md-6">
+                <div class="metric-card">
+                    <div class="metric-card-icon danger">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="metric-value">$<span th:text="${monthlyRevenue ?: '0'}">250K</span></div>
+                    <div class="metric-label">Monthly Revenue</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up me-1"></i>25% vs last month
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activities & Quick Stats -->
+        <div class="row" style="margin-top: 40px;">
+            <!-- Recent Activities -->
+            <div class="col-lg-6">
+                <div class="section-header">
+                    <h2>Recent Activities</h2>
+                    <a href="/activities" class="view-all-link">View All →</a>
+                </div>
+                
+                <div class="metric-card" style="padding: 0; border: 1px solid var(--border-color);">
+                    <!-- Activity Items -->
+                    <div class="activity-item">
+                        <div class="activity-icon success" style="background: rgba(34, 197, 94, 0.1); color: var(--primary-color);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Contract Signed</div>
+                            <div class="activity-description">John Doe signed contract #CNT-2026-001</div>
+                            <div class="activity-time">2 hours ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon info" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">New Customer Added</div>
+                            <div class="activity-description">ABC Corporation has been added to your CRM</div>
+                            <div class="activity-time">5 hours ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon warning" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Approval Pending</div>
+                            <div class="activity-description">Invoice #INV-2026-042 awaits your approval</div>
+                            <div class="activity-time">1 day ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="col-lg-6">
+                <div class="section-header">
+                    <h2>Top Performers</h2>
+                    <a href="/team" class="view-all-link">View Team →</a>
+                </div>
+                
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Sales</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://via.placeholder.com/32" class="rounded-circle" 
+                                             width="32" height="32">
+                                        <div>Sarah Johnson</div>
+                                    </div>
+                                </td>
+                                <td>$45,000</td>
+                                <td><span class="status-badge active">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://via.placeholder.com/32" class="rounded-circle" 
+                                             width="32" height="32">
+                                        <div>Michael Chen</div>
+                                    </div>
+                                </td>
+                                <td>$38,500</td>
+                                <td><span class="status-badge active">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="https://via.placeholder.com/32" class="rounded-circle" 
+                                             width="32" height="32">
+                                        <div>Emily Davis</div>
+                                    </div>
+                                </td>
+                                <td>$32,200</td>
+                                <td><span class="status-badge pending">Pending</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -18,6 +18,7 @@
             <td><input type="text" th:field="*{username}" required></td>
         </tr>
         <tr th:if="${!isEdit}">
+        <tr>
             <td><label>Password:</label></td>
             <td><input type="password" th:field="*{password}" required></td>
         </tr>
