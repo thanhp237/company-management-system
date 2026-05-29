@@ -4,23 +4,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-/**
- * Handle login/logout pages and redirects
- */
 @Controller
 public class LoginController {
     
-    /**
-     * GET /login
-     * Display login page
-     */
     @GetMapping("/login")
-    public String showLoginPage(Model model, 
+    public String showLoginPage(Model model,
                                 @RequestParam(required = false) String error,
                                 @RequestParam(required = false) String locked,
-                                @RequestParam(required = false) String inactive) {
+                                @RequestParam(required = false) String inactive,
+                                @RequestParam(required = false) String logout) {
         model.addAttribute("title", "Login");
         
         if (error != null) {
@@ -32,15 +27,14 @@ public class LoginController {
         if (inactive != null) {
             model.addAttribute("inactive", true);
         }
+        if (logout != null) {
+            model.addAttribute("logout", true);
+        }
         
         return "auth/login";
     }
     
-    /**
-     * GET /
-     * Redirect root to dashboard or login
-     */
-    @GetMapping("/auth")
+    @GetMapping("/")
     public String redirectRoot(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
             return "redirect:/dashboard";
@@ -48,13 +42,8 @@ public class LoginController {
         return "redirect:/login";
     }
     
-    /**
-     * GET /forgot-password
-     * Display forgot password page (placeholder)
-     */
-    @GetMapping("/forgot-password")
-    public String showForgotPasswordPage(Model model) {
-        model.addAttribute("title", "Forgot Password");
-        return "auth/forgot-password";
+    @PostMapping("/logout")
+    public String logout() {
+        return "redirect:/login?logout=true";
     }
 }
