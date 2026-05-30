@@ -237,4 +237,17 @@ public class UserServiceImpl implements UserService {
         String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized;
     }
+
+@Override
+@Transactional(readOnly = true)
+public List<UserResponse> getActiveUsersByRole(String roleCode) {
+    if (roleCode == null || roleCode.trim().isEmpty()) {
+        return getAllUsers();
+    }
+    
+    return userRepository.findActiveUsersByRoleCode(roleCode)
+            .stream()
+            .map(UserResponse::fromEntity) //  hàm có sẵn
+            .toList();
+}
 }

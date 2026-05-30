@@ -16,4 +16,6 @@ public interface UserService {
     void deleteUser(Long id);
     void updateUserStatus(UserRequest request);
     List<Role> getAllRoles();
+    // Thêm vào trong interface UserService hiện tại của bạn:
+List<UserResponse> getActiveUsersByRole(String roleCode);
 }

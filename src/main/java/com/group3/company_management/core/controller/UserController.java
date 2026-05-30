@@ -3,10 +3,14 @@ package com.group3.company_management.core.controller;
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
 import com.group3.company_management.core.service.UserService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 
 @Controller
 @RequestMapping("/users")
@@ -19,11 +23,21 @@ public class UserController {
         this.userService = service;
     }
 
-    @GetMapping
-    public String listUsers(Model model){
-        model.addAttribute("users", userService.getAllUsers());
-        return "users/list";
+@GetMapping
+public String listUsers(@RequestParam(required = false) String role, Model model) {
+    // Sửa kiểu dữ liệu ở đây từ Entity sang DTO (UserResponse) để khớp với Service trả về
+    List<com.group3.company_management.core.dto.UserResponse> users; 
+    
+    // Nếu trên URL có tham số ?role=... thì gọi hàm lọc, ngược lại lấy tất cả
+    if (role != null && !role.trim().isEmpty()) {
+        users = userService.getActiveUsersByRole(role);
+    } else {
+        users = userService.getAllUsers();
     }
+    
+    model.addAttribute("users", users);
+    return "users/list";
+}
 
     @GetMapping("/add")
     public String showAddForm(@RequestParam(required = false) Long id, Model model) {

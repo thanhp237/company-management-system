@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Roles List</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <style>
+        .container { width: 85%; margin: 30px auto; font-family: Arial, sans-serif; }
+        .table-roles { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .table-roles th, .table-roles td { border: 1px solid #e0e0e0; padding: 12px 15px; text-align: center; }
+        .table-roles th { background-color: #f8f9fa; color: #333; font-weight: 600; }
+        .table-roles tr:hover { background-color: #f1f3f5; }
+        .btn-detail { background-color: #4dabf7; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 14px; transition: background 0.2s; }
+        .btn-detail:hover { background-color: #339af0; }
+        .title { color: #212529; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="title">Roles List</h2>
+    <p style="color: #6c757d; margin-bottom: 20px;">Quản lý và thống kê số lượng tài khoản theo từng quyền hạn hệ thống.</p>
+
+    <table class="table-roles">
+        <thead>
+            <tr>
+                <th style="width: 8%;">STT</th>
+                <th style="width: 25%;">Role Code</th>
+                <th style="width: 35%;">Role Name</th>
+                <th style="width: 17%;">Total Accounts</th>
+                <th style="width: 15%;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="role : ${roles}">
+                <td th:text="${role.stt}">1</td>
+                <td th:text="${role.roleCode}">ADMIN</td>
+                <td th:text="${role.roleName}">Administrator</td>
+                <td th:text="${role.totalCount}">0</td>
+                <td>
+                    <a th:href="@{/users(role=${role.roleCode})}" class="btn-detail">Detail</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
