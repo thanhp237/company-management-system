@@ -1,5 +1,6 @@
 package com.group3.company_management.core.service.impl;
 
+import com.group3.company_management.core.dto.ProfileUpdateRequest;
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
 import com.group3.company_management.core.entity.Role;
@@ -249,5 +250,27 @@ public List<UserResponse> getActiveUsersByRole(String roleCode) {
             .stream()
             .map(UserResponse::fromEntity) //  hàm có sẵn
             .toList();
+}
+
+@Override
+@Transactional(readOnly = true)
+public UserResponse getProfileByUsername(String username) {
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    return UserResponse.fromEntity(user);
+}
+
+@Override
+@Transactional
+public void updateProfile(String username, ProfileUpdateRequest request) {
+    User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    
+    // cho update
+    user.setFullName(request.getFullName());
+    user.setEmail(request.getEmail());
+    user.setPhone(request.getPhone());
+    
+    userRepository.save(user);
 }
 }

@@ -1,5 +1,6 @@
 package com.group3.company_management.core.service;
 
+import com.group3.company_management.core.dto.ProfileUpdateRequest;
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
 import com.group3.company_management.core.entity.Role;
@@ -16,6 +17,9 @@ public interface UserService {
     void deleteUser(Long id);
     void updateUserStatus(UserRequest request);
     List<Role> getAllRoles();
-    // Thêm vào trong interface UserService hiện tại của bạn:
-List<UserResponse> getActiveUsersByRole(String roleCode);
+    // 
+    List<UserResponse> getActiveUsersByRole(String roleCode);
+
+    UserResponse getProfileByUsername(String username);
+    void updateProfile(String username, ProfileUpdateRequest request);
 }
