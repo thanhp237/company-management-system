@@ -25,9 +25,9 @@ public class DashboardController {
         model.addAttribute("userName", authentication.getName());
         
         // TODO: Replace with actual data from services
-        model.addAttribute("totalCustomers", 1234);
-        model.addAttribute("activeContracts", 245);
-        model.addAttribute("pendingApprovals", 18);
+        model.addAttribute("totalCustomers"/* , 36 */ );
+        model.addAttribute("activeContracts"/* , 36 */ );
+        model.addAttribute("pendingApprovals"/* , 36 */ );
         model.addAttribute("monthlyRevenue", "250000");
         
         return "dashboard/index";
