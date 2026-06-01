@@ -79,6 +79,9 @@ public class User implements UserDetails {
     @Builder.Default
     private String status = "ACTIVE";
 
+    @Column(name = "first_login")
+    @Builder.Default
+    private Boolean firstLogin = true;
     /**
      * Track failed login attempts
      * Used for account security and temporary locking via lockedUntil timestamp

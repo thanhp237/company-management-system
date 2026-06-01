@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
+import com.group3.company_management.core.security.CustomLoginSuccessHandler;
 import com.group3.company_management.core.security.JwtAuthenticationEntryPoint;
 import com.group3.company_management.core.security.JwtAuthenticationFilter;
 
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
+    private final CustomLoginSuccessHandler customLoginSuccessHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -68,7 +68,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/dashboard", true)
+                        .successHandler(customLoginSuccessHandler)
                         .failureUrl("/login?error")
                         .permitAll()
                 )
@@ -123,11 +123,12 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/main.css"
                         ).permitAll()
-
                         .requestMatchers(
                                 "/dashboard/**",
                                 "/users/**",
-                                "/departments/**"
+                                "/departments/**",
+                                "/change-password",
+                                "/first-change-password"
                         ).authenticated()
 
                         .anyRequest().authenticated()
