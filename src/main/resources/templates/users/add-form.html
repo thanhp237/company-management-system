@@ -12,6 +12,8 @@
 
 <form th:action="@{/users/save}" th:object="${userForm}" method="post">
     <input type="hidden" th:field="*{id}">
+    <input type="hidden" th:field="*{departmentId}">
+    <input type="hidden" th:field="*{groupId}">
     <table>
         <tr>
             <td><label>Username:</label></td>
