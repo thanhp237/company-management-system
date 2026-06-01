@@ -16,8 +16,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <style>
-        :root {
+    <!-- <style>
+         :root {
             --primary-color: #22c55e;
             --primary-dark: #16a34a;
             --primary-light: #86efac;
@@ -315,8 +315,11 @@
                 margin-left: 0;
                 padding: 20px 15px;
             }
-        }
-    </style>
+        } 
+    </style> -->
+
+
+    
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -406,10 +409,10 @@
                     <div class="metric-card-icon success">
                         <i class="fas fa-users"></i>
                     </div>
-                    <div class="metric-value" th:text="${totalCustomers ?: 0}">1,234</div>
+                    <div class="metric-value" th:text="${totalCustomers ?: 0}">Total</div>
                     <div class="metric-label">Total Customers</div>
                     <div class="metric-change positive">
-                        <i class="fas fa-arrow-up me-1"></i>12% this month
+                        <i class="fas fa-arrow-up me-1"></i>xx% this month
                     </div>
                 </div>
             </div>
@@ -420,10 +423,10 @@
                     <div class="metric-card-icon info">
                         <i class="fas fa-file-contract"></i>
                     </div>
-                    <div class="metric-value" th:text="${activeContracts ?: 0}">245</div>
+                    <div class="metric-value" th:text="${activeContracts ?: 0}">Contracts</div>
                     <div class="metric-label">Active Contracts</div>
                     <div class="metric-change positive">
-                        <i class="fas fa-arrow-up me-1"></i>8% last month
+                        <i class="fas fa-arrow-up me-1"></i>xx% last month
                     </div>
                 </div>
             </div>
@@ -434,10 +437,10 @@
                     <div class="metric-card-icon warning">
                         <i class="fas fa-hourglass-half"></i>
                     </div>
-                    <div class="metric-value" th:text="${pendingApprovals ?: 0}">18</div>
+                    <div class="metric-value" th:text="${pendingApprovals ?: 0}">The Approvals</div>
                     <div class="metric-label">Pending Approvals</div>
                     <div class="metric-change negative">
-                        <i class="fas fa-arrow-down me-1"></i>5% from yesterday
+                        <i class="fas fa-arrow-down me-1"></i>xx% from yesterday
                     </div>
                 </div>
             </div>
@@ -448,10 +451,10 @@
                     <div class="metric-card-icon danger">
                         <i class="fas fa-dollar-sign"></i>
                     </div>
-                    <div class="metric-value">$<span th:text="${monthlyRevenue ?: '0'}">250K</span></div>
+                    <div class="metric-value">$<span th:text="${monthlyRevenue ?: '0'}">Revenue</span></div>
                     <div class="metric-label">Monthly Revenue</div>
                     <div class="metric-change positive">
-                        <i class="fas fa-arrow-up me-1"></i>25% vs last month
+                        <i class="fas fa-arrow-up me-1"></i>xx% vs last month
                     </div>
                 </div>
             </div>

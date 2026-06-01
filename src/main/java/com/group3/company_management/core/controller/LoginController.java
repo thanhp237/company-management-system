@@ -55,6 +55,7 @@ public class LoginController {
     /**
      * GET /forgot-password
      * Display forgot password page (placeholder)
+     * Combined with future implementation of password reset/change functionality
      */
     @GetMapping("/forgot-password")
     public String showForgotPasswordPage(Model model) {
