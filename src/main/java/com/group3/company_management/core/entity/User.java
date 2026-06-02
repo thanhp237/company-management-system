@@ -75,7 +75,7 @@ public class User implements UserDetails {
      * - ACTIVE: User can log in
      * - INACTIVE: User cannot log in
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
     private Role role;
 

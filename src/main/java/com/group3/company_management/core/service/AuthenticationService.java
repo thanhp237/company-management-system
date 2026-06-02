@@ -162,4 +162,21 @@ public class AuthenticationService {
         log.warn("❌ Failed login attempt for user: {} (attempt #{}) from IP: {}", 
             user.getUsername(), newFailCount, ipAddress);
     }
+    @Transactional
+    public void logout(String username, String ipAddress, String userAgent) {
+        // Tìm user xem có tồn tại không
+        User user = userRepository.findByUsernameAndNotDeleted(username)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+        // Lưu log ghi nhận user đã đăng xuất thành công
+        loginAttemptRepository.save(LoginAttempt.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .ipAddress(ipAddress)
+                .userAgent(userAgent)
+                .status("LOGOUT") // Đánh dấu trạng thái là LOGOUT
+                .build());
+
+        log.info("🚪 User {} logged out successfully from IP: {}", user.getUsername(), ipAddress);
+    }
 }
