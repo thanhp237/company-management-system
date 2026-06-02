@@ -7,6 +7,7 @@ import java.util.Collections;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
@@ -65,6 +66,9 @@ public class User implements UserDetails {
 
     @Column(name = "group_id")
     private Long groupId;
+
+    @Column(name = "role_id", insertable = false, updatable = false)
+    private Long roleId;
 
     /**
      * Status: ACTIVE or INACTIVE (only 2 statuses)
@@ -127,12 +131,18 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        return Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + role.getRoleCode()));
     }
 
     @Override
     public String getPassword() {
         return this.passwordHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.username;
     }
 
     @Override
@@ -166,4 +176,28 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return "ACTIVE".equals(this.status) && !this.isDeleted;
     }
+
+    public boolean isActive() {
+        return "ACTIVE".equals(this.status) && !this.isDeleted;
+    }
+
+    public boolean isInactive() {
+        return "INACTIVE".equals(this.status) && !this.isDeleted;
+    }
+
+    public boolean isAdmin() {
+        return role != null &&
+                "ADMIN".equalsIgnoreCase(role.getRoleCode());
+    }
+
+    public boolean isManager() {
+        return role != null &&
+                "MANAGER".equalsIgnoreCase(role.getRoleCode());
+    }
+
+    public boolean isSales() {
+        return role != null &&
+                "SALES".equalsIgnoreCase(role.getRoleCode());
+    }
+
 }
