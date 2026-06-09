@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet">
 <head>
     <title>Departments List</title>
 </head>
 <body>
 
 <h1>Departments List</h1>
-
+<form th:action="@{/departments/search}"
+      method="get">
+    <input type="text" name="keyword"/>
+    <button type="submit">search</button>
+    <a th:href="@{/departments}">Clear</a>
+</form>
 <a th:href="@{/departments/add}">Add Department</a>
 
 <table border="1">

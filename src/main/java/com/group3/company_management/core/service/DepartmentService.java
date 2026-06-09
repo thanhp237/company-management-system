@@ -11,4 +11,5 @@ public interface DepartmentService {
         void saveDepartment(Department department);
 
         void deleteDepartment(Long id);
+        List<Department> searchByIdandName(String keyword);
 }

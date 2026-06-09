@@ -41,4 +41,10 @@ public class DepartmentServiceImpl implements DepartmentService {
     public void deleteDepartment(Long id) {
         departmentRepository.deleteById(id);
     }
+
+    @Override
+    public List<Department> searchByIdandName(String keyword) {
+
+        return departmentRepository.search(keyword);
+    }
 }

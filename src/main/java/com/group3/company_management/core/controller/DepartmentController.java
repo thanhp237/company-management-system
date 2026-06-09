@@ -8,6 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/departments")
 public class DepartmentController {
@@ -65,4 +67,10 @@ public class DepartmentController {
         departmentService.deleteDepartment(id);
         return "redirect:/departments";
     }
-}
+    @GetMapping("/search")
+       public String searchByNameAndId(@RequestParam("keyword") String keyword,Model model){
+        List<Department> listSearch = departmentService.searchByIdandName(keyword);
+        model.addAttribute("departments", listSearch);
+        return "departments/list";
+        }
+    }
