@@ -1,15 +1,21 @@
 package com.group3.company_management.core.controller;
 
-import com.group3.company_management.core.dto.ChangePasswordDTO;
-import com.group3.company_management.core.service.ChangePasswordService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import com.group3.company_management.core.dto.ChangePasswordDTO;
+import com.group3.company_management.core.service.ChangePasswordService;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
+
 public class ChangePasswordController {
 
     private final ChangePasswordService changePasswordService;
@@ -39,7 +45,9 @@ public class ChangePasswordController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/change-password")
+
     public String showChangePasswordForm(Model model) {
         model.addAttribute("changePassword", new ChangePasswordDTO());
         return "change-password/change";
