@@ -151,6 +151,8 @@ public class SecurityConfig {
                                                                 HttpMethod.GET,
                                                                 "/api/v1/auth/health")
                                                 .permitAll()
+                                                .requestMatchers("/employees/**")
+                                                .hasAnyRole("MANAGER", "ADMIN", "SALES", "ADMINOFFICER")
 
                                                 // Public UI pages
                                                 .requestMatchers(
