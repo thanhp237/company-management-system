@@ -115,10 +115,12 @@ public class SecurityConfig {
                                 "/api/v1/auth/login"
                         ).permitAll()
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/v1/auth/health"
-                        ).permitAll()
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/v1/auth/health")
+                                                .permitAll()
+                                                .requestMatchers("/employees/**")
+                                                .hasAnyRole("MANAGER", "ADMIN", "SALES", "ADMINOFFICER")
 
                         // Public UI pages
                         .requestMatchers(
