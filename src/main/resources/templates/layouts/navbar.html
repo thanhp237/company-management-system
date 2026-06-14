@@ -2,32 +2,55 @@
      xmlns:th="http://www.thymeleaf.org" 
      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <div class="container-fluid px-4">
-        <!-- Brand/Logo -->
         <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
             <i class="fas fa-briefcase text-success me-2" style="font-size: 1.5rem;"></i>
             <span>CompanyMS</span>
         </a>
         
-        <!-- Mobile Toggler -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         
-        <!-- Navbar Content -->
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <!-- User is not authenticated -->
-                <li sec:authorize="!isAuthenticated()" class="nav-item">
+            <ul class="navbar-nav ms-auto align-items-center"> <li sec:authorize="!isAuthenticated()" class="nav-item">
                     <a class="nav-link" href="/login">
                         <i class="fas fa-sign-in-alt me-1"></i> Login
                     </a>
                 </li>
                 
-                <!-- User is authenticated -->
+                <li sec:authorize="isAuthenticated()" class="nav-item dropdown me-2 position-relative" id="notiBellWrapper">
+                    <button class="btn btn-light border-0 rounded-circle p-0 position-relative d-flex align-items-center justify-content-center" 
+                            type="button" id="bellDropdown" data-bs-toggle="dropdown" aria-expanded="false" 
+                            style="width: 38px; height: 38px;">
+                        <i class="fas fa-bell text-secondary fs-5"></i>
+                        <span id="bell-badge-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" 
+                              style="font-size: 9px; padding: 4px 6px; transform: translate(-25%, 25%) !important;">
+                            0
+                        </span>
+                    </button>
+                    
+                    <ul class="dropdown-menu dropdown-menu-end p-2 shadow border-0 rounded-3" aria-labelledby="bellDropdown" style="width: 320px; max-height: 450px; overflow-y: auto;">
+                        <li>
+                            <div class="d-flex justify-content-between align-items-center px-2 py-1 border-bottom mb-2">
+                                <span class="fw-bold text-dark" style="font-size: 13px;">Thông báo mới nhận</span>
+                                <span class="badge bg-primary-subtle text-primary rounded-pill" id="quick-unread-txt" style="font-size: 11px;">0 chưa đọc</span>
+                            </div>
+                        </li>
+                        
+                        <div id="bell-items-container">
+                            <li><div class="text-muted text-center py-3" style="font-size: 12px;">Đang tải thông báo...</div></li>
+                        </div>
+                        
+                        <li>
+                            <a class="dropdown-item text-center text-primary border-top mt-2 fw-bold" href="/notifications" style="font-size: 13px;">
+                                Xem tất cả thông báo <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <li sec:authorize="isAuthenticated()" class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" 
                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <!-- User Avatar -->
                         <img src="https://via.placeholder.com/32" alt="User" 
                              class="rounded-circle me-2" width="32" height="32">
                         <span sec:authentication="name"></span>
@@ -58,3 +81,62 @@
         </div>
     </div>
 </nav>
+
+<script sec:authorize="isAuthenticated()">
+    document.addEventListener("DOMContentLoaded", function() {
+        loadBellNotifications();
+    });
+
+    function loadBellNotifications() {
+        fetch('/api/notifications/summary')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('bell-badge-count');
+                const txtUnread = document.getElementById('quick-unread-txt');
+                const container = document.getElementById('bell-items-container');
+                
+                // 1. Cập nhật số lượng thông báo lên chuông đỏ
+                if (data.unreadCount > 0) {
+                    badge.textContent = data.unreadCount;
+                    badge.classList.remove('d-none');
+                    txtUnread.textContent = data.unreadCount + ' chưa đọc';
+                } else {
+                    badge.classList.add('d-none');
+                    txtUnread.textContent = '0 chưa đọc';
+                }
+                
+                // 2. Đổ danh sách 5 cái mới nhất vào dropdown
+                if (data.notifications && data.notifications.length > 0) {
+                    let htmlOutput = '';
+                    data.notifications.forEach(item => {
+                        const unreadClass = !item.isRead ? 'fw-bold text-dark' : 'text-muted';
+                        const dotIcon = !item.isRead ? '<i class="fas fa-circle text-primary me-2" style="font-size:8px;"></i>' : '<i class="far fa-circle text-secondary me-2" style="font-size:8px;"></i>';
+                        const itemBg = !item.isRead ? 'background-color: #f8fafd;' : '';
+                        
+                        htmlOutput += `
+                            <li class="p-2 border-bottom rounded-2 mb-1" style="cursor: pointer; font-size: 13px; ${itemBg}" onclick="clickNotiInBell(${item.id})">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="${unreadClass} text-truncate" style="max-width: 280px;">
+                                        ${dotIcon}${item.title}
+                                    </div>
+                                </div>
+                                <div class="text-secondary ps-3 text-truncate" style="font-size: 12px; max-width: 280px;">${item.message}</div>
+                            </li>`;
+                    });
+                    container.innerHTML = htmlOutput;
+                } else {
+                    container.innerHTML = '<li><div class="text-muted text-center py-3" style="font-size: 12px;"><i class="far fa-bell-slash me-1"></i>Không có thông báo mới</div></li>';
+                }
+            })
+            .catch(err => console.error('Lỗi tải thông báo từ API:', err));
+    }
+
+    function clickNotiInBell(notiId) {
+        fetch('/api/notifications/' + notiId + '/read', { method: 'POST' })
+            .then(() => {
+                // Đọc xong tự chuyển hướng về trang quản lý danh sách thông báo chính thức
+                window.location.href = '/notifications';
+            })
+            .catch(err => console.error('Lỗi xử lý đọc thông báo:', err));
+    }
+</script>
