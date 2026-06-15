@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Import Leads</title>
+</head>
+<body>
+
+<h2>Import Customer / Lead From Excel</h2>
+
+<form th:action="@{/leads/import}" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".xlsx,.xls">
+    <button type="submit">Import</button>
+</form>
+
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+
+<table border="1" th:if="${leads}">
+    <thead>
+    <tr>
+        <th>Full Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Address</th>
+        <th>Company Name</th>
+        <th>Tax Code</th>
+        <th>Customer Source</th>
+        <th>Customer Type</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="lead : ${leads}">
+        <td th:text="${lead.fullName}"></td>
+        <td th:text="${lead.phone}"></td>
+        <td th:text="${lead.email}"></td>
+        <td th:text="${lead.address}"></td>
+        <td th:text="${lead.companyName}"></td>
+        <td th:text="${lead.taxCode}"></td>
+        <td th:text="${lead.customerSource}"></td>
+        <td th:text="${lead.customerType}"></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

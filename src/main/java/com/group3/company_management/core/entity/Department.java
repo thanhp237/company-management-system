@@ -1,6 +1,7 @@
 package com.group3.company_management.core.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
@@ -13,9 +14,9 @@ public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @NotBlank(message = "Code id required")
     private String code;
-
+    @NotBlank(message = "Code id required")
     private String name;
 
     public Department() {

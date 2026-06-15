@@ -1,11 +1,13 @@
 package com.group3.company_management.core.controller;
 
-import com.group3.company_management.core.dto.DepartmentDTO;
+
 import com.group3.company_management.core.entity.Department;
 import com.group3.company_management.core.service.DepartmentService;
 
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,38 +28,27 @@ public class DepartmentController {
         return "departments/list";
     }
 
-    @GetMapping("/add")
-    public String showAddForm(Model model) {
-        model.addAttribute("department", new DepartmentDTO());
-        return "departments/form";
-    }
+
 
     @PostMapping("/save")
-    public String saveDepartment(@ModelAttribute("department") DepartmentDTO departmentdto) {
-        Department department;
-        if(departmentdto.getId()!= null){
-            department = departmentService.getDepartmentById(departmentdto.getId());
-        }else {
-            department  = new Department();
-        }
-        department.setCode(departmentdto.getCode());
-        department.setName(departmentdto.getName());
+    public String saveDepartment(@Valid @ModelAttribute("department") Department department, BindingResult bindingResult) {
+      if(bindingResult.hasErrors()){
+          return "departments/form";
+      }
         departmentService.saveDepartment(department);
         return "redirect:/departments";
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
+    @GetMapping("/edit")
+    public String showEditForm(@RequestParam(required = false) Long id, Model model) {
+        Department department;
+       if(id == null){
+            department = new Department();
+       }else{
+           department = departmentService.getDepartmentById(id);
+       }
 
-        Department department = departmentService.getDepartmentById(id);
-
-        DepartmentDTO dto = new DepartmentDTO(
-                department.getId(),
-                department.getCode(),
-                department.getName()
-        );
-
-        model.addAttribute("department", dto);
+        model.addAttribute("department", department);
 
         return "departments/form";
     }

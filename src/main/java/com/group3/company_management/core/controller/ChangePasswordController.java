@@ -45,7 +45,7 @@ public class ChangePasswordController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @GetMapping("/change-password")
 
     public String showChangePasswordForm(Model model) {

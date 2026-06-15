@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-      rel="stylesheet">
+
 <head>
     <title>Departments List</title>
 </head>
@@ -14,7 +13,7 @@
     <button type="submit">search</button>
     <a th:href="@{/departments}">Clear</a>
 </form>
-<a th:href="@{/departments/add}">Add Department</a>
+<a th:href="@{/departments/edit}">Add Department</a>
 
 <table border="1">
 
@@ -35,13 +34,13 @@
         <td th:text="${department.name}"></td>
 
         <td>
-            <a th:href="@{/departments/edit/{id}(id=${department.id})}">
+            <a th:href="@{/departments/edit(id=${department.id})}">
                 Edit
             </a>
 
             |
 
-            <a th:href="@{/departments/delete/{id}(id=${department.id})}">
+            <a th:href="@{/departments/delete(id=${department.id})}">
                 Delete
             </a>
         </td>
