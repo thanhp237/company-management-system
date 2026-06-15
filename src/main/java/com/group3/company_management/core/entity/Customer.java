@@ -1,29 +1,22 @@
-package com.group3.company_management.core.entity;
 // src/main/java/com/group3/company_management/core/entity/Customer.java
 
-import java.time.LocalDateTime;
+package com.group3.company_management.core.entity;
 
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
- * Customer entity - same pattern as User entity
- * Soft delete enabled with @SQLDelete and @SQLRestriction
+ * Customer entity - B2B customers who can login and access portal
+ * Implements UserDetails for Spring Security 6+ authentication
+ * Different from User (Employee) entity
  */
 @Entity
 @Table(name = "customers", indexes = {
@@ -38,7 +31,7 @@ import lombok.Setter;
 @Builder
 @SQLDelete(sql = "UPDATE customers SET deleted_at = CURRENT_TIMESTAMP, is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
-public class Customer {
+public class Customer implements UserDetails {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,8 +43,17 @@ public class Customer {
     @Column(nullable = false, unique = true, length = 20)
     private String phone;
     
-    @Column(length = 255)
+    /**
+     * Email is username for customer login (unique)
+     */
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
+    
+    /**
+     * Password hash for authentication (same as User)
+     */
+    @Column(length = 255)
+    private String passwordHash;
     
     @Column(columnDefinition = "TEXT")
     private String address;
@@ -62,9 +64,31 @@ public class Customer {
     @Column(name = "assigned_sales_id")
     private Long assignedSalesId;
     
+    /**
+     * Customer Status: ACTIVE or INACTIVE
+     */
     @Column(nullable = false, length = 20)
     @Builder.Default
     private String customerStatus = "ACTIVE";
+    
+    /**
+     * Failed login attempts (for account lockout like User)
+     */
+    @Column(name = "failed_attempts")
+    @Builder.Default
+    private Integer failedAttempts = 0;
+    
+    /**
+     * Account locked until timestamp
+     */
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+    
+    /**
+     * Last login timestamp
+     */
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
     
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -88,5 +112,57 @@ public class Customer {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+    
+    // ============= Spring Security 6+ UserDetails Implementation =============
+    
+    /**
+     * Customers have no special roles - all equal access
+     */
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList();
+    }
+    
+    /**
+     * Email is the username for customer login
+     */
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+    
+    @Override
+    public String getPassword() {
+        return this.passwordHash;
+    }
+    
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    
+    /**
+     * Account is locked if lockedUntil is in the future
+     */
+    @Override
+    public boolean isAccountNonLocked() {
+        if (this.lockedUntil == null) {
+            return true;
+        }
+        return LocalDateTime.now().isAfter(this.lockedUntil);
+    }
+    
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    
+    /**
+     * Customer is enabled if status is ACTIVE and not deleted
+     */
+    @Override
+    public boolean isEnabled() {
+        return "ACTIVE".equals(this.customerStatus) && !this.isDeleted;
     }
 }
