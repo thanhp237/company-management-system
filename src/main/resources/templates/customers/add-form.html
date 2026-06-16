@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${isEdit} ? 'Edit Customer' : 'Add Customer'">
+        Add Customer
+    </title>
+</head>
+
+<body>
+
+    <h2 th:text="${isEdit} ? 'Edit Customer' : 'Add New Customer'">
+        Add New Customer
+    </h2>
+
+    <p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;">
+    </p>
+
+    <form th:object="${customerForm}" method="post">
+
+        <input type="hidden" th:field="*{id}">
+
+        <table>
+
+            <tr>
+                <td>
+                    <label>Full Name:</label>
+                </td>
+                <td>
+                    <input type="text" th:field="*{fullName}" required>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <label>Phone:</label>
+                </td>
+                <td>
+                    <input type="text" th:field="*{phone}" required>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <label>Email:</label>
+                </td>
+                <td>
+                    <input type="email" th:field="*{email}">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <label>Address:</label>
+                </td>
+                <td>
+                    <input type="text" th:field="*{address}">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <label>Customer Source:</label>
+                </td>
+                <td>
+                    <input type="text" th:field="*{customerSource}">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <label>Assigned Sales ID:</label>
+                </td>
+                <td>
+                    <input type="number" th:field="*{assignedSalesId}">
+                </td>
+            </tr>
+
+            <tr th:if="${isEdit}">
+                <td>
+                    <label>Status:</label>
+                </td>
+                <td>
+                    <select th:field="*{customerStatus}">
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
+                    </select>
+                </td>
+            </tr>
+
+        </table>
+
+        <br>
+
+        <div>
+            <a th:href="@{/customers}">
+                Back to List
+            </a>
+
+            <button type="submit" th:formaction="@{/customers/save}" th:disabled="${isEdit}">
+                Create Customer
+            </button>
+
+            <button type="submit" th:formaction="@{/customers/update}" th:disabled="${!isEdit}">
+                Edit Customer
+            </button>
+        </div>
+
+    </form>
+
+</body>
+
+</html>

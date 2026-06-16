@@ -1,11 +1,10 @@
-package com.group3.company_management.core.service.impl;
-
 // src/main/java/com/group3/company_management/core/service/impl/CustomerServiceImpl.java
 
-
+package com.group3.company_management.core.service.impl;
 
 import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.dto.CustomerResponse;
+import com.group3.company_management.customer.dto.CustomerPortalResponse;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.repository.CustomerRepository;
 import com.group3.company_management.core.service.CustomerService;
@@ -18,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Customer service implementation - same pattern as UserServiceImpl
+ * Customer service implementation - UPDATED with portal methods
  */
 @Service
 @RequiredArgsConstructor
@@ -26,6 +25,9 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
     
     private final CustomerRepository customerRepository;
+    // TODO: Will need ContractService and QuoteService for portal
+    
+    // ========== MANAGEMENT METHODS (Existing) ==========
     
     @Override
     @Transactional(readOnly = true)
@@ -71,7 +73,7 @@ public class CustomerServiceImpl implements CustomerService {
     public void createCustomer(CustomerRequest request) {
         log.info("Creating new customer: {}", request.getFullName());
         
-        // Validate phone uniqueness
+         // Validate phone uniqueness
         if (customerRepository.findByPhone(request.getPhone()).isPresent()) {
             throw new IllegalArgumentException("Phone number already exists");
         }
@@ -98,7 +100,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = customerRepository.findById(request.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + request.getId()));
         
-        // Validate phone uniqueness (if phone changed)
+         // Validate phone uniqueness (if phone changed)
         if (!customer.getPhone().equals(request.getPhone())) {
             if (customerRepository.findByPhone(request.getPhone()).isPresent()) {
                 throw new IllegalArgumentException("Phone number already exists");
@@ -142,6 +144,47 @@ public class CustomerServiceImpl implements CustomerService {
         
         customerRepository.deleteById(id);
         log.info("Customer deleted successfully (soft delete): {}", id);
+    }
+    
+    // ========== CUSTOMER PORTAL METHODS (NEW) ==========
+    
+    @Override
+    @Transactional(readOnly = true)
+    public CustomerPortalResponse getCustomerPortalInfo(Long customerId) {
+        log.info("Fetching customer portal info for customer ID: {}", customerId);
+        
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        
+        return CustomerPortalResponse.builder()
+                .id(customer.getId())
+                .fullName(customer.getFullName())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .address(customer.getAddress())
+                .customerStatus(customer.getCustomerStatus())
+                // TODO: Fetch these from Contract and Quote repositories
+                .contractCount(0L)
+                .pendingQuotesCount(0L)
+                .totalPaidAmount(0L)
+                .build();
+    }
+    
+    @Override
+    @Transactional
+    public void updateCustomerProfile(Long customerId, CustomerRequest request) {
+        log.info("Updating customer profile for customer ID: {}", customerId);
+        
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        
+        // Only allow updating certain fields in portal
+        customer.setFullName(request.getFullName());
+        customer.setPhone(request.getPhone());
+        customer.setAddress(request.getAddress());
+        
+        customerRepository.save(customer);
+        log.info("Customer profile updated successfully: {}", customerId);
     }
     
     /**

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer List</title>
+</head>
+<body>
+
+<h2>Customer Management</h2>
+
+<div>
+    <a th:href="@{/customers/add}">
+        Add New Customer
+    </a>
+</div>
+
+<br>
+
+<form method="get" th:action="@{/customers}">
+    <label>Status Filter:</label>
+
+    <select name="status">
+        <option value="">All</option>
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="INACTIVE">INACTIVE</option>
+    </select>
+
+    <button type="submit">
+        Search
+    </button>
+</form>
+
+<br>
+
+<table border="1">
+
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Full Name</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Address</th>
+        <th>Source</th>
+        <th>Assigned Sales</th>
+        <th>Status</th>
+        <th>Created At</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    <tr th:each="customer : ${customers}">
+
+        <td th:text="${customer.id}"></td>
+
+        <td th:text="${customer.fullName}"></td>
+
+        <td th:text="${customer.phone}"></td>
+
+        <td th:text="${customer.email}"></td>
+
+        <td th:text="${customer.address}"></td>
+
+        <td th:text="${customer.customerSource}"></td>
+
+        <td th:text="${customer.assignedSalesId}"></td>
+
+        <td th:text="${customer.customerStatus}"></td>
+
+        <td th:text="${customer.createdAt}"></td>
+
+        <td>
+
+            <a th:href="@{/customers/add(id=${customer.id})}">
+                Edit
+            </a>
+
+            |
+
+            <a th:href="@{/customers/delete/{id}(id=${customer.id})}"
+               onclick="return confirm('Delete this customer?')">
+                Delete
+            </a>
+
+        </td>
+
+    </tr>
+
+    </tbody>
+
+</table>
+
+</body>
+</html>
