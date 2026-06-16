@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Schedule Appointment - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body { background-color: #f9fafb; font-family: 'Inter', sans-serif; }
+        .form-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 700px; margin: 50px auto; }
+        .form-label { font-weight: 600; color: #374151; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-dark mb-0"><i class="far fa-calendar-plus text-success me-2"></i>Schedule Appointment</h3>
+            <a th:href="@{/appointments}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Back</a>
+        </div>
+
+        <form th:action="@{/appointments/save}" th:object="${appointmentRequest}" method="post">
+            <div class="row g-3">
+                
+                <div class="col-md-12">
+                    <label class="form-label">Select Customer <span class="text-danger">*</span></label>
+                    <select th:field="*{customerId}" class="form-select" required>
+                        <option value="" selected disabled>-- Choose a customer from CRM --</option>
+                        <option th:each="cust : ${customers}" th:value="${cust.id}" th:text="${cust.fullName}"></option>
+                    </select>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Appointment Title <span class="text-danger">*</span></label>
+                    <input type="text" th:field="*{title}" class="form-control" placeholder="E.g., Contract negotiation, Consultation call..." required>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Appointment Date & Time <span class="text-danger">*</span></label>
+                    <input type="datetime-local" th:field="*{appointmentTime}" class="form-control" required>
+                    <div class="form-text text-muted"><i class="fas fa-info-circle me-1"></i> Hệ thống sẽ tự động bật cảnh báo nhắc nhở nội bộ trước giờ hẹn 1 ngày (24h).</div>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label">Description / Notes</label>
+                    <textarea th:field="*{description}" class="form-control" rows="4" placeholder="Nhập mục tiêu cuộc gặp, địa điểm hoặc các tài liệu Sales cần chuẩn bị trước..."></textarea>
+                </div>
+
+                <div class="col-12 mt-4 text-end">
+                    <button type="reset" class="btn btn-light me-2">Clear Form</button>
+                    <button type="submit" class="btn btn-success px-4">Save & Schedule</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
