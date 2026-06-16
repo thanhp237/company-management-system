@@ -8,6 +8,14 @@
 
 <h2>Account Management</h2>
 <a th:href="@{/users/add}">Add New Account</a>
+<form th:action="@{/users/find}" method="get">
+    <input
+            type="text"
+            name="keyword"
+            placeholder="Search by username, email, full name..."
+    >
+    <button type="submit">Search</button>
+</form>
 
 <br><br>
 

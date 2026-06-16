@@ -38,4 +38,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 2. Hàm lấy danh sách User theo RoleCode (Dùng cho tính năng lọc của nút Detail)
     @Query("SELECT u FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")
     List<User> findActiveUsersByRoleCode(@Param("roleCode") String roleCode);
+    List<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(String username, String email);
 }

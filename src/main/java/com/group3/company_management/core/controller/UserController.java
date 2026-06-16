@@ -2,6 +2,7 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
+import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.service.UserService;
 
 import java.util.List;
@@ -52,7 +53,18 @@ public String listUsers(@RequestParam(required = false) String role, Model model
         userService.deleteUser(id);
         return "redirect:/users";
     }
+    @GetMapping("/find")
+    public String findUser(
+            @RequestParam(required = false) String keyword,
+            Model model) {
 
+        List<UserResponse> users = userService.search(keyword);
+
+        model.addAttribute("users", users);
+        model.addAttribute("keyword", keyword);
+
+        return "users/list";
+    }
     @PostMapping("/save")
     public String saveUser(@ModelAttribute("userForm") UserRequest request, Model model) {
         try {

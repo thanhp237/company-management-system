@@ -273,4 +273,22 @@ public void updateProfile(String username, ProfileUpdateRequest request) {
     
     userRepository.save(user);
 }
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> search(String keyword) {
+
+        List<User> users;
+
+        if (keyword == null || keyword.isBlank()) {
+            users = userRepository.findAll();
+        } else {
+            users = userRepository
+                    .findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                            keyword, keyword);
+        }
+
+        return users.stream()
+                .map(UserResponse::fromEntity)
+                .toList();
+    }
 }
