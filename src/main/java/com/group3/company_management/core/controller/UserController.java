@@ -8,6 +8,7 @@ import com.group3.company_management.core.service.UserService;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,24 +20,23 @@ public class UserController {
 
     private final UserService userService;
 
+
     @Autowired
     public UserController(UserService service){
         this.userService = service;
     }
 
 @GetMapping
-public String listUsers(@RequestParam(required = false) String role, Model model) {
-    // Sửa kiểu dữ liệu ở đây từ Entity sang DTO (UserResponse) để khớp với Service trả về
-    List<com.group3.company_management.core.dto.UserResponse> users; 
-    
-    // Nếu trên URL có tham số ?role=... thì gọi hàm lọc, ngược lại lấy tất cả
-    if (role != null && !role.trim().isEmpty()) {
-        users = userService.getActiveUsersByRole(role);
-    } else {
-        users = userService.getAllUsers();
-    }
-    
-    model.addAttribute("users", users);
+public String listUsers(
+        @RequestParam(required = false) String role,
+        @RequestParam(defaultValue = "0") int page,
+        Model model) {
+    Page<UserResponse> userPage = userService.getUsersPage(role, page, 10);
+
+    model.addAttribute("userPage", userPage);
+    model.addAttribute("users", userPage.getContent());
+    model.addAttribute("role", role);
+    model.addAttribute("countAccount", userPage.getTotalElements());
     return "users/list";
 }
 
@@ -56,12 +56,18 @@ public String listUsers(@RequestParam(required = false) String role, Model model
     @GetMapping("/find")
     public String findUser(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
             Model model) {
 
-        List<UserResponse> users = userService.search(keyword);
+        Page<UserResponse> userPage = userService.searchPage(keyword, status, page, 10);
 
-        model.addAttribute("users", users);
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("users", userPage.getContent());
         model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
+        model.addAttribute("isSearch", true);
+        model.addAttribute("countAccount", userPage.getTotalElements());
 
         return "users/list";
     }
