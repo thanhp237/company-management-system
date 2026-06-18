@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -94,6 +95,12 @@ public String listUsers(
                 emailService.sendAccountInfo(request.getEmail(), request.getUsername(), rawPassword);
             }
             return "redirect:/users";
+        } catch (MailException exception) {
+            request.setPassword(null);
+            model.addAttribute("errorMessage", "Account created, but email could not be sent. Please check Gmail SMTP configuration.");
+            model.addAttribute("roles", userService.getAllRoles());
+            model.addAttribute("isEdit", false);
+            return "users/add-form";
         } catch (IllegalArgumentException exception) {
             model.addAttribute("errorMessage", exception.getMessage());
             model.addAttribute("roles", userService.getAllRoles());
