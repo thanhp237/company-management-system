@@ -6,7 +6,6 @@ import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.service.EmailService;
 import com.group3.company_management.core.service.UserService;
 
-import java.security.SecureRandom;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +22,6 @@ public class UserController {
 
     private final UserService userService;
     private final EmailService emailService;
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-    private static final String PASSWORD_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
 
 
     @Autowired
@@ -85,11 +82,6 @@ public String listUsers(
             Model model) {
         try {
             String rawPassword = request.getPassword();
-            if ("createAndSend".equals(action)) {
-                rawPassword = generateTemporaryPassword();
-                request.setPassword(rawPassword);
-            }
-
             userService.createUser(request);
             if ("createAndSend".equals(action)) {
                 emailService.sendAccountInfo(request.getEmail(), request.getUsername(), rawPassword);
@@ -106,15 +98,13 @@ public String listUsers(
             model.addAttribute("roles", userService.getAllRoles());
             model.addAttribute("isEdit", false);
             return "users/add-form";
+        } catch (Exception exception) {
+            request.setPassword(null);
+            model.addAttribute("errorMessage", "Could not create account: " + exception.getMessage());
+            model.addAttribute("roles", userService.getAllRoles());
+            model.addAttribute("isEdit", false);
+            return "users/add-form";
         }
-    }
-
-    private String generateTemporaryPassword() {
-        StringBuilder password = new StringBuilder();
-        for (int i = 0; i < 12; i++) {
-            password.append(PASSWORD_CHARS.charAt(SECURE_RANDOM.nextInt(PASSWORD_CHARS.length())));
-        }
-        return password.toString();
     }
 
     @PostMapping("/update")
