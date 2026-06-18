@@ -163,29 +163,11 @@ public class UserServiceImpl implements UserService {
         String roleCode = normalizeRequired(role.getRoleCode(), "Role code is required").toUpperCase(Locale.ROOT);
         String employeeCode = buildEmployeeCode(roleCode, user.getId());
 
-        switch (roleCode) {
-            case "ADMIN" -> jdbcTemplate.update(
-                    "INSERT INTO admins (account_id, employee_code) VALUES (?, ?)",
-                    user.getId(), employeeCode
-            );
-            case "ADMIN_OFFICER" -> jdbcTemplate.update(
-                    "INSERT INTO admin_officers (account_id, employee_code) VALUES (?, ?)",
-                    user.getId(), employeeCode
-            );
-            case "ACCOUNTANT" -> jdbcTemplate.update(
-                    "INSERT INTO accountants (account_id, employee_code) VALUES (?, ?)",
-                    user.getId(), employeeCode
-            );
-            case "MARKETING" -> jdbcTemplate.update(
-                    "INSERT INTO marketing_staffs (account_id, employee_code) VALUES (?, ?)",
-                    user.getId(), employeeCode
-            );
-            case "SALES" -> jdbcTemplate.update(
-                    "INSERT INTO sales_staffs (account_id, employee_code) VALUES (?, ?)",
-                    user.getId(), employeeCode
-            );
-            default -> throw new IllegalArgumentException("Unsupported role code: " + roleCode);
-        }
+        validateEmployeeRole(roleCode);
+        jdbcTemplate.update(
+                "INSERT INTO employees (account_id, employee_code, employee_type) VALUES (?, ?, ?)",
+                user.getId(), employeeCode, roleCode
+        );
     }
 
     private String buildEmployeeCode(String roleCode, Long accountId) {
@@ -199,6 +181,14 @@ public class UserServiceImpl implements UserService {
         };
 
         return "%s%06d".formatted(prefix, accountId);
+    }
+
+    private void validateEmployeeRole(String roleCode) {
+        switch (roleCode) {
+            case "ADMIN", "ADMIN_OFFICER", "ACCOUNTANT", "MARKETING", "SALES" -> {
+            }
+            default -> throw new IllegalArgumentException("Unsupported role code: " + roleCode);
+        }
     }
 
     private void validateUniqueUsername(String username, Long currentUserId) {
