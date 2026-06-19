@@ -3,6 +3,7 @@ package com.group3.company_management.core.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.group3.company_management.core.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +39,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 2. Hàm lấy danh sách User theo RoleCode (Dùng cho tính năng lọc của nút Detail)
     @Query("SELECT u FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")
     List<User> findActiveUsersByRoleCode(@Param("roleCode") String roleCode);
+    List<User> findByRole_RoleName(String roleName);
 }

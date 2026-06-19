@@ -24,13 +24,13 @@ public class Customer {
 
     @Column(columnDefinition = "TEXT")
     private String address;
-
+    @Column(name = "assigned_sales_id")
     private Long assignedSalesId;
 
     private LocalDateTime createdAt;
 
     private String customerSource;
-
+    @Column(name = "customer_status")
     private String customerStatus;
 
     private LocalDateTime deletedAt;
@@ -51,6 +51,13 @@ public class Customer {
 
     private Long ownerId;
 
+    private Integer failedAttempts;
+
+    private LocalDateTime lastLoginAt;
+
+    private LocalDateTime lockedUntil;
+
+    private String passwordHash;
     public Customer() {
     }
 }

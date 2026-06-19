@@ -8,16 +8,21 @@
 
 <h2>Import Customer / Lead From Excel</h2>
 
-<form th:action="@{/leads/import}" method="post" enctype="multipart/form-data">
+<form th:action="@{/customer/import}" method="post" enctype="multipart/form-data">
     <input type="file" name="file" accept=".xlsx,.xls">
     <button type="submit">Import</button>
 </form>
-
+<button type="button"
+        onclick="window.location.href='/excel/customer_template.xlsx'">
+    Download Template
+</button>
 <p th:if="${error}" th:text="${error}" style="color:red;"></p>
-
-<table border="1" th:if="${leads}">
+<form th:action="@{/customer/check}" method="post">
+<table border="1" th:if="${customer}">
     <thead>
     <tr>
+        <th></th>
+        <th>ID</th>
         <th>Full Name</th>
         <th>Phone</th>
         <th>Email</th>
@@ -26,11 +31,16 @@
         <th>Tax Code</th>
         <th>Customer Source</th>
         <th>Customer Type</th>
+        <th>Sale</th>
     </tr>
     </thead>
 
     <tbody>
-    <tr th:each="lead : ${leads}">
+    <tr th:each="lead : ${customer}">
+
+      <td> <input type="checkbox" name="checkbox" th:value="${lead.id}"/>
+      </td>
+        <td th:text="${lead.id}"></td>
         <td th:text="${lead.fullName}"></td>
         <td th:text="${lead.phone}"></td>
         <td th:text="${lead.email}"></td>
@@ -39,9 +49,30 @@
         <td th:text="${lead.taxCode}"></td>
         <td th:text="${lead.customerSource}"></td>
         <td th:text="${lead.customerType}"></td>
+        <td>
+            <span th:if="${lead.assignedSalesId == null}">Chưa phân</span>
+
+            <span th:each="sale : ${sales}"
+                  th:if="${sale.id == lead.assignedSalesId}"
+                  th:text="${sale.fullName}">
+    </span>
+        </td>
     </tr>
+
+
+
+
     </tbody>
 </table>
+    <select name="saleId" required>
+        <option value="">Choose sale</option>
+        <option th:each="sale: ${sales}"
+                th:value="${sale.id}"
+                th:text="${sale.fullName}">
 
+        </option>
+    </select>
+    <button type="submit" >Phân bổ </button>
+</form>
 </body>
 </html>

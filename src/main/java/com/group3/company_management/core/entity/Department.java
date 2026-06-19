@@ -18,14 +18,15 @@ public class Department {
     private String code;
     @NotBlank(message = "Code id required")
     private String name;
-
+    private String status = "ACTIVE";
     public Department() {
 
     }
 
-    public Department(Long id, String code, String name) {
+    public Department(Long id, String code, String name,String status) {
         this.id = id;
         this.code = code;
         this.name = name;
+        this.status = status;
     }
 }

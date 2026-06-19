@@ -4,51 +4,96 @@
 <head>
     <title>Departments List</title>
 </head>
+
 <body>
 
 <h1>Departments List</h1>
-<form th:action="@{/departments/search}"
-      method="get">
+
+<form th:action="@{/departments/search}" method="get">
     <input type="text" name="keyword"/>
-    <button type="submit">search</button>
+    <button type="submit">Search</button>
     <a th:href="@{/departments}">Clear</a>
+    <p th:text="${err}"></p>
 </form>
+
 <a th:href="@{/departments/edit}">Add Department</a>
 
 <table border="1">
-
     <thead>
     <tr>
         <th>ID</th>
         <th>Code</th>
         <th>Name</th>
-        <th>Actions</th>
+
+        <th>Edit</th>
+        <th>Delete</th>
     </tr>
     </thead>
 
     <tbody>
-
-    <tr th:each="department : ${departments}">
+    <tr th:each="department : ${departmentPage.content}">
         <td th:text="${department.id}"></td>
         <td th:text="${department.code}"></td>
         <td th:text="${department.name}"></td>
+        <td>
+            <form th:action="@{/departments/update-status}" method="post" style="margin: 0;">
+                <input type="hidden" name="id" th:value="${department.id}">
+
+                <select name="status"
+                        th:attr="data-current=${department.status}"
+                        onchange="if (confirm('Want to change status?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
+                    <option value="ACTIVE" th:selected="${department.status == 'ACTIVE'}">ACTIVE</option>
+                    <option value="INACTIVE" th:selected="${department.status == 'INACTIVE'}">INACTIVE</option>
+                </select>
+            </form>
+        </td>
+
 
         <td>
-            <a th:href="@{/departments/edit(id=${department.id})}">
-                Edit
-            </a>
+            <a th:href="@{/departments/edit(id=${department.id})}">Edit</a>
+        </td>
 
-            |
-
-            <a th:href="@{/departments/delete(id=${department.id})}">
-                Delete
-            </a>
+        <td>
+            <a th:href="@{/departments/delete/{id}(id=${department.id})}">Delete</a>
         </td>
     </tr>
-
     </tbody>
-
 </table>
+<div>
 
+    <a th:if="${!departmentPage.first}"
+       th:href="@{/departments(page=0)}">
+        First
+    </a>
+
+    <a th:if="${!departmentPage.first}"
+       th:href="@{/departments(page=${departmentPage.number - 1})}">
+        Prev
+    </a>
+
+    <span th:each="i : ${#numbers.sequence(0, departmentPage.totalPages - 1)}">
+
+        <a th:if="${i != departmentPage.number}"
+           th:text="${i + 1}"
+           th:href="@{/departments(page=${i})}">
+        </a>
+
+        <strong th:if="${i == departmentPage.number}"
+                th:text="${i + 1}">
+        </strong>
+
+    </span>
+
+    <a th:if="${!departmentPage.last}"
+       th:href="@{/departments(page=${departmentPage.number + 1})}">
+        Next
+    </a>
+
+    <a th:if="${!departmentPage.last}"
+       th:href="@{/departments(page=${departmentPage.totalPages - 1})}">
+        Last
+    </a>
+
+</div>
 </body>
 </html>

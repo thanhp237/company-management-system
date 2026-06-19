@@ -16,7 +16,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -37,3 +37,6 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         }
     }
 }
+// SELECT d
+//    FROM Department d
+//    WHERE d.name = :name

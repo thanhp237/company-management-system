@@ -10,17 +10,14 @@
 <form th:action="@{/departments/save}"
       th:object="${department}"
       method="post">
-
+    <p style="color: red" th:text="${err}"></p>
     <input type="hidden" th:field="*{id}">
 
     <div>
         <label>Code:</label>
 
         <input type="text" th:field="*{code}">
-        <span th:if="${#fields.hasErrors('code')}"
-              th:errors="*{code}"
-              style="color:red">
-        </span>
+
     </div>
 
     <br>
@@ -29,10 +26,7 @@
         <label>Name:</label>
 
         <input type="text" th:field="*{name}">
-        <span th:if="${#fields.hasErrors('name')}"
-              th:errors="*{name}"
-              style="color:red">
-        </span>
+
     </div>
 
     <br>

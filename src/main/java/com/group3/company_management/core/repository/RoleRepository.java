@@ -7,4 +7,5 @@ import com.group3.company_management.core.entity.Role;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
+
 }
