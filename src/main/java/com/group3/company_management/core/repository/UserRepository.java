@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import com.group3.company_management.core.entity.Role;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -39,5 +43,34 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 2. Hàm lấy danh sách User theo RoleCode (Dùng cho tính năng lọc của nút Detail)
     @Query("SELECT u FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")
     List<User> findActiveUsersByRoleCode(@Param("roleCode") String roleCode);
+
     List<User> findByRole_RoleName(String roleName);
+
+
+    @Query("SELECT u FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")
+    Page<User> findActiveUsersByRoleCode(@Param("roleCode") String roleCode, Pageable pageable);
+
+    List<User> findByUsernameContainingIgnoreCaseAndStatusIgnoreCaseOrEmailContainingIgnoreCaseAndStatusIgnoreCase(
+            String username,
+            String status1,
+            String email,
+            String status2
+    );
+    List<User> findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(String username, String email);
+    List<User> findByStatus(String status);
+
+    @Query("""
+            SELECT u FROM User u
+            WHERE (:keyword IS NULL OR :keyword = ''
+                OR LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            AND (:status IS NULL OR :status = '' OR LOWER(u.status) = LOWER(:status))
+            """)
+    Page<User> searchUsers(
+            @Param("keyword") String keyword,
+            @Param("status") String status,
+            Pageable pageable
+    );
+
 }

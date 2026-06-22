@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import com.group3.company_management.core.security.CustomLoginSuccessHandler;
 import com.group3.company_management.core.security.JwtAuthenticationEntryPoint;
@@ -24,7 +25,8 @@ import com.group3.company_management.core.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Spring Security configuration for UI form login and JWT-based API authentication
+ * Spring Security configuration for UI form login and JWT-based API
+ * authentication
  */
 @Configuration
 @EnableWebSecurity
@@ -113,10 +115,12 @@ public class SecurityConfig {
                                 "/api/v1/auth/login"
                         ).permitAll()
 
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/v1/auth/health"
-                        ).permitAll()
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/v1/auth/health")
+                                                .permitAll()
+                                                .requestMatchers("/employees/**")
+                                                .hasAnyRole("MANAGER", "ADMIN", "SALES", "ADMINOFFICER")
 
                         // Public UI pages
                         .requestMatchers(
