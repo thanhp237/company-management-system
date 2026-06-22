@@ -21,7 +21,7 @@ public class importCustomerController {
         this.customerImportService = customerImportService;
     }
 
-    @GetMapping("/import")
+    @GetMapping
     public String showImportPage(Model model) {
 
         List<Customer> listCustomer = customerImportService.allCustomer();
