@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Company Management System</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- <style>
          :root {
             --primary-color: #22c55e;
@@ -319,8 +319,9 @@
     </style> -->
 
 
-    
+
 </head>
+
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
@@ -334,10 +335,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" 
-                           data-bs-toggle="dropdown">
-                            <img src="https://via.placeholder.com/32" alt="User" 
-                                 class="rounded-circle me-2" width="32" height="32">
+                        <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button"
+                            data-bs-toggle="dropdown">
+                            <img src="https://via.placeholder.com/32" alt="User" class="rounded-circle me-2" width="32"
+                                height="32">
                             <span sec:authentication="name"></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
@@ -346,7 +347,9 @@
                             <li><a class="dropdown-item" href="/users">Users</a></li>
                             <li><a class="dropdown-item" href="/users">Roles</a></li>
                             <li> <a class="dropdown-item" href="/dashboard/settings">Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <form method="POST" action="/logout">
                                     <button type="submit" class="dropdown-item">Logout</button>
@@ -358,7 +361,7 @@
             </div>
         </div>
     </nav>
-    
+
     <!-- Sidebar -->
     <aside class="sidebar bg-dark">
         <div class="p-3">
@@ -372,6 +375,11 @@
                 <li class="nav-item mb-2">
                     <a class="nav-link text-light" href="/users">
                         <i class="fas fa-users me-2"></i>Users
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-light" href="/customers">
+                        <i class="fas fa-address-book me-2"></i>Customers
                     </a>
                 </li>
                 <li class="nav-item mb-2">
@@ -392,7 +400,7 @@
             </ul>
         </div>
     </aside>
-    
+
     <!-- Main Content -->
     <main class="main-content">
         <!-- Page Header -->
@@ -400,7 +408,7 @@
             <h1>Welcome back, <span sec:authentication="name"></span>!</h1>
             <p>Here's what's happening with your business today.</p>
         </div>
-        
+
         <!-- Metrics Row -->
         <div class="row">
             <!-- Total Customers -->
@@ -416,7 +424,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Active Contracts -->
             <div class="col-lg-3 col-md-6">
                 <div class="metric-card">
@@ -430,7 +438,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Pending Approvals -->
             <div class="col-lg-3 col-md-6">
                 <div class="metric-card">
@@ -444,7 +452,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Monthly Revenue -->
             <div class="col-lg-3 col-md-6">
                 <div class="metric-card">
@@ -459,7 +467,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Recent Activities & Quick Stats -->
         <div class="row" style="margin-top: 40px;">
             <!-- Recent Activities -->
@@ -468,11 +476,12 @@
                     <h2>Recent Activities</h2>
                     <a href="/users" class="view-all-link">View Users</a>
                 </div>
-                
+
                 <div class="metric-card" style="padding: 0; border: 1px solid var(--border-color);">
                     <!-- Activity Items -->
                     <div class="activity-item">
-                        <div class="activity-icon success" style="background: rgba(34, 197, 94, 0.1); color: var(--primary-color);">
+                        <div class="activity-icon success"
+                            style="background: rgba(34, 197, 94, 0.1); color: var(--primary-color);">
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="activity-content">
@@ -481,7 +490,7 @@
                             <div class="activity-time">2 hours ago</div>
                         </div>
                     </div>
-                    
+
                     <div class="activity-item">
                         <div class="activity-icon info" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
                             <i class="fas fa-user-plus"></i>
@@ -492,7 +501,7 @@
                             <div class="activity-time">5 hours ago</div>
                         </div>
                     </div>
-                    
+
                     <div class="activity-item">
                         <div class="activity-icon warning" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
                             <i class="fas fa-clock"></i>
@@ -505,14 +514,14 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Quick Stats -->
             <div class="col-lg-6">
                 <div class="section-header">
                     <h2>Top Performers</h2>
                     <a href="/departments" class="view-all-link">View Departments</a>
                 </div>
-                
+
                 <div class="data-table">
                     <table>
                         <thead>
@@ -526,8 +535,8 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="https://via.placeholder.com/32" class="rounded-circle" 
-                                             width="32" height="32">
+                                        <img src="https://via.placeholder.com/32" class="rounded-circle" width="32"
+                                            height="32">
                                         <div>Sarah Johnson</div>
                                     </div>
                                 </td>
@@ -537,8 +546,8 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="https://via.placeholder.com/32" class="rounded-circle" 
-                                             width="32" height="32">
+                                        <img src="https://via.placeholder.com/32" class="rounded-circle" width="32"
+                                            height="32">
                                         <div>Michael Chen</div>
                                     </div>
                                 </td>
@@ -548,8 +557,8 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="https://via.placeholder.com/32" class="rounded-circle" 
-                                             width="32" height="32">
+                                        <img src="https://via.placeholder.com/32" class="rounded-circle" width="32"
+                                            height="32">
                                         <div>Emily Davis</div>
                                     </div>
                                 </td>
@@ -562,8 +571,9 @@
             </div>
         </div>
     </main>
-    
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

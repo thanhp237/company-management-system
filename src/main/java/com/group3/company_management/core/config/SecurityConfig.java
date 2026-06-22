@@ -50,7 +50,7 @@ public class SecurityConfig {
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+        return authConfig.getAuthenticationManager(); /* --> DaoAuthenticationProvider  */
     }
 
 
@@ -76,8 +76,8 @@ public class SecurityConfig {
                 // Use the custom Thymeleaf login page for browser users
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .loginProcessingUrl("/login")
-                        .successHandler(customLoginSuccessHandler)
+                        .loginProcessingUrl("/login")   //Login request is POSTed to this URL 
+                        .successHandler(customLoginSuccessHandler)  
                         .failureUrl("/login?error")
                         .permitAll()
                 )
@@ -134,6 +134,7 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/main.css"
                         ).permitAll()
+                        .requestMatchers("/customer/login", "/customer/logout").permitAll()
                         .requestMatchers(
                                 "/dashboard/**",
                                 "/users/**",
@@ -142,13 +143,16 @@ public class SecurityConfig {
                                 "/first-change-password"
                         ).authenticated()
 
+                        
+                        .requestMatchers("/customer/portal/**").authenticated()
                         .anyRequest().authenticated()
+
                 )
 
                 // JWT filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
+                        UsernamePasswordAuthenticationFilter.class /* method:  attemptAuthentication(HttpServletRequest request, HttpServletResponse response)  */
                 );
 
         return http.build();

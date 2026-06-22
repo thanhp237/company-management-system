@@ -37,7 +37,7 @@ public class LoginController {
             model.addAttribute("inactive", true);
         }
         
-        return "auth/login";
+        return "auth/login"; // customuserdetailsservice will 
     }
     
     /**
