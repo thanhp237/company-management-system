@@ -2,11 +2,15 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
+import com.group3.company_management.core.entity.User;
+import com.group3.company_management.core.service.EmailService;
 import com.group3.company_management.core.service.UserService;
 
+import java.security.SecureRandom;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,25 +21,28 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final EmailService emailService;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final String PASSWORD_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
+
 
     @Autowired
-    public UserController(UserService service){
+    public UserController(UserService service, EmailService emailService){
         this.userService = service;
+        this.emailService = emailService;
     }
 
 @GetMapping
-public String listUsers(@RequestParam(required = false) String role, Model model) {
-    // Sửa kiểu dữ liệu ở đây từ Entity sang DTO (UserResponse) để khớp với Service trả về
-    List<com.group3.company_management.core.dto.UserResponse> users; 
-    
-    // Nếu trên URL có tham số ?role=... thì gọi hàm lọc, ngược lại lấy tất cả
-    if (role != null && !role.trim().isEmpty()) {
-        users = userService.getActiveUsersByRole(role);
-    } else {
-        users = userService.getAllUsers();
-    }
-    
-    model.addAttribute("users", users);
+public String listUsers(
+        @RequestParam(required = false) String role,
+        @RequestParam(defaultValue = "0") int page,
+        Model model) {
+    Page<UserResponse> userPage = userService.getUsersPage(role, page, 10);
+
+    model.addAttribute("userPage", userPage);
+    model.addAttribute("users", userPage.getContent());
+    model.addAttribute("role", role);
+    model.addAttribute("countAccount", userPage.getTotalElements());
     return "users/list";
 }
 
@@ -52,11 +59,40 @@ public String listUsers(@RequestParam(required = false) String role, Model model
         userService.deleteUser(id);
         return "redirect:/users";
     }
+    @GetMapping("/find")
+    public String findUser(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
 
+        Page<UserResponse> userPage = userService.searchPage(keyword, status, page, 10);
+
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
+        model.addAttribute("isSearch", true);
+        model.addAttribute("countAccount", userPage.getTotalElements());
+
+        return "users/list";
+    }
     @PostMapping("/save")
-    public String saveUser(@ModelAttribute("userForm") UserRequest request, Model model) {
+    public String saveUser(
+            @ModelAttribute("userForm") UserRequest request,
+            @RequestParam(defaultValue = "create") String action,
+            Model model) {
         try {
+            String rawPassword = request.getPassword();
+            if ("createAndSend".equals(action)) {
+                rawPassword = generateTemporaryPassword();
+                request.setPassword(rawPassword);
+            }
+
             userService.createUser(request);
+            if ("createAndSend".equals(action)) {
+                emailService.sendAccountInfo(request.getEmail(), request.getUsername(), rawPassword);
+            }
             return "redirect:/users";
         } catch (IllegalArgumentException exception) {
             model.addAttribute("errorMessage", exception.getMessage());
@@ -64,6 +100,14 @@ public String listUsers(@RequestParam(required = false) String role, Model model
             model.addAttribute("isEdit", false);
             return "users/add-form";
         }
+    }
+
+    private String generateTemporaryPassword() {
+        StringBuilder password = new StringBuilder();
+        for (int i = 0; i < 12; i++) {
+            password.append(PASSWORD_CHARS.charAt(SECURE_RANDOM.nextInt(PASSWORD_CHARS.length())));
+        }
+        return password.toString();
     }
 
     @PostMapping("/update")

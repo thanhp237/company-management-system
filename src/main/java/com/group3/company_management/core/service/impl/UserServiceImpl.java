@@ -9,6 +9,9 @@ import com.group3.company_management.core.repository.RoleRepository;
 import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,19 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(UserResponse::fromEntity)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UserResponse> getUsersPage(String roleCode, int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), size);
+        boolean hasRole = roleCode != null && !roleCode.trim().isEmpty();
+
+        Page<User> users = hasRole
+                ? userRepository.findActiveUsersByRoleCode(roleCode, pageable)
+                : userRepository.findAll(pageable);
+
+        return users.map(UserResponse::fromEntity);
     }
 
     @Override
@@ -273,4 +289,51 @@ public void updateProfile(String username, ProfileUpdateRequest request) {
     
     userRepository.save(user);
 }
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> search(String keyword, String status) {
+
+        List<User> users;
+
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+        boolean hasStatus = status != null && !status.isBlank();
+
+        if (!hasKeyword && !hasStatus) {
+            users = userRepository.findAll();
+
+        } else if (hasKeyword && hasStatus) {
+            users = userRepository
+                    .findByUsernameContainingIgnoreCaseAndStatusIgnoreCaseOrEmailContainingIgnoreCaseAndStatusIgnoreCase(
+                            keyword, status, keyword, status
+                    );
+
+        } else if (hasKeyword) {
+            users = userRepository
+                    .findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+                            keyword, keyword
+                    );
+
+        } else {
+            users = userRepository
+                    .findByStatus(status);
+        }
+
+        return users.stream()
+                .map(UserResponse::fromEntity)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UserResponse> searchPage(String keyword, String status, int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), size);
+        return userRepository.searchUsers(keyword, status, pageable)
+                .map(UserResponse::fromEntity);
+    }
+
+    @Override
+    @Transactional
+    public Long countUsers (){
+        return userRepository.count();
+    }
 }
