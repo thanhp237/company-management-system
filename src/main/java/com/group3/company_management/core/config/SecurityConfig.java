@@ -1,9 +1,12 @@
 package com.group3.company_management.core.config;
 
+import com.group3.company_management.core.security.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,6 +27,8 @@ import com.group3.company_management.core.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 /**
  * Spring Security configuration for UI form login and JWT-based API
  * authentication
@@ -35,6 +40,8 @@ public class SecurityConfig {
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+
 
     /**
      * Password encoder using BCrypt algorithm
@@ -48,9 +55,13 @@ public class SecurityConfig {
     /**
      * Authentication manager for validating credentials
      */
+
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return new ProviderManager(List.of(provider));
     }
 
 
