@@ -11,12 +11,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.mail.MailException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 
 @Controller
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/users")
 public class UserController {
 
@@ -40,6 +42,7 @@ public String listUsers(
     model.addAttribute("userPage", userPage);
     model.addAttribute("users", userPage.getContent());
     model.addAttribute("role", role);
+    model.addAttribute("roles", userService.getAllRoles());
     model.addAttribute("countAccount", userPage.getTotalElements());
     return "users/list";
 }
@@ -61,15 +64,18 @@ public String listUsers(
     public String findUser(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String role,
             @RequestParam(defaultValue = "0") int page,
             Model model) {
 
-        Page<UserResponse> userPage = userService.searchPage(keyword, status, page, 10);
+        Page<UserResponse> userPage = userService.searchPage(keyword, status, role, page, 10);
 
         model.addAttribute("userPage", userPage);
         model.addAttribute("users", userPage.getContent());
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
+        model.addAttribute("role", role);
+        model.addAttribute("roles", userService.getAllRoles());
         model.addAttribute("isSearch", true);
         model.addAttribute("countAccount", userPage.getTotalElements());
 

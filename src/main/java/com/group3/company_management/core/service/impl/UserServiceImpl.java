@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,11 +45,12 @@ public class UserServiceImpl implements UserService {
     public Page<UserResponse> getUsersPage(String roleCode, int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), size);
         boolean hasRole = roleCode != null && !roleCode.trim().isEmpty();
-
-        Page<User> users = hasRole
-                ? userRepository.findActiveUsersByRoleCode(roleCode, pageable)
-                : userRepository.findAll(pageable);
-
+        Page<User> users;
+        if (hasRole){
+            users = userRepository.findActiveUsersByRoleCode(roleCode, pageable);
+        }else {
+            users = userRepository.findAllActiveWithEmployee(pageable);
+        }
         return users.map(UserResponse::fromEntity);
     }
 
@@ -79,7 +81,7 @@ public class UserServiceImpl implements UserService {
         user.setRole(role);
         user.setStatus("ACTIVE");
         userRepository.saveAndFlush(user);
-        createRoleProfile(user, role);
+        syncEmployeeProfile(user, role);
     }
 
     @Override
@@ -100,7 +102,8 @@ public class UserServiceImpl implements UserService {
         user.setDepartmentId(request.getDepartmentId());
         user.setGroupId(request.getGroupId());
         user.setRole(role);
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
+        syncEmployeeProfile(user, role);
     }
 
     @Override
@@ -120,7 +123,11 @@ public class UserServiceImpl implements UserService {
         user.setGroupId(userDetails.getGroupId());
         user.setRole(userDetails.getRole());
         user.setStatus(normalizeOptional(userDetails.getStatus()));
-        return userRepository.save(user);
+        User savedUser = userRepository.saveAndFlush(user);
+        if (savedUser.getRole() != null) {
+            syncEmployeeProfile(savedUser, savedUser.getRole());
+        }
+        return savedUser;
     }
 
     @Override
@@ -159,13 +166,19 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("Role not found with ID: " + id));
     }
 
-    private void createRoleProfile(User user, Role role) {
+    private void syncEmployeeProfile(User user, Role role) {
         String roleCode = normalizeRequired(role.getRoleCode(), "Role code is required").toUpperCase(Locale.ROOT);
         String employeeCode = buildEmployeeCode(roleCode, user.getId());
 
         validateEmployeeRole(roleCode);
         jdbcTemplate.update(
-                "INSERT INTO employees (account_id, employee_code, employee_type) VALUES (?, ?, ?)",
+                """
+                        INSERT INTO employees (account_id, employee_code, employee_type)
+                        VALUES (?, ?, ?)
+                        ON CONFLICT (account_id)
+                        DO UPDATE SET employee_code = EXCLUDED.employee_code,
+                                      employee_type = EXCLUDED.employee_type
+                        """,
                 user.getId(), employeeCode, roleCode
         );
     }
@@ -293,19 +306,15 @@ public void updateProfile(String username, ProfileUpdateRequest request) {
 
         } else if (hasKeyword && hasStatus) {
             users = userRepository
-                    .findByUsernameContainingIgnoreCaseAndStatusIgnoreCaseOrEmailContainingIgnoreCaseAndStatusIgnoreCase(
-                            keyword, status, keyword, status
-                    );
+                    .searchByKeywordAndStatus(keyword, status);
 
         } else if (hasKeyword) {
             users = userRepository
-                    .findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(
-                            keyword, keyword
-                    );
+                    .searchByKeyword(keyword);
 
         } else {
             users = userRepository
-                    .findByStatus(status);
+                    .searchByStatus(status);
         }
 
         return users.stream()
@@ -315,9 +324,9 @@ public void updateProfile(String username, ProfileUpdateRequest request) {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserResponse> searchPage(String keyword, String status, int page, int size) {
-        Pageable pageable = PageRequest.of(Math.max(page, 0), size);
-        return userRepository.searchUsers(keyword, status, pageable)
+    public Page<UserResponse> searchPage(String keyword, String status, String roleCode, int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), size, Sort.by("id").ascending());
+        return userRepository.searchUsers(keyword, status, roleCode, pageable)
                 .map(UserResponse::fromEntity);
     }
 

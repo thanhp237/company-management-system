@@ -38,7 +38,7 @@ public interface UserService {
 
     List<UserResponse> search(String keyword, String status);
 
-    Page<UserResponse> searchPage(String keyword, String status, int page, int size);
+    Page<UserResponse> searchPage(String keyword, String status, String roleCode, int page, int size);
 
     Long countUsers();
 }
