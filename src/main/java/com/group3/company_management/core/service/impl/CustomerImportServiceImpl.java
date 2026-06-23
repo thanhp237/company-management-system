@@ -11,6 +11,7 @@ import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.CustomerImportService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,21 +45,23 @@ public class CustomerImportServiceImpl implements CustomerImportService {
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
 
+
                 Row row = sheet.getRow(i);
-                if(leadRepository.existsByPhone(getCellValue(row.getCell(1)))){
-                    continue;
-                }if(leadRepository.existsByEmail(getCellValue(row.getCell(2)))){
-                    continue;
-                }if(leadRepository.existsByTaxCode(getCellValue(row.getCell(5)))){
-                    continue;
-                }
-
-
                 if (row == null) {
                     continue;
                 }
+                if(leadRepository.existsByPhone(getCellValue(row.getCell(1)))){
+                    throw new RuntimeException("..");
+                }if(leadRepository.existsByEmail(getCellValue(row.getCell(2)))){
+                    throw new RuntimeException("..");
+                }if(leadRepository.existsByTaxCode(getCellValue(row.getCell(5)))){
+                    throw new RuntimeException("..");
+                }
+
+
+
                 if ((getCellValue(row.getCell(0))).isBlank()) {
-                    continue;
+                    throw new RuntimeException("..");
                 }
                 LeadDTO dto = new LeadDTO();
 
@@ -102,7 +105,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
 
     @Override
     public List<Customer> allCustomer() {
-        return leadRepository.findAll();
+        return leadRepository.findAll(Sort.by("id").ascending());
     }
     @Override
     public List<User> findSale(String roleName) {

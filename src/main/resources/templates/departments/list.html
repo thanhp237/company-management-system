@@ -10,7 +10,15 @@
 <h1>Departments List</h1>
 
 <form th:action="@{/departments/search}" method="get">
-    <input type="text" name="keyword"/>
+    <input type="text" name="keyword" th:value="${keyword}"
+           placeholder="Search by code, name..."
+    >
+
+    <select name="status" >
+        <option value="all">ALL Status</option>
+        <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">ACTIVE</option>
+        <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">INACTIVE</option>
+    </select>
     <button type="submit">Search</button>
     <a th:href="@{/departments}">Clear</a>
     <p th:text="${err}"></p>
@@ -24,7 +32,7 @@
         <th>ID</th>
         <th>Code</th>
         <th>Name</th>
-
+         <th>Status</th>
         <th>Edit</th>
         <th>Delete</th>
     </tr>
@@ -45,6 +53,7 @@
                     <option value="ACTIVE" th:selected="${department.status == 'ACTIVE'}">ACTIVE</option>
                     <option value="INACTIVE" th:selected="${department.status == 'INACTIVE'}">INACTIVE</option>
                 </select>
+
             </form>
         </td>
 
@@ -54,44 +63,29 @@
         </td>
 
         <td>
-            <a th:href="@{/departments/delete/{id}(id=${department.id})}">Delete</a>
+            <a th:href="@{/departments/delete(id=${department.id})}"
+ onclick="return confirm('Delete this department?')">
+                Delete</a>
         </td>
     </tr>
     </tbody>
 </table>
-<div>
 
-    <a th:if="${!departmentPage.first}"
-       th:href="@{/departments(page=0)}">
-        First
-    </a>
+<div th:if="${departmentPage != null and departmentPage.totalPages > 0}">
 
-    <a th:if="${!departmentPage.first}"
-       th:href="@{/departments(page=${departmentPage.number - 1})}">
+    <a th:if="${departmentPage.hasPrevious()}"
+       th:href="@{/departments/search(page=${departmentPage.number - 1}, keyword=${keyword}, status=${status})}">
         Prev
     </a>
 
-    <span th:each="i : ${#numbers.sequence(0, departmentPage.totalPages - 1)}">
-
-        <a th:if="${i != departmentPage.number}"
-           th:text="${i + 1}"
-           th:href="@{/departments(page=${i})}">
-        </a>
-
-        <strong th:if="${i == departmentPage.number}"
-                th:text="${i + 1}">
-        </strong>
-
+    <span>
+        Page <strong th:text="${departmentPage.number + 1}">1</strong> /
+        <span th:text="${departmentPage.totalPages}">1</span>
     </span>
 
-    <a th:if="${!departmentPage.last}"
-       th:href="@{/departments(page=${departmentPage.number + 1})}">
+    <a th:if="${departmentPage.hasNext()}"
+       th:href="@{/departments/search(page=${departmentPage.number + 1}, keyword=${keyword}, status=${status})}">
         Next
-    </a>
-
-    <a th:if="${!departmentPage.last}"
-       th:href="@{/departments(page=${departmentPage.totalPages - 1})}">
-        Last
     </a>
 
 </div>

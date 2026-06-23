@@ -68,8 +68,7 @@ public class Customer implements UserDetails {
      * Customer Status: ACTIVE or INACTIVE
      */
     @Column(nullable = false, length = 20)
-    @Builder.Default
-    private String customerStatus = "ACTIVE";
+    private String customerStatus;
     
     /**
      * Failed login attempts (for account lockout like User)
@@ -118,6 +117,14 @@ public class Customer implements UserDetails {
     
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+    @Column(length = 20)
+    private String opportunityLevel;
+
+    @Column(columnDefinition = "TEXT")
+    private String evaluationNote;
+
+    @Column(length = 10)
+    private String gender;
     
     @PrePersist
     protected void onCreate() {

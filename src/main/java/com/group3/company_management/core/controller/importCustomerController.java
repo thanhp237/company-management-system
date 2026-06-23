@@ -1,9 +1,9 @@
 package com.group3.company_management.core.controller;
 
-import com.group3.company_management.core.dto.LeadDTO;
+
 import com.group3.company_management.core.entity.Customer;
-import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.service.CustomerImportService;
+import com.group3.company_management.core.service.CustomerService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,18 +14,17 @@ import java.util.List;
 @Controller
 @RequestMapping("/customer")
 public class importCustomerController {
-
     private final CustomerImportService customerImportService;
+    private CustomerService customerService;
 
-    public importCustomerController(CustomerImportService customerImportService) {
+    public importCustomerController(CustomerImportService customerImportService, CustomerService customerService) {
         this.customerImportService = customerImportService;
+        this.customerService = customerService;
     }
 
     @GetMapping
     public String showImportPage(Model model) {
-
         List<Customer> listCustomer = customerImportService.allCustomer();
-
         model.addAttribute("customer", listCustomer);
         model.addAttribute("sales", customerImportService.findSale("Sales Staff"));
         return "lead/import";
@@ -43,12 +42,15 @@ public class importCustomerController {
 
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
+            model.addAttribute("customer", customerImportService.allCustomer());
+            model.addAttribute("sales", customerImportService.findSale("Sales Staff"));
+            return "lead/import";
         }
 
         return "lead/import";
     }
     @PostMapping("/check")
-    public String checkBox(@RequestParam("checkbox") List<Long> id, @RequestParam("saleId") Long idSale, Model model) {
+    public String checkBox(@RequestParam(value = "checkbox", required = false) List<Long> id, @RequestParam("saleId") Long idSale, Model model) {
        for (Long  custommerId: id ){
            Customer customer =  customerImportService.findCustomerById(custommerId);
            customer.setAssignedSalesId(idSale);
@@ -62,5 +64,16 @@ public class importCustomerController {
         model.addAttribute("sales", customerImportService.findSale("Sales Staff"));
         return "lead/import";
     }
+    @GetMapping("/detail")
+    public String detailCustomer(@RequestParam Long id,Model model){
+        Customer customer = customerService.findCustomerById(id);
+        model.addAttribute("customer",customer);
+        return "lead/detail";
 
+    }
+    @PostMapping("/detail")
+    public String saveImformationCustomer(@ModelAttribute("customer") Customer customer,Model model){
+        customerService.saveCustomer(customer);
+        return "redirect:/customer/detail";
+    }
 }

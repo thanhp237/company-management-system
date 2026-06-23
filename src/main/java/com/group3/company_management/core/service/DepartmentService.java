@@ -13,10 +13,10 @@ public interface DepartmentService {
 
         void saveDepartment(Department department);
 
-        void deleteDepartment(Long id);
-        List<Department> searchByIdandName(String keyword);
+        public void deleteDepartment(Long id, String username);
+        Page<Department> searchByIdandName(String keyword,String status,int page);
         Page<Department> getDepartmentsPage(int page);
-        public void updateStatus(Long id, String status);
+
         public void updateDepartmentStatus(Long id, String status);
 
 }

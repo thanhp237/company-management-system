@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -31,20 +32,16 @@ public class DepartmentServiceImpl implements DepartmentService {
         return departmentRepository.findAll();
 
     }
-    public void updateStatus(Long id, String status) {
-
-        Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
-
-        department.setStatus(status);
-
-        departmentRepository.save(department);
+    private Department findActiveDepartmentById(Long id) {
+        return departmentRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new RuntimeException("Department not found with ID: " + id));
     }
+
 
     @Override
     @Transactional(readOnly = true)
     public Department getDepartmentById(Long id) {
-        return departmentRepository.findById(id)
+        return departmentRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Department not found"));
     }
 
@@ -62,18 +59,29 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     @Transactional
-    public void deleteDepartment(Long id) {
-        departmentRepository.deleteById(id);
+    public void deleteDepartment(Long id, String username) {
+
+        Department department = departmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+
+        department.setIsDeleted(true);
+        department.setDeletedAt(LocalDateTime.now());
+        department.setDeletedBy(username);
+
+        departmentRepository.save(department);
     }
 
     @Override
-    public List<Department> searchByIdandName(String keyword) {
-         if(departmentRepository.search(keyword)== null || departmentRepository.search(keyword).isEmpty()){
-             throw new RuntimeException("Department not found");
-         }if(keyword == null || keyword.trim().isEmpty()){
-             throw  new RuntimeException("Keyword not blank");
-        }else{
-        return departmentRepository.search(keyword);}
+    public Page<Department> searchByIdandName(String keyword,String status,int page) {
+        Pageable pageable = PageRequest.of(page,10,Sort.by("id").ascending());
+        if (keyword == null) {
+            keyword = "";
+        }
+
+        if (status == null || status.trim().isEmpty()) {
+            status = "all";
+        }
+        return departmentRepository.search(keyword,status,pageable);
     }
     private String validate(String  value, String mes){
         if(value == null || value.trim().isEmpty()){
@@ -81,18 +89,18 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
         return value.trim();
     }
-
-
     @Override
+    public Page<Department> getDepartmentsPage(int page) {
 
-   public Page<Department> getDepartmentsPage(int page){
-        Pageable pageable = PageRequest.of(
-                page,
-                5,
-                Sort.by("id").ascending()
-        );
-        return departmentRepository.findAll(pageable);
+        Pageable pageable = PageRequest.of(page, 10, Sort.by("id").ascending());
+
+        return departmentRepository.findAllNotDeleted(pageable);
     }
+
+
+
+
+
     @Override
     public void updateDepartmentStatus(Long id, String status) {
         if (id == null) {
@@ -100,12 +108,9 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
 
 
-        Department department1 = findActiveUserById(id);
+        Department department1 = findActiveDepartmentById(id);
         department1.setStatus(status);
         departmentRepository.save(department1);
     }
-    private Department findActiveUserById(Long id) {
-        return departmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
-    }
+
 }

@@ -7,6 +7,7 @@ import com.group3.company_management.core.service.DepartmentService;
 
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,7 +33,8 @@ public class DepartmentController {
         Page<Department> departmentPage = departmentService.getDepartmentsPage(page);
 
         model.addAttribute("departmentPage", departmentPage);
-
+        model.addAttribute("keyword", "");
+        model.addAttribute("status", "all");
         return "departments/list";
     }
     @PostMapping("/update-status")
@@ -72,21 +74,32 @@ public class DepartmentController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteDepartment(@PathVariable Long id) {
-        departmentService.deleteDepartment(id);
+    public String deleteDepartment(@PathVariable Long id,
+                                   Authentication authentication) {
+
+        departmentService.deleteDepartment(id, authentication.getName());
+
         return "redirect:/departments";
     }
     @GetMapping("/search")
-       public String searchByNameAndId(@RequestParam("keyword") String keyword,Model model){
+       public String searchByNameAndId(@RequestParam("keyword") String keyword,@RequestParam("status") String status,
+            @RequestParam(defaultValue = "0") int page
+            ,Model model){
+
         try{
-            List<Department> listSearch = departmentService.searchByIdandName(keyword);
-            model.addAttribute("departments", listSearch);
+            Page<Department> listSearch = departmentService.searchByIdandName(keyword,status,page);
+            model.addAttribute("departmentPage", listSearch);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("status", status);
             return "departments/list";
 
         }catch (RuntimeException e){
             model.addAttribute("err", e.getMessage());
-            model.addAttribute("departments",
-                    departmentService.getAllDepartments());
+            Page<Department> departmentPage =
+                    departmentService.getDepartmentsPage(page);
+
+            model.addAttribute("departmentPage", departmentPage);
+
             return "departments/list";
         }
         }

@@ -13,7 +13,7 @@
     <button type="submit">Import</button>
 </form>
 <button type="button"
-        onclick="window.location.href='/excel/customer_template.xlsx'">
+        onclick="window.location.href='/excel/customer_import_template.xlsx'">
     Download Template
 </button>
 <p th:if="${error}" th:text="${error}" style="color:red;"></p>
@@ -24,6 +24,7 @@
         <th></th>
         <th>ID</th>
         <th>Full Name</th>
+        <th>Gender</th>
         <th>Phone</th>
         <th>Email</th>
         <th>Address</th>
@@ -40,8 +41,13 @@
 
       <td> <input type="checkbox" name="checkbox" th:value="${lead.id}"/>
       </td>
-        <td th:text="${lead.id}"></td>
-        <td th:text="${lead.fullName}"></td>
+        <td>
+               <a th:href="@{/customer/detail(id = ${lead.id})}"
+                th:text="${lead.id}">
+               </a></td>
+        <td> <a    th:href="@{/customer/detail(id = ${lead.id})}"
+                th:text="${lead.fullName}"></a></td>
+        <td th:text="${lead.gender}"></td>
         <td th:text="${lead.phone}"></td>
         <td th:text="${lead.email}"></td>
         <td th:text="${lead.address}"></td>
