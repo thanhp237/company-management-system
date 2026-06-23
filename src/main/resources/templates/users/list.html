@@ -20,6 +20,13 @@
         <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
         <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Inactive</option>
     </select>
+    <select name="role">
+        <option value="">All Roles</option>
+        <option th:each="roleItem : ${roles}"
+                th:value="${roleItem.roleCode}"
+                th:text="${roleItem.roleName}"
+                th:selected="${role == roleItem.roleCode}"></option>
+    </select>
     <button type="submit">Search</button>
 </form>
 
@@ -32,7 +39,8 @@
 <table border="1">
     <thead>
     <tr>
-        <th>ID</th>
+        <th>STT</th>
+        <th>Employee Code</th>
         <th>Username</th>
         <th>Email</th>
         <th>Full Name</th>
@@ -45,6 +53,7 @@
     <tbody>
     <tr th:each="user,stat : ${users}">
         <td th:text="${userPage != null ? userPage.number * userPage.size + stat.count : stat.count}"></td>
+        <td th:text="${user.employeeCode != null ? user.employeeCode : 'N/A'}"></td>
         <td th:text="${user.username}"></td>
         <td th:text="${user.email}"></td>
         <td th:text="${user.fullName}"></td>
@@ -74,16 +83,17 @@
         </td>
     </tr>
     <tr th:if="${#lists.isEmpty(users)}">
-        <td colspan="8">No accounts found.</td>
+        <td colspan="9">No accounts found.</td>
     </tr>
     </tbody>
 </table>
 
+
 <div class="pagination" th:if="${userPage != null and userPage.totalPages > 0}">
     <a th:if="${userPage.hasPrevious() and isSearch != true}"
-       th:href="@{/users(page=${userPage.number - 1}, role=${role})}">&laquo; Trang trước</a>
+       th:href="@{/users(page=${userPage.number - 1}, role=${role})}">&laquo; Back</a>
     <a th:if="${userPage.hasPrevious() and isSearch == true}"
-       th:href="@{/users/find(page=${userPage.number - 1}, keyword=${keyword}, status=${status})}">&laquo; Trang trước</a>
+       th:href="@{/users/find(page=${userPage.number - 1}, keyword=${keyword}, status=${status}, role=${role})}">&laquo; Back</a>
 
     <span>
         Trang <strong th:text="${userPage.number + 1}">1</strong> /
@@ -91,10 +101,11 @@
     </span>
 
     <a th:if="${userPage.hasNext() and isSearch != true}"
-       th:href="@{/users(page=${userPage.number + 1}, role=${role})}">Back &raquo;</a>
+       th:href="@{/users(page=${userPage.number + 1}, role=${role})}">Next &raquo;</a>
     <a th:if="${userPage.hasNext() and isSearch == true}"
-       th:href="@{/users/find(page=${userPage.number + 1}, keyword=${keyword}, status=${status})}">Next &raquo;</a>
+       th:href="@{/users/find(page=${userPage.number + 1}, keyword=${keyword}, status=${status}, role=${role})}">Next &raquo;</a>
 </div>
+<a th:href="@{/users}">Back to List</a>
 
 </body>
 </html>
