@@ -5,6 +5,7 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.dto.CustomerResponse;
+import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,4 +161,5 @@ public class CustomerController {
         request.setCustomerStatus(response.getCustomerStatus());
         return request;
     }
+
 }

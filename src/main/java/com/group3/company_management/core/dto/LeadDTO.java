@@ -17,7 +17,7 @@ public class LeadDTO {
     private String customerSource;
 
 
-
+   private String gender;
 
     private String fullName;
 

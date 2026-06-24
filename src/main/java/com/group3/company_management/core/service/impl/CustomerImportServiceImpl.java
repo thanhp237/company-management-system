@@ -47,32 +47,42 @@ public class CustomerImportServiceImpl implements CustomerImportService {
 
 
                 Row row = sheet.getRow(i);
+
+
+                if (row == null ||
+                        !"Full Name".equalsIgnoreCase(getCellValue(row.getCell(0)))) {
+
+                    throw new RuntimeException(
+                            "Invalid Excel template. Please download and use the provided template."
+                    );
+                }
                 if (row == null) {
                     continue;
                 }
-                if(leadRepository.existsByPhone(getCellValue(row.getCell(1)))){
-                    throw new RuntimeException("..");
-                }if(leadRepository.existsByEmail(getCellValue(row.getCell(2)))){
-                    throw new RuntimeException("..");
-                }if(leadRepository.existsByTaxCode(getCellValue(row.getCell(5)))){
-                    throw new RuntimeException("..");
+                if(leadRepository.existsByPhone(getCellValue(row.getCell(2)))){
+                    continue;
+                }if(leadRepository.existsByEmail(getCellValue(row.getCell(3)))){
+                    continue;
+                }if(leadRepository.existsByTaxCode(getCellValue(row.getCell(6)))){
+                    continue;
                 }
 
 
 
                 if ((getCellValue(row.getCell(0))).isBlank()) {
-                    throw new RuntimeException("..");
+                    continue;
                 }
                 LeadDTO dto = new LeadDTO();
 
                 dto.setFullName(getCellValue(row.getCell(0)));
-                dto.setPhone(getCellValue(row.getCell(1)));
-                dto.setEmail(getCellValue(row.getCell(2)));
-                dto.setAddress(getCellValue(row.getCell(3)));
-                dto.setCompanyName(getCellValue(row.getCell(4)));
-                dto.setTaxCode(getCellValue(row.getCell(5)));
-                dto.setCustomerSource(getCellValue(row.getCell(6)));
-                dto.setCustomerType(getCellValue(row.getCell(7)));
+                dto.setGender(getCellValue(row.getCell(1)));
+                dto.setPhone(getCellValue(row.getCell(2)));
+                dto.setEmail(getCellValue(row.getCell(3)));
+                dto.setAddress(getCellValue(row.getCell(4)));
+                dto.setCompanyName(getCellValue(row.getCell(5)));
+                dto.setTaxCode(getCellValue(row.getCell(6)));
+                dto.setCustomerSource(getCellValue(row.getCell(7)));
+                dto.setCustomerType(getCellValue(row.getCell(8)));
 
                 leads.add(dto);
                 Customer customer = new Customer();
@@ -86,6 +96,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
                customer.setCustomerType((dto.getCustomerType()));
                customer.setName(customer.getFullName());
                 customer.setCreatedAt(LocalDateTime.now());
+                customer.setGender(dto.getGender());
                customer.setCreatedBy(userRepository.findByUsername(name).get().getId());
                leadRepository.save(customer);
 

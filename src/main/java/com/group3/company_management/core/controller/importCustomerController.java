@@ -47,6 +47,9 @@ public class importCustomerController {
             return "lead/import";
         }
 
+        model.addAttribute("customer", customerImportService.allCustomer());
+        model.addAttribute("sales", customerImportService.findSale("Sales Staff"));
+
         return "lead/import";
     }
     @PostMapping("/check")
@@ -71,9 +74,28 @@ public class importCustomerController {
         return "lead/detail";
 
     }
+
     @PostMapping("/detail")
-    public String saveImformationCustomer(@ModelAttribute("customer") Customer customer,Model model){
-        customerService.saveCustomer(customer);
-        return "redirect:/customer/detail";
+    public String saveImformationCustomer(
+            @ModelAttribute("customer") Customer customer,
+            Model model) {
+
+        Customer oldCustomer =
+                customerService.findCustomerById(customer.getId());
+
+        oldCustomer.setName(customer.getName());
+        oldCustomer.setFullName(customer.getName());
+        oldCustomer.setEmail(customer.getEmail());
+        oldCustomer.setAddress(customer.getAddress());
+        oldCustomer.setPhone(customer.getPhone());
+        oldCustomer.setGender(customer.getGender());
+        oldCustomer.setCustomerSource(customer.getCustomerSource());
+        oldCustomer.setCustomerStatus(customer.getCustomerStatus());
+        oldCustomer.setOpportunityLevel(customer.getOpportunityLevel());
+
+        customerService.saveCustomer(oldCustomer);
+
+        return "redirect:/customer/detail?id=" + oldCustomer.getId();
     }
+
 }
