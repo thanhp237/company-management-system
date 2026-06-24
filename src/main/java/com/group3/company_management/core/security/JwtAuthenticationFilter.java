@@ -43,6 +43,7 @@ if (
         path.equals("/auth") ||
         path.startsWith("/dashboard") ||
         path.startsWith("/users") ||
+        path.startsWith("/products") ||
         path.startsWith("/departments") ||
         path.startsWith("/css/") ||
         path.startsWith("/js/") ||
