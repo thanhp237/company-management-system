@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lead Pipeline - Track Stages</title>
+</head>
+<body>
+
+<h2>Lead Pipeline - Track Stages</h2>
+
+<a href="/dashboard">Back to Dashboard</a>
+
+<p th:if="${successMessage}" th:text="${successMessage}"></p>
+<p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+<p th:if="${countAccount != null}">
+    Found: <strong th:text="${countAccount}">0</strong> opportunities
+</p>
+
+<h3>Stage Summary</h3>
+<ul>
+    <li th:each="stage : ${stages}">
+        <span th:text="${stage}">NEW</span>:
+        <strong th:text="${stageCounts.get(stage)}">0</strong>
+    </li>
+</ul>
+
+<h3>Search Pipeline</h3>
+<form th:action="@{/pipeline/find}" method="get">
+    <input type="text"
+           name="keyword"
+           th:value="${keyword}"
+           placeholder="Search by code, customer, assigned to">
+    <select name="stage">
+        <option value="" th:selected="${selectedStage == 'ALL'}">All</option>
+        <option th:each="stage : ${stages}"
+                th:value="${stage}"
+                th:text="${stage}"
+                th:selected="${selectedStage == stage}">NEW</option>
+    </select>
+    <button type="submit">Search</button>
+</form>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Opportunity Code</th>
+        <th>Customer</th>
+        <th>Assigned To</th>
+        <th>Stage</th>
+        <th>Expected Amount</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="opportunity : ${opportunities}">
+        <td th:text="${opportunity.opportunityCode}">OPP001</td>
+        <td th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'N/A'}">Nguyen A</td>
+        <td th:text="${opportunity.assignedTo != null ? opportunity.assignedTo.fullName : 'N/A'}">Sales 01</td>
+        <td th:text="${opportunity.stage}">NEW</td>
+        <td th:text="${opportunity.expectedAmount != null ? #numbers.formatDecimal(opportunity.expectedAmount, 0, 'COMMA', 0, 'POINT') : '0'}">
+            10,000,000
+        </td>
+        <td>
+            <a th:href="@{/pipeline/{id}(id=${opportunity.id})}">Detail</a>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(opportunities)}">
+        <td colspan="6">No opportunities found.</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="pagination" th:if="${opportunityPage != null and opportunityPage.totalPages > 0}">
+    <a th:if="${opportunityPage.hasPrevious() and isSearch != true}"
+       th:href="@{/pipeline(page=${opportunityPage.number - 1})}">&laquo; Back</a>
+    <a th:if="${opportunityPage.hasPrevious() and isSearch == true}"
+       th:href="@{/pipeline/find(page=${opportunityPage.number - 1}, keyword=${keyword}, stage=${selectedStage == 'ALL' ? null : selectedStage})}">&laquo; Back</a>
+
+    <span>
+        Trang <strong th:text="${opportunityPage.number + 1}">1</strong> /
+        <span th:text="${opportunityPage.totalPages}">1</span>
+    </span>
+
+    <a th:if="${opportunityPage.hasNext() and isSearch != true}"
+       th:href="@{/pipeline(page=${opportunityPage.number + 1})}">Next &raquo;</a>
+    <a th:if="${opportunityPage.hasNext() and isSearch == true}"
+       th:href="@{/pipeline/find(page=${opportunityPage.number + 1}, keyword=${keyword}, stage=${selectedStage == 'ALL' ? null : selectedStage})}">Next &raquo;</a>
+</div>
+
+</body>
+</html>
