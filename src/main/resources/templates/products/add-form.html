@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${isEdit} ? 'Edit Product' : 'Add Product'">Add Product</title>
+</head>
+<body>
+
+<h2 th:text="${isEdit} ? 'Edit Product' : 'Add New Product'">Add New Product</h2>
+
+<p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+
+<form th:action="@{/products/save}" th:object="${productForm}" method="post">
+    <input type="hidden" th:field="*{id}">
+
+    <table>
+        <tr>
+            <td><label>Product code:</label></td>
+            <td><input type="text" th:field="*{productCode}" required></td>
+        </tr>
+        <tr>
+            <td><label>Name:</label></td>
+            <td><input type="text" th:field="*{name}" required></td>
+        </tr>
+        <tr>
+            <td><label>Category:</label></td>
+            <td>
+                <select th:field="*{category}" required>
+                    <option value="">-- Select Category --</option>
+                    <option th:each="categoryItem : ${categories}"
+                            th:value="${categoryItem}"
+                            th:text="${categoryItem}"></option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td><label>Description:</label></td>
+            <td><textarea th:field="*{description}" rows="4" cols="40"></textarea></td>
+        </tr>
+        <tr>
+            <td><label>Unit price:</label></td>
+            <td><input type="number" th:field="*{unitPrice}" min="0" step="0.01" required></td>
+        </tr>
+        <tr>
+            <td><label>Active:</label></td>
+            <td><input type="checkbox" th:field="*{active}"></td>
+        </tr>
+    </table>
+
+    <br>
+    <div>
+        <a th:href="@{/products}">Back to List</a>
+        <button type="submit" th:formaction="@{/products/save}" th:disabled="${isEdit}">
+            Create Product
+        </button>
+        <button type="submit" th:formaction="@{/products/update}" th:disabled="${!isEdit}">
+            Edit Product
+        </button>
+    </div>
+</form>
+
+</body>
+</html>

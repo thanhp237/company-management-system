@@ -39,7 +39,7 @@ public class QuotationController {
         quotationRequest.setCustomerId(customerId);
 
         model.addAttribute("customer", customer);
-        model.addAttribute("products", productRepository.findByIsActiveTrue());
+        model.addAttribute("products", productRepository.findByActiveTrue());
         model.addAttribute("quotationRequest", quotationRequest);
 
         return "quotation/create";
