@@ -15,4 +15,5 @@ public interface CustomerImportService {
     public Customer findCustomerById(Long id);
     public void saveCustomer(Customer customer);
     public User findUser(Long id);
+    void assignCustomersToSale(List<Long> customerIds, Long saleId);
 }

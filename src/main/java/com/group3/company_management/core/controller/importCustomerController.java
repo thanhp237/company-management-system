@@ -54,13 +54,8 @@ public class importCustomerController {
     }
     @PostMapping("/check")
     public String checkBox(@RequestParam(value = "checkbox", required = false) List<Long> id, @RequestParam("saleId") Long idSale, Model model) {
-       for (Long  custommerId: id ){
-           Customer customer =  customerImportService.findCustomerById(custommerId);
-           customer.setAssignedSalesId(idSale);
-           customerImportService.saveCustomer(customer);
-
-       }
-       String name =(customerImportService.findUser(idSale)).getUsername();
+       customerImportService.assignCustomersToSale(id, idSale);
+       String name = customerImportService.findUser(idSale).getUsername();
         List<Customer> listCustomer = customerImportService.allCustomer();
         model.addAttribute(("nameSale"), name);
         model.addAttribute("customer", listCustomer);
