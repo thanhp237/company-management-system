@@ -1,93 +1,207 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Departments List</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Directory</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/main.css}">
 </head>
 
 <body>
 
-<h1>Departments List</h1>
+<th:block th:insert="~{layouts/navbar}"></th:block>
 
-<form th:action="@{/departments/search}" method="get">
-    <input type="text" name="keyword" th:value="${keyword}"
-           placeholder="Search by code, name..."
-    >
-
-    <select name="status" >
-        <option value="all">ALL Status</option>
-        <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">ACTIVE</option>
-        <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">INACTIVE</option>
-    </select>
-    <button type="submit">Search</button>
-    <a th:href="@{/departments}">Clear</a>
-    <p th:text="${err}"></p>
-</form>
-
-<a th:href="@{/departments/edit}">Add Department</a>
-
-<table border="1">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Code</th>
-        <th>Name</th>
-         <th>Status</th>
-        <th>Edit</th>
-        <th>Delete</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    <tr th:each="department : ${departmentPage.content}">
-        <td th:text="${department.id}"></td>
-        <td th:text="${department.code}"></td>
-        <td th:text="${department.name}"></td>
-        <td>
-            <form th:action="@{/departments/update-status}" method="post" style="margin: 0;">
-                <input type="hidden" name="id" th:value="${department.id}">
-
-                <select name="status"
-                        th:attr="data-current=${department.status}"
-                        onchange="if (confirm('Want to change status?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
-                    <option value="ACTIVE" th:selected="${department.status == 'ACTIVE'}">ACTIVE</option>
-                    <option value="INACTIVE" th:selected="${department.status == 'INACTIVE'}">INACTIVE</option>
-                </select>
-
-            </form>
-        </td>
-
-
-        <td>
-            <a th:href="@{/departments/edit(id=${department.id})}">Edit</a>
-        </td>
-
-        <td>
-            <a th:href="@{/departments/delete(id=${department.id})}"
- onclick="return confirm('Delete this department?')">
-                Delete</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-<div th:if="${departmentPage != null and departmentPage.totalPages > 0}">
-
-    <a th:if="${departmentPage.hasPrevious()}"
-       th:href="@{/departments/search(page=${departmentPage.number - 1}, keyword=${keyword}, status=${status})}">
-        Prev
-    </a>
-
-    <span>
-        Page <strong th:text="${departmentPage.number + 1}">1</strong> /
-        <span th:text="${departmentPage.totalPages}">1</span>
-    </span>
-
-    <a th:if="${departmentPage.hasNext()}"
-       th:href="@{/departments/search(page=${departmentPage.number + 1}, keyword=${keyword}, status=${status})}">
-        Next
-    </a>
-
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
 </div>
+
+<main class="admin-workspace with-sidebar">
+    <div class="management-page">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <div class="text-success fw-bold text-uppercase small">System Management</div>
+                <h1 class="fw-bold mb-1">Department Directory</h1>
+                <p class="text-muted mb-0">Manage company departments and department status.</p>
+            </div>
+
+            <a class="btn btn-success px-4 py-2" th:href="@{/departments/edit}">
+                <i class="fas fa-plus me-2"></i>
+                Add Department
+            </a>
+        </div>
+
+        <form class="management-filter-shell mb-4"
+              th:action="@{/departments/search}"
+              method="get">
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted">CODE / NAME</label>
+                    <input type="text"
+                           name="keyword"
+                           class="form-control"
+                           th:value="${keyword}"
+                           placeholder="Search by code or name...">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted">STATUS</label>
+                    <select name="status" class="form-select">
+                        <option value="all" th:selected="${status == 'all'}">All Statuses</option>
+                        <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">ACTIVE</option>
+                        <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">INACTIVE</option>
+                    </select>
+                </div>
+
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-dark w-100">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+
+                <div class="col-md-1">
+                    <a th:href="@{/departments}" class="btn btn-outline-secondary w-100">
+                        Clear
+                    </a>
+                </div>
+            </div>
+
+            <p class="text-danger mt-2 mb-0" th:text="${err}"></p>
+        </form>
+
+        <section class="management-table-shell">
+            <div class="table-responsive">
+                <table class="management-table">
+                    <thead>
+                    <tr>
+                        <th>Department / Identity</th>
+                        <th>Department Code</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="department : ${departmentPage.content}">
+                        <td>
+                            <div class="identity-cell">
+                                <div class="avatar-circle"
+                                     th:text="${#strings.substring(department.name, 0, 1)}">
+                                    D
+                                </div>
+
+                                <div>
+                                    <strong th:text="${department.name}">Department Name</strong>
+                                    <span th:text="${'ID: ' + department.id}">ID: 1</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="muted-code" th:text="${department.code}">
+                                DEP001
+                            </span>
+                        </td>
+
+                        <td>
+                            <form th:action="@{/departments/update-status}"
+                                  method="post"
+                                  class="status-form">
+
+                                <input type="hidden" name="id" th:value="${department.id}">
+
+                                <select name="status"
+                                        class="status-select"
+                                        th:classappend="${department.status == 'ACTIVE'} ? ' active' : ' inactive'"
+                                        th:attr="data-current=${department.status}"
+                                        onchange="if(confirm('Want to change status?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
+
+                                    <option value="ACTIVE"
+                                            th:selected="${department.status == 'ACTIVE'}">
+                                        ACTIVE
+                                    </option>
+
+                                    <option value="INACTIVE"
+                                            th:selected="${department.status == 'INACTIVE'}">
+                                        INACTIVE
+                                    </option>
+                                </select>
+                            </form>
+                        </td>
+
+                        <td>
+                            <div class="row-actions">
+                                <a th:href="@{/departments/edit(id=${department.id})}"
+                                   title="Edit department">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+
+                                <a th:href="@{/departments/delete(id=${department.id})}"
+                                   class="danger"
+                                   title="Delete department"
+                                   onclick="return confirm('Delete this department?')">
+                                    <i class="fas fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${departmentPage == null or #lists.isEmpty(departmentPage.content)}">
+                        <td colspan="4">
+                            <div class="empty-state">
+                                <i class="fas fa-building"></i>
+                                <span>No departments found.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="management-pagination"
+                 th:if="${departmentPage != null and departmentPage.totalPages > 0}">
+
+                <span th:text="${'Showing ' + #lists.size(departmentPage.content) + ' of ' + departmentPage.totalElements + ' departments'}">
+                    Showing departments
+                </span>
+
+                <div class="pagination-buttons">
+                    <a th:if="${departmentPage.hasPrevious()}"
+                       th:href="@{/departments/search(page=${departmentPage.number - 1}, keyword=${keyword}, status=${status})}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    <a th:if="${!departmentPage.hasPrevious()}" class="disabled" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    <a class="active"
+                       th:text="${departmentPage.number + 1}">
+                        1
+                    </a>
+
+                    <a th:if="${departmentPage.hasNext()}"
+                       th:href="@{/departments/search(page=${departmentPage.number + 1}, keyword=${keyword}, status=${status})}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+
+                    <a th:if="${!departmentPage.hasNext()}" class="disabled" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

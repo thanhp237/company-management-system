@@ -1,19 +1,18 @@
 package com.group3.company_management.core.controller;
 
 
-import com.group3.company_management.core.dto.UserRequest;
+
 import com.group3.company_management.core.entity.Department;
 import com.group3.company_management.core.service.DepartmentService;
 
-import jakarta.validation.Valid;
+
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 
 @Controller
 @RequestMapping("/departments")
