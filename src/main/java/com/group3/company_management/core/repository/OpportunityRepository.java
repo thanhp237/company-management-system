@@ -34,7 +34,7 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
     Page<Opportunity> findByStageAndAssignedToUsernameOrderByCreatedAtDesc(String stage, String username, Pageable pageable);
 
     @EntityGraph(attributePaths = {"customer", "assignedTo"})
-    @Query(value = """
+    @Query("""
             SELECT o FROM Opportunity o
             WHERE (:stage IS NULL OR :stage = '' OR o.stage = :stage)
             AND (:assignedUsername IS NULL OR :assignedUsername = ''
@@ -45,17 +45,6 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
                 OR LOWER(o.assignedTo.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
                 OR LOWER(o.assignedTo.username) LIKE LOWER(CONCAT('%', :keyword, '%')))
             ORDER BY o.createdAt DESC
-            """,
-            countQuery = """
-            SELECT COUNT(o) FROM Opportunity o
-            WHERE (:stage IS NULL OR :stage = '' OR o.stage = :stage)
-            AND (:assignedUsername IS NULL OR :assignedUsername = ''
-                OR LOWER(o.assignedTo.username) = LOWER(:assignedUsername))
-            AND (:keyword IS NULL OR :keyword = ''
-                OR LOWER(o.opportunityCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(o.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(o.assignedTo.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                OR LOWER(o.assignedTo.username) LIKE LOWER(CONCAT('%', :keyword, '%')))
             """)
     Page<Opportunity> searchPipeline(
             @Param("keyword") String keyword,

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="userStats" class="management-stat-grid">
+    <article class="management-stat-card success">
+        <span>Total Accounts</span>
+        <strong th:text="${countAccount != null ? countAccount : 0}">0</strong>
+        <small>
+            <i class="fas fa-layer-group"></i>
+            Directory records
+        </small>
+    </article>
+
+    <article class="management-stat-card info">
+        <span>Active On Page</span>
+        <strong th:text="${users != null ? users.?[status == 'ACTIVE'].size() : 0}">0</strong>
+        <small>
+            <i class="fas fa-check-circle"></i>
+            Current page only
+        </small>
+    </article>
+
+    <article class="management-stat-card danger">
+        <span>Inactive On Page</span>
+        <strong th:text="${users != null ? users.?[status == 'INACTIVE'].size() : 0}">0</strong>
+        <small>
+            <i class="fas fa-lock"></i>
+            Review required
+        </small>
+    </article>
+</div>
+
+<div th:fragment="pipelineStats" class="management-stat-grid">
+    <article class="management-stat-card success">
+        <span>Total Opportunities</span>
+        <strong th:text="${countAccount != null ? countAccount : 0}">0</strong>
+        <small>
+            <i class="fas fa-layer-group"></i>
+            Matching records
+        </small>
+    </article>
+
+    <article class="management-stat-card info">
+        <span>Won Deals</span>
+        <strong th:text="${stageCounts != null ? stageCounts.get('WON') : 0}">0</strong>
+        <small>
+            <i class="fas fa-trophy"></i>
+            Closed successfully
+        </small>
+    </article>
+
+    <article class="management-stat-card warning">
+        <span>Lost Deals</span>
+        <strong th:text="${stageCounts != null ? stageCounts.get('LOST') : 0}">0</strong>
+        <small>
+            <i class="fas fa-circle-exclamation"></i>
+            Closed unsuccessfully
+        </small>
+    </article>
+</div>
+
+</body>
+</html>
