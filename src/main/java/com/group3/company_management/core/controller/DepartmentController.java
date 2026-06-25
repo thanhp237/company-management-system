@@ -23,6 +23,7 @@ public class DepartmentController {
 
 
     public DepartmentController(DepartmentService departmentService) {
+
         this.departmentService = departmentService;
     }
     @GetMapping
@@ -47,7 +48,9 @@ public class DepartmentController {
 
 
     @PostMapping("/save")
-    public String saveDepartment( @ModelAttribute("department") Department department ,Model model) {
+    public String saveDepartment(
+            @ModelAttribute("department") Department department ,
+            Model model) {
       try{
           departmentService.saveDepartment(department);
           return "redirect:/departments";
@@ -60,7 +63,9 @@ public class DepartmentController {
     }
 
     @GetMapping("/edit")
-    public String showEditForm(@RequestParam(required = false) Long id, Model model) {
+    public String showEditForm(
+            @RequestParam(required = false) Long id,
+            Model model) {
         Department department;
        if(id == null){
             department = new Department();
@@ -74,7 +79,8 @@ public class DepartmentController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteDepartment(@PathVariable Long id,
+    public String deleteDepartment(
+            @PathVariable Long id,
                                    Authentication authentication) {
 
         departmentService.deleteDepartment(id, authentication.getName());

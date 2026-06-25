@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quotation Detail</title>
+</head>
+<body>
+
+<h2>Quotation Detail</h2>
+
+<p>Quotation Code: <span th:text="${quotation.quotationCode}"></span></p>
+<p>Customer Name: <span th:text="${quotation.customerName}"></span></p>
+<p>Email: <span th:text="${quotation.customerEmail}"></span></p>
+<p>Phone: <span th:text="${quotation.customerPhone}"></span></p>
+<p>Address: <span th:text="${quotation.customerAddress}"></span></p>
+<p>Status: <span th:text="${quotation.status}"></span></p>
+<p>Note: <span th:text="${quotation.note}"></span></p>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Product Code</th>
+        <th>Product Name</th>
+        <th>Description</th>
+        <th>Quantity</th>
+        <th>Unit Price</th>
+        <th>Total Price</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="item : ${quotation.details}">
+        <td th:text="${item.productCode}"></td>
+        <td th:text="${item.productName}"></td>
+        <td th:text="${item.description}"></td>
+        <td th:text="${item.quantity}"></td>
+        <td th:text="${item.unitPrice}"></td>
+        <td th:text="${item.totalPrice}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<h3>Sub Total: <span th:text="${quotation.subTotal}"></span></h3>
+<h3>Discount: <span th:text="${quotation.discountAmount}"></span></h3>
+<h2>Final Amount: <span th:text="${quotation.finalAmount}"></span></h2>
+
+<a th:href="@{/quotation/export-pdf/{id}(id=${quotation.id})}">
+    Export PDF
+</a>
+
+<br><br>
+
+
+
+</body>
+</html>

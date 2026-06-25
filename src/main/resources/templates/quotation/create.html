@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Quotation</title>
+</head>
+<body>
+
+<h2>Create Quotation</h2>
+
+<form th:action="@{/quotation/save}" th:object="${quotationRequest}" method="post">
+
+    <input type="hidden" th:field="*{customerId}">
+
+    <h3>Customer Information</h3>
+
+    Name:
+    <input type="text" th:value="${customer.name}" readonly><br><br>
+
+    Email:
+    <input type="text" th:value="${customer.email}" readonly><br><br>
+
+    Phone:
+    <input type="text" th:value="${customer.phone}" readonly><br><br>
+
+    Address:
+    <input type="text" th:value="${customer.address}" readonly><br><br>
+
+    <h3>Quotation Items</h3>
+
+    <table border="1" id="productTable">
+        <thead>
+        <tr>
+            <th>Product</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Amount</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr>
+            <td>
+                <select name="details[0].productId" onchange="changeProduct(this)">
+                    <option value="">-- Select Product --</option>
+
+                    <option th:each="p : ${products}"
+                            th:value="${p.id}"
+                            th:text="${p.name}"
+                            th:data-price="${p.unitPrice}">
+                    </option>
+                </select>
+            </td>
+
+            <td>
+                <input type="text" class="unitPrice" readonly>
+            </td>
+
+            <td>
+                <input type="number"
+                       name="details[0].quantity"
+                       class="quantity"
+                       value="1"
+                       min="1"
+                       oninput="calculateRow(this)">
+            </td>
+
+            <td>
+                <input type="text" class="amount" readonly>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <br>
+
+    <button type="button" onclick="addRow()">Add Product</button>
+
+    <h3>Total: <span id="grandTotal">0</span></h3>
+
+    Note:<br>
+    <textarea th:field="*{note}" rows="4" cols="50"></textarea>
+
+    <br><br>
+
+    <button type="submit">Save</button>
+
+</form>
+
+<script>
+    let index = 1;
+
+    function changeProduct(select) {
+        const row = select.closest("tr");
+        const selectedOption = select.options[select.selectedIndex];
+        const price = selectedOption.getAttribute("data-price") || 0;
+
+        row.querySelector(".unitPrice").value = price;
+
+        calculateRow(row.querySelector(".quantity"));
+    }
+
+    function calculateRow(input) {
+        const row = input.closest("tr");
+
+        const unitPrice = parseFloat(row.querySelector(".unitPrice").value) || 0;
+        const quantity = parseInt(row.querySelector(".quantity").value) || 0;
+
+        const amount = unitPrice * quantity;
+
+        row.querySelector(".amount").value = amount;
+
+        calculateGrandTotal();
+    }
+
+    function calculateGrandTotal() {
+        let total = 0;
+
+        document.querySelectorAll(".amount").forEach(function (input) {
+            total += parseFloat(input.value) || 0;
+        });
+
+        document.getElementById("grandTotal").innerText = total;
+    }
+
+    function addRow() {
+        const tbody = document.querySelector("#productTable tbody");
+        const firstRow = tbody.querySelector("tr");
+        const newRow = firstRow.cloneNode(true);
+
+        newRow.querySelector("select").name = `details[${index}].productId`;
+        newRow.querySelector("select").selectedIndex = 0;
+
+        newRow.querySelector(".quantity").name = `details[${index}].quantity`;
+        newRow.querySelector(".quantity").value = 1;
+
+        newRow.querySelector(".unitPrice").value = "";
+        newRow.querySelector(".amount").value = "";
+
+        tbody.appendChild(newRow);
+
+        index++;
+        calculateGrandTotal();
+    }
+</script>
+
+</body>
+</html>
