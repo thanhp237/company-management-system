@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<form th:fragment="userFilters" class="management-filterbar" th:action="@{/users/find}" method="get">
+    <label>
+        <span>Name / Email / ID</span>
+        <input type="text"
+               name="keyword"
+               th:value="${keyword}"
+               placeholder="e.g. John Doe or user@enterprise.com">
+    </label>
+
+    <label>
+        <span>Role</span>
+        <select name="role">
+            <option value="">Any Role</option>
+            <option th:each="roleItem : ${roles}"
+                    th:value="${roleItem.roleCode}"
+                    th:text="${roleItem.roleName}"
+                    th:selected="${role == roleItem.roleCode}">Administrator</option>
+        </select>
+    </label>
+
+    <label>
+        <span>Status</span>
+        <select name="status">
+            <option value="">All Statuses</option>
+            <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
+            <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Inactive</option>
+        </select>
+    </label>
+
+    <button class="filter-icon-button" type="submit" title="Apply filters" aria-label="Apply filters">
+        <i class="fas fa-filter"></i>
+    </button>
+</form>
+
+<form th:fragment="pipelineFilters" class="management-filterbar" th:action="@{/pipeline/find}" method="get">
+    <label class="filter-wide">
+        <span>Lead / Customer</span>
+        <input type="text"
+               name="keyword"
+               th:value="${keyword}"
+               placeholder="Search by code, customer, assigned to">
+    </label>
+
+    <label>
+        <span>Stage</span>
+        <select name="stage">
+            <option value="" th:selected="${selectedStage == 'ALL'}">All Stages</option>
+            <option th:each="stage : ${stages}"
+                    th:value="${stage}"
+                    th:text="${stage}"
+                    th:selected="${selectedStage == stage}">NEW</option>
+        </select>
+    </label>
+
+    <button class="filter-icon-button" type="submit" title="Apply filters" aria-label="Apply filters">
+        <i class="fas fa-filter"></i>
+    </button>
+</form>
+
+</body>
+</html>

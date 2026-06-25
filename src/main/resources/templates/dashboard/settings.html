@@ -1,33 +1,55 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <meta charset="UTF-8">
-  <title>Settings</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Company Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
 </head>
-
 <body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
 
+<main class="admin-workspace with-sidebar">
+    <div class="management-page">
+        <div class="management-taskbar">
+            <div>
+                <p class="management-eyebrow">Account controls</p>
+                <h1>Settings</h1>
+                <p class="management-subtitle">Manage your password and account preferences.</p>
+            </div>
+            <div class="management-actions">
+                <a class="btn btn-outline-secondary management-secondary-action" th:href="@{/dashboard}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+        </div>
 
+        <section class="settings-grid">
+            <a class="settings-action-card" th:href="@{/change-password}">
+                <span class="settings-action-icon">
+                    <i class="fas fa-key"></i>
+                </span>
+                <span>
+                    <strong>Change Password</strong>
+                    <small>Update your login password for this account.</small>
+                </span>
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </section>
+    </div>
+</main>
 
-  <h2>Settings PassWord</h2>
-
-
-
-
-
-      <a th:href="@{/change-password}">
-        Change Password
-      </a>
-
-
-
-  <br>
-
-  <a th:href="@{/dashboard}">Back to Dashboard</a>
-
-
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

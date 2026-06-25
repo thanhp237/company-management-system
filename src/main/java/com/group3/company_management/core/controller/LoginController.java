@@ -37,7 +37,7 @@ public class LoginController {
             model.addAttribute("inactive", true);
         }
         
-        return "auth/login";
+        return "auth/login"; // customuserdetailsservice will get the username and password from the form and authenticate before redirecting to LoginController
     }
     
     /**
