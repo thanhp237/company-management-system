@@ -138,6 +138,7 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/main.css"
                         ).permitAll()
+                        .requestMatchers("/customer/login", "/customer/logout").permitAll()
                         .requestMatchers(
                                 "/dashboard/**",
                                 "/users/**",
@@ -146,13 +147,16 @@ public class SecurityConfig {
                                 "/first-change-password"
                         ).authenticated()
 
+                        
+                        .requestMatchers("/customer/portal/**").authenticated()
                         .anyRequest().authenticated()
+
                 )
 
                 // JWT filter
                 .addFilterBefore(
                         jwtAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class
+                        UsernamePasswordAuthenticationFilter.class /* method:  attemptAuthentication(HttpServletRequest request, HttpServletResponse response)  */
                 );
 
         return http.build();

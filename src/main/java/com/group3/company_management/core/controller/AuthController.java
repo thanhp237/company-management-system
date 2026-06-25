@@ -52,10 +52,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * POST /api/v1/auth/logout
-     * Logout endpoint (client removes token from storage)
-     */
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok().body(
@@ -63,10 +60,7 @@ public class AuthController {
         );
     }
     
-    /**
-     * GET /api/v1/auth/health
-     * Health check endpoint
-     */
+
     @GetMapping("/health")
     public ResponseEntity<?> health() {
         return ResponseEntity.ok().body(
@@ -74,10 +68,7 @@ public class AuthController {
         );
     }
     
-    /**
-     * Extract client IP address from request
-     * Handles X-Forwarded-For header for proxies
-     */
+
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
