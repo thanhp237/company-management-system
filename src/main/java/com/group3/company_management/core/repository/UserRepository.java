@@ -3,9 +3,12 @@ package com.group3.company_management.core.repository;
 import java.util.List;
 import java.util.Optional;
 
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.data.jpa.repository.EntityGraph;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,13 +18,13 @@ import com.group3.company_management.core.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    
+
     // Find user by username for login
     Optional<User> findByUsername(String username);
-    
+
     // Find user by email
     Optional<User> findByEmail(String email);
-    
+
     // Find user by username, excluding soft-deleted users
     @Query("SELECT u FROM User u WHERE u.username = :username AND u.isDeleted = false")
     Optional<User> findByUsernameAndNotDeleted(@Param("username") String username);
@@ -42,7 +45,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")
     List<User> findActiveUsersByRoleCode(@Param("roleCode") String roleCode);
 
+
+    List<User> findByRole_RoleName(String roleName);
+
+
+
     @EntityGraph(attributePaths = {"role", "employee"})
+
     @Query("SELECT u FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")
     Page<User> findActiveUsersByRoleCode(@Param("roleCode") String roleCode, Pageable pageable);
 
@@ -89,6 +98,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("roleCode") String roleCode,
             Pageable pageable
     );
+
     @Query(value = "SELECT employee_code FROM employees WHERE account_id = :accountId", nativeQuery = true)
     String findEmployeeCodeByAccountId(@Param("accountId") Long accountId);
+
 }

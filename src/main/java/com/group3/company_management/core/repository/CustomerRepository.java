@@ -41,4 +41,5 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      * Find all customers (excluding soft deleted)
      */
     List<Customer> findAllByOrderByCreatedAtDesc();
+    Customer findCustomerById(Long id);
 }

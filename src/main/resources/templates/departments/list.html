@@ -1,48 +1,93 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Departments List</title>
 </head>
+
 <body>
 
 <h1>Departments List</h1>
 
-<a th:href="@{/departments/add}">Add Department</a>
+<form th:action="@{/departments/search}" method="get">
+    <input type="text" name="keyword" th:value="${keyword}"
+           placeholder="Search by code, name..."
+    >
+
+    <select name="status" >
+        <option value="all">ALL Status</option>
+        <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">ACTIVE</option>
+        <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">INACTIVE</option>
+    </select>
+    <button type="submit">Search</button>
+    <a th:href="@{/departments}">Clear</a>
+    <p th:text="${err}"></p>
+</form>
+
+<a th:href="@{/departments/edit}">Add Department</a>
 
 <table border="1">
-
     <thead>
     <tr>
         <th>ID</th>
         <th>Code</th>
         <th>Name</th>
-        <th>Actions</th>
+         <th>Status</th>
+        <th>Edit</th>
+        <th>Delete</th>
     </tr>
     </thead>
 
     <tbody>
-
-    <tr th:each="department : ${departments}">
+    <tr th:each="department : ${departmentPage.content}">
         <td th:text="${department.id}"></td>
         <td th:text="${department.code}"></td>
         <td th:text="${department.name}"></td>
+        <td>
+            <form th:action="@{/departments/update-status}" method="post" style="margin: 0;">
+                <input type="hidden" name="id" th:value="${department.id}">
+
+                <select name="status"
+                        th:attr="data-current=${department.status}"
+                        onchange="if (confirm('Want to change status?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
+                    <option value="ACTIVE" th:selected="${department.status == 'ACTIVE'}">ACTIVE</option>
+                    <option value="INACTIVE" th:selected="${department.status == 'INACTIVE'}">INACTIVE</option>
+                </select>
+
+            </form>
+        </td>
+
 
         <td>
-            <a th:href="@{/departments/edit/{id}(id=${department.id})}">
-                Edit
-            </a>
+            <a th:href="@{/departments/edit(id=${department.id})}">Edit</a>
+        </td>
 
-            |
-
-            <a th:href="@{/departments/delete/{id}(id=${department.id})}">
-                Delete
-            </a>
+        <td>
+            <a th:href="@{/departments/delete(id=${department.id})}"
+ onclick="return confirm('Delete this department?')">
+                Delete</a>
         </td>
     </tr>
-
     </tbody>
-
 </table>
 
+<div th:if="${departmentPage != null and departmentPage.totalPages > 0}">
+
+    <a th:if="${departmentPage.hasPrevious()}"
+       th:href="@{/departments/search(page=${departmentPage.number - 1}, keyword=${keyword}, status=${status})}">
+        Prev
+    </a>
+
+    <span>
+        Page <strong th:text="${departmentPage.number + 1}">1</strong> /
+        <span th:text="${departmentPage.totalPages}">1</span>
+    </span>
+
+    <a th:if="${departmentPage.hasNext()}"
+       th:href="@{/departments/search(page=${departmentPage.number + 1}, keyword=${keyword}, status=${status})}">
+        Next
+    </a>
+
+</div>
 </body>
 </html>

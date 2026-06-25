@@ -38,6 +38,7 @@ public class ChangePasswordService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+
         user.setFirstLogin(false);
 
         userRepository.save(user);

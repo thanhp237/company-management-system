@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Information Customer</title>
+</head>
+<body>
+    <form  th:action="@{/customer/detail}" th:object="${customer}" method="post">
+       ID: <input type="text" th:field="*{id}" readonly/><br/>
+        Name:<input type="text" th:field="*{name}"/><br/>
+        Email:<input type="text" th:field="*{email}"/><br/>
+        Address:<input type="text" th:field="*{address}"/><br/>
+        CustomerSource:<input type="text" th:field="*{customerSource}"/><br/>
+        Phone:<input type="text" th:field="*{phone}"/><br/>
+        Gender:<input type="text" th:field="*{gender}"/><br/>
+
+       Status: <select th:field="*{customerStatus}">
+            <option value="NEW">New</option>
+            <option value="CONTACTED">Contacted</option>
+            <option value="FOLLOW_UP">Follow Up</option>
+            <option value="OPPORTUNITY">Opportunity</option>
+        </select></br>
+       Opportunity: <select th:field="*{opportunityLevel}">
+            <option value="COLD">Cold</option>
+            <option value="WARM">Warm</option>
+            <option value="HOT">Hot</option>
+            <option value="FAIL">Fail</option>
+        </select>
+
+<input type="submit" value="Submit"/>
+    </form>
+    <a th:href="@{/customer}">Back</a>
+</body>
+</html>
