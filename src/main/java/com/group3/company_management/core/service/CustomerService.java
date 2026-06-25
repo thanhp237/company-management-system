@@ -21,7 +21,6 @@ public interface CustomerService {
 
     CustomerResponse getCustomerById(Long id);
 
-    CustomerPortalResponse getCustomerPortalInfo(Long customerId);
 
     void createCustomer(CustomerRequest request);
 
