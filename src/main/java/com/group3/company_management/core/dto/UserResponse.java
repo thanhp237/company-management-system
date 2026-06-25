@@ -17,6 +17,7 @@ public class UserResponse {
     private Long roleId;
     private String roleName;
     private String status;
+    private String employeeCode;
 
     public static UserResponse fromEntity(User user) {
         UserResponse response = new UserResponse();
@@ -30,6 +31,11 @@ public class UserResponse {
         if (user.getRole() != null) {
             response.setRoleId(user.getRole().getId());
             response.setRoleName(user.getRole().getRoleName());
+        }
+        if (user.getEmployee() != null) {
+            response.setEmployeeCode(user.getEmployee().getEmployeeCode());
+        } else {
+            response.setEmployeeCode(user.getEmployeeCode());
         }
         response.setStatus(user.getStatus());
         return response;

@@ -1,7 +1,8 @@
 package com.group3.company_management.core.security;
 
 import java.io.IOException;
-
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,12 +23,19 @@ import lombok.extern.slf4j.Slf4j;
  * Executes for every request once
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
+
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
+
+    public JwtAuthenticationFilter(
+            JwtTokenProvider tokenProvider,
+            @Qualifier("customUserDetailsService") UserDetailsService userDetailsService
+    ) {
+        this.tokenProvider = tokenProvider;
+        this.userDetailsService = userDetailsService;
+    }
     
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -43,6 +51,7 @@ if (
         path.equals("/auth") ||
         path.startsWith("/dashboard") ||
         path.startsWith("/users") ||
+        path.startsWith("/products") ||
         path.startsWith("/departments") ||
         path.startsWith("/css/") ||
         path.startsWith("/js/") ||

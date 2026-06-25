@@ -12,7 +12,8 @@
         </button>
         
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center"> <li sec:authorize="!isAuthenticated()" class="nav-item">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li sec:authorize="!isAuthenticated()" class="nav-item">
                     <a class="nav-link" href="/login">
                         <i class="fas fa-sign-in-alt me-1"></i> Login
                     </a>
@@ -49,27 +50,33 @@
                     </ul>
                 </li>
                 <li sec:authorize="isAuthenticated()" class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" 
+                    <a class="nav-link dropdown-toggle user-menu-toggle" href="#" id="userMenu"
                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="https://via.placeholder.com/32" alt="User" 
-                             class="rounded-circle me-2" width="32" height="32">
-                        <span sec:authentication="name"></span>
+                        <span class="nav-user-avatar">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <span class="nav-user-name" sec:authentication="name">admin</span>
+                        <i class="fas fa-chevron-down nav-user-caret"></i>
                     </a>
                     
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                    <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userMenu">
+                        <li class="user-dropdown-header">
+                            <span>Role: System Admin</span>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item" href="/dashboard">
-                                <i class="fas fa-chart-line me-2"></i> Dashboard
+                            <a class="dropdown-item" href="/profile">
+                                <i class="fas fa-user me-2"></i> My Profile
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="/users">
-                                <i class="fas fa-users me-2"></i> Users
+                            <a class="dropdown-item" href="/change-password">
+                                <i class="fas fa-key me-2"></i> Change Password
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form method="POST" action="/logout" class="d-inline">
+                            <form method="POST" action="/logout" class="m-0">
                                 <button type="submit" class="dropdown-item text-danger">
                                     <i class="fas fa-sign-out-alt me-2"></i> Logout
                                 </button>

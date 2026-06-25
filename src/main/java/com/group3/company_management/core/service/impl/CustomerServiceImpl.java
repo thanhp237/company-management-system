@@ -204,4 +204,14 @@ public class CustomerServiceImpl implements CustomerService {
                 .updatedAt(customer.getUpdatedAt())
                 .build();
     }
+    @Override
+    public  Customer findCustomerById(Long id){
+        return customerRepository.findCustomerById(id);
+    }
+    @Override
+  public  void saveCustomer(Customer customer){
+        customerRepository.save(customer);
+    }
+
+
 }

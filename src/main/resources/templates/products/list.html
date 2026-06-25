@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Management</title>
+</head>
+<body>
+
+<h2>Product Management</h2>
+
+<a th:href="@{/products/add}">Add New Product</a>
+
+<form th:action="@{/products/find}" method="get">
+    <input
+            type="text"
+            name="keyword"
+            th:value="${keyword}"
+            placeholder="Search by code, name..."
+    >
+    <select name="category">
+        <option value="">All Categories</option>
+        <option th:each="categoryItem : ${categories}"
+                th:value="${categoryItem}"
+                th:text="${categoryItem}"
+                th:selected="${category == categoryItem}"></option>
+    </select>
+    <select name="status">
+        <option value="">All Status</option>
+        <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
+        <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Inactive</option>
+    </select>
+    <button type="submit">Search</button>
+</form>
+
+<p th:if="${countProduct != null}">
+    Found: <strong th:text="${countProduct}"></strong> products
+</p>
+
+<br><br>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>STT</th>
+        <th>Product Code</th>
+        <th>Category</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Unit Price</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="product,stat : ${products}">
+        <td th:text="${productPage != null ? productPage.number * productPage.size + stat.count : stat.count}"></td>
+        <td th:text="${product.productCode}"></td>
+        <td th:text="${product.category != null ? product.category : 'N/A'}"></td>
+        <td th:text="${product.name}"></td>
+        <td th:text="${product.description}"></td>
+        <td th:text="${#numbers.formatDecimal(product.unitPrice, 0, 'COMMA', 2, 'POINT')}"></td>
+        <td th:text="${product.active == true ? 'ACTIVE' : 'INACTIVE'}"></td>
+        <td>
+            <a th:href="@{/products/add(id=${product.id})}">Edit</a>
+            <span th:if="${product.active == true}"> | </span>
+            <a th:href="@{/products/delete/{id}(id=${product.id})}"
+               th:if="${product.active == true}"
+               onclick="return confirm('Deactivate this product?')">
+                Delete
+            </a>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(products)}">
+        <td colspan="8">No products found.</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="pagination" th:if="${productPage != null and productPage.totalPages > 0}">
+    <a th:if="${productPage.hasPrevious() and isSearch != true}"
+       th:href="@{/products(page=${productPage.number - 1})}">&laquo; Back</a>
+    <a th:if="${productPage.hasPrevious() and isSearch == true}"
+       th:href="@{/products/find(page=${productPage.number - 1}, keyword=${keyword}, category=${category}, status=${status})}">&laquo; Back</a>
+
+    <span>
+        Trang <strong th:text="${productPage.number + 1}">1</strong> /
+        <span th:text="${productPage.totalPages}">1</span>
+    </span>
+
+    <a th:if="${productPage.hasNext() and isSearch != true}"
+       th:href="@{/products(page=${productPage.number + 1})}">Next &raquo;</a>
+    <a th:if="${productPage.hasNext() and isSearch == true}"
+       th:href="@{/products/find(page=${productPage.number + 1}, keyword=${keyword}, category=${category}, status=${status})}">Next &raquo;</a>
+</div>
+
+<a th:href="@{/products}">Back to List</a>
+
+</body>
+</html>

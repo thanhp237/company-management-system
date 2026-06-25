@@ -1,12 +1,19 @@
 package com.group3.company_management.core.controller;
 
-import com.group3.company_management.core.dto.DepartmentDTO;
+
+import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.entity.Department;
 import com.group3.company_management.core.service.DepartmentService;
 
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/departments")
@@ -14,55 +21,86 @@ public class DepartmentController {
 
     private final DepartmentService departmentService;
 
+
     public DepartmentController(DepartmentService departmentService) {
         this.departmentService = departmentService;
     }
-
     @GetMapping
-    public String listDepartments(Model model) {
-        model.addAttribute("departments", departmentService.getAllDepartments());
+    public String listDepartments(
+            @RequestParam(defaultValue = "0") int page,
+            Model model
+    ) {
+        Page<Department> departmentPage = departmentService.getDepartmentsPage(page);
+
+        model.addAttribute("departmentPage", departmentPage);
+        model.addAttribute("keyword", "");
+        model.addAttribute("status", "all");
         return "departments/list";
     }
-
-    @GetMapping("/add")
-    public String showAddForm(Model model) {
-        model.addAttribute("department", new DepartmentDTO());
-        return "departments/form";
-    }
-
-    @PostMapping("/save")
-    public String saveDepartment(@ModelAttribute("department") DepartmentDTO departmentdto) {
-        Department department;
-        if(departmentdto.getId()!= null){
-            department = departmentService.getDepartmentById(departmentdto.getId());
-        }else {
-            department  = new Department();
-        }
-        department.setCode(departmentdto.getCode());
-        department.setName(departmentdto.getName());
-        departmentService.saveDepartment(department);
+    @PostMapping("/update-status")
+    public String updateStatus(@RequestParam Long id,
+                               @RequestParam String status) {
+        departmentService.updateDepartmentStatus(id,status);
         return "redirect:/departments";
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
 
-        Department department = departmentService.getDepartmentById(id);
 
-        DepartmentDTO dto = new DepartmentDTO(
-                department.getId(),
-                department.getCode(),
-                department.getName()
-        );
+    @PostMapping("/save")
+    public String saveDepartment( @ModelAttribute("department") Department department ,Model model) {
+      try{
+          departmentService.saveDepartment(department);
+          return "redirect:/departments";
+      }catch (RuntimeException e){
+          model.addAttribute("err", e.getMessage());
+          return "departments/form";
+      }
 
-        model.addAttribute("department", dto);
+
+    }
+
+    @GetMapping("/edit")
+    public String showEditForm(@RequestParam(required = false) Long id, Model model) {
+        Department department;
+       if(id == null){
+            department = new Department();
+       }else{
+           department = departmentService.getDepartmentById(id);
+       }
+
+        model.addAttribute("department", department);
 
         return "departments/form";
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteDepartment(@PathVariable Long id) {
-        departmentService.deleteDepartment(id);
+    public String deleteDepartment(@PathVariable Long id,
+                                   Authentication authentication) {
+
+        departmentService.deleteDepartment(id, authentication.getName());
+
         return "redirect:/departments";
     }
-}
+    @GetMapping("/search")
+       public String searchByNameAndId(@RequestParam("keyword") String keyword,@RequestParam("status") String status,
+            @RequestParam(defaultValue = "0") int page
+            ,Model model){
+
+        try{
+            Page<Department> listSearch = departmentService.searchByIdandName(keyword,status,page);
+            model.addAttribute("departmentPage", listSearch);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("status", status);
+            return "departments/list";
+
+        }catch (RuntimeException e){
+            model.addAttribute("err", e.getMessage());
+            Page<Department> departmentPage =
+                    departmentService.getDepartmentsPage(page);
+
+            model.addAttribute("departmentPage", departmentPage);
+
+            return "departments/list";
+        }
+        }
+    }

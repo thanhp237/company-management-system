@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="userTaskbar" class="management-taskbar">
+    <div>
+        <p class="management-eyebrow">System access</p>
+        <h1>User Directory</h1>
+        <p class="management-subtitle">Manage enterprise accounts, roles, and account status.</p>
+    </div>
+
+    <div class="management-actions">
+        <a class="btn btn-primary management-primary-action" th:href="@{/users/add}">
+            <i class="fas fa-user-plus"></i>
+            <span>Invite New User</span>
+        </a>
+    </div>
+</div>
+
+<div th:fragment="pipelineTaskbar" class="management-taskbar">
+    <div>
+        <p class="management-eyebrow">Revenue operations</p>
+        <h1>Lead Pipeline</h1>
+        <p class="management-subtitle">Track opportunities by stage, owner, and expected value.</p>
+    </div>
+
+    <div class="management-actions">
+        <a class="btn btn-outline-secondary management-secondary-action" th:href="@{/dashboard}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Dashboard</span>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

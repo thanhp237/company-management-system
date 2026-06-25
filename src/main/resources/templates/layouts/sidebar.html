@@ -30,6 +30,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-light text-decoration-none" href="/roles">
+                                Roles
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-light text-decoration-none" href="/departments">
                                 Departments
                             </a>
@@ -49,37 +54,8 @@
                 <div class="collapse" id="salesMenu">
                     <ul class="nav flex-column ps-5 py-2">
                         <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/users">
-                                User Accounts
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/departments">
-                                Departments
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            
-            <!-- Accounting Section -->
-            <li class="nav-item">
-                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
-                   data-bs-toggle="collapse" href="#accountingMenu" role="button">
-                    <i class="fas fa-file-invoice-dollar me-3 text-success"></i>
-                    <span>Accounting</span>
-                    <i class="fas fa-chevron-down ms-auto"></i>
-                </a>
-                <div class="collapse" id="accountingMenu">
-                    <ul class="nav flex-column ps-5 py-2">
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/users">
-                                Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/departments">
-                                Departments
+                            <a class="nav-link text-light text-decoration-none" href="/pipeline">
+                                Pipeline
                             </a>
                         </li>
                     </ul>
@@ -89,30 +65,10 @@
             <!-- Settings (Admin only) -->
             <li sec:authorize="hasRole('ADMIN')" class="nav-item mt-4 border-top pt-4">
                 <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
-                   data-bs-toggle="collapse" href="#settingsMenu" role="button">
+                   href="/dashboard/settings">
                     <i class="fas fa-cog me-3 text-success"></i>
                     <span>Settings</span>
-                    <i class="fas fa-chevron-down ms-auto"></i>
                 </a>
-                <div class="collapse" id="settingsMenu">
-                    <ul class="nav flex-column ps-5 py-2">
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/users">
-                                Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/departments">
-                                Departments
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/dashboard">
-                                Dashboard
-                            </a>
-                        </li>
-                    </ul>
-                </div>
             </li>
         </ul>
     </div>

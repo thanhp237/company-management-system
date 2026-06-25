@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Opportunity Detail</title>
+</head>
+<body>
+
+<h2>Opportunity Detail</h2>
+
+<a th:href="@{/pipeline}">Back to Pipeline</a>
+
+<p th:if="${successMessage}" th:text="${successMessage}"></p>
+<p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+<h3>Stage Summary</h3>
+<ul>
+    <li th:each="stage : ${stages}">
+        <span th:text="${stage}">NEW</span>:
+        <strong th:text="${stageCounts.get(stage)}">0</strong>
+    </li>
+</ul>
+
+<h3>Opportunity</h3>
+<table border="1">
+    <tr>
+        <th>Opportunity Code</th>
+        <td th:text="${opportunity.opportunityCode}">OPP001</td>
+    </tr>
+    <tr>
+        <th>Customer</th>
+        <td th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'N/A'}">Customer</td>
+    </tr>
+    <tr>
+        <th>Assigned To</th>
+        <td th:text="${opportunity.assignedTo != null ? opportunity.assignedTo.fullName : 'N/A'}">Sales</td>
+    </tr>
+    <tr>
+        <th>Stage</th>
+        <td th:text="${opportunity.stage}">NEW</td>
+    </tr>
+    <tr>
+        <th>Expected Amount</th>
+        <td th:text="${opportunity.expectedAmount != null ? #numbers.formatDecimal(opportunity.expectedAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</td>
+    </tr>
+</table>
+
+<h3>Change Stage</h3>
+<form th:if="${!#lists.isEmpty(nextStages)}"
+      th:action="@{/pipeline/{id}/stage(id=${opportunity.id})}"
+      method="post"
+      onsubmit="return confirm('Save this stage change?');">
+    <div>
+        <label>Next stage:</label>
+        <select name="stage" required>
+            <option th:each="nextStage : ${nextStages}"
+                    th:value="${nextStage}"
+                    th:text="${nextStage}">QUALIFIED</option>
+        </select>
+    </div>
+    <button type="submit">Save Stage</button>
+</form>
+<p th:if="${#lists.isEmpty(nextStages)}">This opportunity is closed. No stage actions available.</p>
+
+</body>
+</html>

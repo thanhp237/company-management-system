@@ -1,4 +1,4 @@
-// src/main/java/com/group3/company_management/core/entity/Customer.java
+
 
 package com.group3.company_management.core.entity;
 
@@ -68,8 +68,7 @@ public class Customer implements UserDetails {
      * Customer Status: ACTIVE or INACTIVE
      */
     @Column(nullable = false, length = 20)
-    @Builder.Default
-    private String customerStatus = "ACTIVE";
+    private String customerStatus;
     
     /**
      * Failed login attempts (for account lockout like User)
@@ -92,7 +91,23 @@ public class Customer implements UserDetails {
     
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+    @Column(length = 100)
+    private String customerType;
+
+    @Column(length = 50)
+    private String taxCode;
+
+    @Column(length = 255)
+    private String companyName;
+
+    @Column(name = "created_by")
+    private Long createdBy;
+
+    @Column(name = "owner_id")
+    private Long ownerId;
+
+    @Column(length = 255)
+    private String name;
     @Column(nullable = false)
     private LocalDateTime updatedAt;
     
@@ -102,6 +117,14 @@ public class Customer implements UserDetails {
     
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+    @Column(length = 20)
+    private String opportunityLevel;
+
+    @Column(columnDefinition = "TEXT")
+    private String evaluationNote;
+
+    @Column(length = 10)
+    private String gender;
     
     @PrePersist
     protected void onCreate() {
@@ -166,3 +189,4 @@ public class Customer implements UserDetails {
         return "ACTIVE".equals(this.customerStatus) && !this.isDeleted;
     }
 }
+
