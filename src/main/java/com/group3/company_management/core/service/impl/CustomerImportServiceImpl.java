@@ -86,7 +86,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
 
                 leads.add(dto);
                 Customer customer = new Customer();
-                customer.setFullName(dto.getFullName());
+                 customer.setFullName(dto.getFullName());
                 customer.setPhone(dto.getPhone());
                 customer.setEmail(dto.getEmail());
                 customer.setAddress(dto.getAddress());
@@ -97,6 +97,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
                customer.setName(customer.getFullName());
                 customer.setCreatedAt(LocalDateTime.now());
                 customer.setGender(dto.getGender());
+                customer.setCustomerStatus("NEW");
                customer.setCreatedBy(userRepository.findByUsername(name).get().getId());
                leadRepository.save(customer);
 

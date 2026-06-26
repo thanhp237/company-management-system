@@ -1,22 +1,22 @@
 package com.group3.company_management.core.service.impl;
 
-
-
 import com.group3.company_management.core.dto.QuotationDetailRequest;
-import com.group3.company_management.core.dto.QuotationRequest;
 import com.group3.company_management.core.dto.QuotationDetailResponse;
+import com.group3.company_management.core.dto.QuotationRequest;
 import com.group3.company_management.core.dto.QuotationResponse;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Product;
 import com.group3.company_management.core.entity.Quotation;
 import com.group3.company_management.core.entity.QuotationDetail;
+import com.group3.company_management.core.entity.User;
+import com.group3.company_management.core.entity.Voucher;
 import com.group3.company_management.core.repository.CustomerRepository;
 import com.group3.company_management.core.repository.ProductRepository;
 import com.group3.company_management.core.repository.QuotationRepository;
+import com.group3.company_management.core.repository.UserRepository;
+import com.group3.company_management.core.repository.VoucherRepository;
 import com.group3.company_management.core.service.QuotationService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,13 +28,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class QuotationServiceImpl implements QuotationService {
 
+    private final VoucherRepository voucherRepository;
     private final QuotationRepository quotationRepository;
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
-    public Long createQuotation(QuotationRequest request) {
+    public Long createQuotation(QuotationRequest request, String username) {
 
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
@@ -45,11 +47,20 @@ public class QuotationServiceImpl implements QuotationService {
         quotation.setOpportunityId(request.getOpportunityId());
         quotation.setNote(request.getNote());
         quotation.setStatus("DRAFT");
-        quotation.setDiscountAmount(BigDecimal.ZERO);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        quotation.setEmployeeId(user.getEmployee().getId());
 
         BigDecimal subTotal = BigDecimal.ZERO;
 
         for (QuotationDetailRequest item : request.getDetails()) {
+
+            if (item.getProductId() == null
+                    || item.getQuantity() == null
+                    || item.getQuantity() <= 0) {
+                continue;
+            }
 
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -72,12 +83,12 @@ public class QuotationServiceImpl implements QuotationService {
             subTotal = subTotal.add(totalPrice);
         }
 
-        quotation.setSubTotal(subTotal);
-        quotation.setFinalAmount(subTotal.subtract(quotation.getDiscountAmount()));
+        BigDecimal discountAmount = calculateDiscountAmount(request.getVoucherId(), subTotal);
 
-        quotation.setQuotationCode(
-                "QT-" + System.currentTimeMillis()
-        );
+        quotation.setDiscountAmount(discountAmount);
+        quotation.setSubTotal(subTotal);
+        quotation.setFinalAmount(subTotal.subtract(discountAmount));
+        quotation.setQuotationCode("QT-" + System.currentTimeMillis());
 
         Quotation saved = quotationRepository.save(quotation);
 
@@ -112,6 +123,12 @@ public class QuotationServiceImpl implements QuotationService {
 
         for (QuotationDetailRequest item : request.getDetails()) {
 
+            if (item.getProductId() == null
+                    || item.getQuantity() == null
+                    || item.getQuantity() <= 0) {
+                continue;
+            }
+
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -131,12 +148,34 @@ public class QuotationServiceImpl implements QuotationService {
             subTotal = subTotal.add(totalPrice);
         }
 
+        BigDecimal discountAmount = calculateDiscountAmount(request.getVoucherId(), subTotal);
+
         response.setDetails(detailResponses);
         response.setSubTotal(subTotal);
-        response.setDiscountAmount(BigDecimal.ZERO);
-        response.setFinalAmount(subTotal);
+        response.setDiscountAmount(discountAmount);
+        response.setFinalAmount(subTotal.subtract(discountAmount));
 
         return response;
+    }
+
+    private BigDecimal calculateDiscountAmount(Long voucherId, BigDecimal subTotal) {
+        if (voucherId == null) {
+            return BigDecimal.ZERO;
+        }
+
+        Voucher voucher = voucherRepository.findById(voucherId)
+                .orElseThrow(() -> new RuntimeException("Voucher not found"));
+
+        BigDecimal discountAmount = subTotal
+                .multiply(voucher.getDiscountPercent())
+                .divide(BigDecimal.valueOf(100));
+
+        if (voucher.getMaxDiscountAmount() != null
+                && discountAmount.compareTo(voucher.getMaxDiscountAmount()) > 0) {
+            discountAmount = voucher.getMaxDiscountAmount();
+        }
+
+        return discountAmount;
     }
 
     private QuotationResponse mapToResponse(Quotation quotation) {
