@@ -1,7 +1,6 @@
 package com.group3.company_management.core.repository;
 
 import com.group3.company_management.core.entity.Product;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,9 +12,9 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findByActiveTrue();
-    boolean existsByProductCodeIgnoreCase(String productCode);
 
+    boolean existsByProductCodeIgnoreCase(String productCode);
+    List<Product> findByActiveTrue();
     boolean existsByProductCodeIgnoreCaseAndIdNot(String productCode, Long id);
 
     @Query("""
@@ -34,4 +33,3 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             Pageable pageable
     );
 }
-

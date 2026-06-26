@@ -1,4 +1,4 @@
-package com.group3.company_management.customer;
+package com.group3.company_management.customer.dto;
 
 public class CustomerPlaceholder {
 }
