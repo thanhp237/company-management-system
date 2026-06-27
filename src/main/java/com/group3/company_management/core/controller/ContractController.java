@@ -2,6 +2,8 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.dto.ContractRuleRequest;
 import com.group3.company_management.core.dto.ContractResponse;
+import com.group3.company_management.core.dto.CustomerAccountResult;
+import com.group3.company_management.core.service.CustomerAccountService;
 import com.group3.company_management.core.service.ContractService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +27,7 @@ import java.util.List;
 public class ContractController {
 
     private final ContractService contractService;
+    private final CustomerAccountService customerAccountService;
 
     @GetMapping
     public String listContracts(Authentication authentication, Model model) {
@@ -138,6 +141,36 @@ public class ContractController {
         return "redirect:/contracts/" + id;
     }
 
+    @PostMapping("/{id}/create-customer-account")
+    @PreAuthorize("hasAnyRole('SALES', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN')")
+    public String createCustomerAccount(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes) {
+        try {
+            CustomerAccountResult result = customerAccountService.createFromContract(id);
+            addCustomerAccountMessage(redirectAttributes, result, "Customer account created");
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+
+        return "redirect:/contracts/" + id;
+    }
+
+    @PostMapping("/{id}/resend-customer-account-email")
+    @PreAuthorize("hasAnyRole('SALES', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN')")
+    public String resendCustomerAccountEmail(
+            @PathVariable Long id,
+            RedirectAttributes redirectAttributes) {
+        try {
+            CustomerAccountResult result = customerAccountService.resendAccountEmail(id);
+            addCustomerAccountMessage(redirectAttributes, result, "Customer login email resent");
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+
+        return "redirect:/contracts/" + id;
+    }
+
     @PostMapping("/{id}/cancel")
     @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
     public String cancelContract(
@@ -173,5 +206,25 @@ public class ContractController {
         request.setLegalTerms(contract.getLegalTerms());
         request.setAdminNote(contract.getAdminNote());
         return request;
+    }
+
+    private void addCustomerAccountMessage(
+            RedirectAttributes redirectAttributes,
+            CustomerAccountResult result,
+            String actionMessage) {
+        if (result.isEmailSent()) {
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    actionMessage + " and email sent successfully"
+            );
+            return;
+        }
+
+        redirectAttributes.addFlashAttribute(
+                "errorMessage",
+                actionMessage + ", but email sending failed. Temporary login: "
+                        + result.getUsername() + " / " + result.getRawPassword()
+                        + ". Please check SMTP username/password in application.properties."
+        );
     }
 }
