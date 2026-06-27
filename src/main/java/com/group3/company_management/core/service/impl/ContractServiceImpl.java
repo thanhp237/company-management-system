@@ -233,6 +233,7 @@ public class ContractServiceImpl implements ContractService {
             response.setCustomerEmail(customer.getEmail());
             response.setCustomerPhone(customer.getPhone());
             response.setCustomerAddress(customer.getAddress());
+            response.setCustomerAccountCreated(hasText(customer.getPasswordHash()));
         }
 
         Employee sale = contract.getSale();

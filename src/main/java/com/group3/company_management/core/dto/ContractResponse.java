@@ -32,6 +32,8 @@ public class ContractResponse {
 
     private String customerAddress;
 
+    private Boolean customerAccountCreated;
+
     private BigDecimal contractAmount;
 
     private BigDecimal discountAmount;
