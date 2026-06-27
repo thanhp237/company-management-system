@@ -88,7 +88,7 @@ public class QuotationServiceImpl implements QuotationService {
         quotation.setDiscountAmount(discountAmount);
         quotation.setSubTotal(subTotal);
         quotation.setFinalAmount(subTotal.subtract(discountAmount));
-        quotation.setQuotationCode("QT-" + System.currentTimeMillis());
+        quotation.setQuotationCode(request.getQuotationCode());
 
         Quotation saved = quotationRepository.save(quotation);
 

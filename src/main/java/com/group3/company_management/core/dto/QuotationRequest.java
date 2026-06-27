@@ -18,6 +18,7 @@ public class QuotationRequest {
     private LocalDate quotationDate;
     private LocalDate validUntil;
     private String status;
+    private String quotationCode;
     private BigDecimal discountAmount;
 
     private Long employeeId;

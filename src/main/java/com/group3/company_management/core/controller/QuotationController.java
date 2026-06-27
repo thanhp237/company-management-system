@@ -50,10 +50,12 @@ public class QuotationController {
         model.addAttribute("products", productRepository.findByActiveTrue());
 
 
-        model.addAttribute("quotationCode",
-                "QT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        String quotationCode = "QT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+        quotationRequest.setQuotationCode(quotationCode);
+        model.addAttribute("quotationCode", quotationCode);
         model.addAttribute("opportunities",
-                opportunityRepository.findByCustomerId(customerId));
+                opportunityRepository.findFirstOpportunityByCustomerId(customerId));
         model.addAttribute("quotationDate", LocalDate.now());
 
         model.addAttribute("salesPerson",

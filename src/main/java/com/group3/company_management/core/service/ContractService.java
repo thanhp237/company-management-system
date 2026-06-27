@@ -2,6 +2,9 @@ package com.group3.company_management.core.service;
 
 import com.group3.company_management.core.dto.ContractRuleRequest;
 import com.group3.company_management.core.dto.ContractResponse;
+import com.group3.company_management.core.dto.ContractStatisticsResponse;
+import com.group3.company_management.core.entity.Contract;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -24,4 +27,17 @@ public interface ContractService {
     void customerSignContract(Long contractId);
 
     void cancelContract(Long contractId);
+    Page<ContractResponse> searchContracts(
+            String username,
+            String keyword,
+            Contract.ContractStatus status,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    );
+
+    ContractStatisticsResponse getContractStatistics(String username);
+
+    void deleteContract(Long contractId, String username);
 }

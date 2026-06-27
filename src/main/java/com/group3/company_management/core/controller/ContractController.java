@@ -2,18 +2,16 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.dto.ContractRuleRequest;
 import com.group3.company_management.core.dto.ContractResponse;
+import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.service.ContractService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -27,18 +25,35 @@ public class ContractController {
     private final ContractService contractService;
 
     @GetMapping
-    public String listContracts(Authentication authentication, Model model) {
-        List<ContractResponse> contracts = contractService.getMyContracts(authentication.getName());
-        List<ContractResponse> pendingAdminContracts = contractService.getPendingAdminContracts();
+    public String listContracts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Contract.ContractStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            Authentication authentication,
+            Model model
+    ) {
+        Page<ContractResponse> contractPage = contractService.searchContracts(
+                authentication.getName(), keyword, status, page, size, sortBy, sortDir
+        );
         boolean adminOfficerView = hasRole(authentication, "ROLE_ADMIN_OFFICER")
-                || hasRole(authentication, "ROLE_ADMINOFFICER")
-                || hasRole(authentication, "ROLE_ADMIN");
+                || hasRole(authentication, "ROLE_ADMINOFFICER");
 
-        model.addAttribute("contracts", contracts);
-        model.addAttribute("pendingAdminContracts", pendingAdminContracts);
-        model.addAttribute("countContract", contracts.size());
-        model.addAttribute("countPendingAdminContract", pendingAdminContracts.size());
         model.addAttribute("adminOfficerView", adminOfficerView);
+
+        model.addAttribute("contractPage", contractPage);
+        model.addAttribute("contracts", contractPage.getContent());
+        model.addAttribute("statistics", contractService.getContractStatistics(authentication.getName()));
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("statuses", Contract.ContractStatus.values());
+        model.addAttribute("pendingAdminContracts", List.of());
+        model.addAttribute("countPendingAdminContract", 0);
+        model.addAttribute("countContract", contractPage.getTotalElements());
 
         return "contracts/list";
     }
@@ -151,6 +166,22 @@ public class ContractController {
         }
 
         return "redirect:/contracts/" + id;
+    }
+    @PostMapping("/{id}/delete")
+    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    public String deleteContract(
+            @PathVariable Long id,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            contractService.deleteContract(id, authentication.getName());
+            redirectAttributes.addFlashAttribute("successMessage", "Contract deleted successfully.");
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+
+        return "redirect:/contracts";
     }
 
     private boolean hasRole(Authentication authentication, String role) {

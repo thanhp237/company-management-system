@@ -2,24 +2,56 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Contracts</title>
+    <title>Contract Management</title>
 </head>
 <body>
 
-<h2>Contracts</h2>
+<h2>Contract Management</h2>
 
-<p th:if="${successMessage}" th:text="${successMessage}"></p>
-<p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+<p th:if="${successMessage}" th:text="${successMessage}" style="color: green;"></p>
+<p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+
+<form th:action="@{/contracts}" method="get">
+    <input type="text" name="keyword" placeholder="Search by contract code or customer"
+           th:value="${keyword}">
+
+    <select name="status">
+        <option value="">All</option>
+        <option value="DRAFT">Draft</option>
+        <option value="PENDING_ADMIN_OFFICER">Pending</option>
+        <option value="ADMIN_REVIEWED">Reviewed</option>
+        <option value="SENT_TO_CUSTOMER">Sent</option>
+        <option value="SIGNED">Signed</option>
+        <option value="CANCELLED">Cancelled</option>
+    </select>
+
+    <select name="sortBy">
+        <option value="createdAt">Created Date</option>
+        <option value="contractCode">Contract Code</option>
+        <option value="finalAmount">Final Amount</option>
+        <option value="status">Status</option>
+    </select>
+
+    <select name="sortDir">
+        <option value="desc">Desc</option>
+        <option value="asc">Asc</option>
+    </select>
+
+    <button type="submit">Search</button>
+</form>
+
+<br>
+
+<div th:if="${statistics != null}">
+    Total: <span th:text="${statistics.total}">0</span> |
+    Draft: <span th:text="${statistics.draft}">0</span> |
+    Pending: <span th:text="${statistics.pending}">0</span> |
+    Signed: <span th:text="${statistics.signed}">0</span> |
+    Cancelled: <span th:text="${statistics.cancelled}">0</span>
+</div>
 
 <div th:if="${adminOfficerView}">
     <h3>Pending Contracts For Admin Officer</h3>
-
-    <p>
-        Pending:
-        <strong th:text="${countPendingAdminContract != null ? countPendingAdminContract : 0}">0</strong>
-    </p>
-
-    <p>Only contracts with status PENDING_ADMIN_OFFICER are shown here.</p>
 
     <table border="1">
         <thead>
@@ -40,9 +72,10 @@
             <td th:text="${contract.saleName}">Sale</td>
             <td th:text="${contract.finalAmount}">0</td>
             <td>
-                <a th:href="@{/contracts/{id}(id=${contract.id})}">Open</a>
+                <a th:href="@{/contracts/{id}(id=${contract.id})}">Review</a>
             </td>
         </tr>
+
         <tr th:if="${#lists.isEmpty(pendingAdminContracts)}">
             <td colspan="6">No pending contracts.</td>
         </tr>
@@ -50,10 +83,7 @@
     </table>
 </div>
 
-<p>
-    <span th:text="${adminOfficerView ? 'My Handled Contracts:' : 'My Contracts:'}">My Contracts:</span>
-    <strong th:text="${countContract != null ? countContract : 0}">0</strong>
-</p>
+<h3 th:text="${adminOfficerView ? 'My Handled Contracts' : 'My Contracts'}">My Contracts</h3>
 
 <table border="1">
     <thead>
@@ -67,6 +97,7 @@
         <th>Action</th>
     </tr>
     </thead>
+
     <tbody>
     <tr th:each="contract : ${contracts}">
         <td th:text="${contract.contractCode}">CT-001</td>
@@ -77,49 +108,50 @@
         <td th:text="${contract.createdAt != null ? #temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">N/A</td>
         <td>
             <a th:href="@{/contracts/{id}(id=${contract.id})}">View</a>
+
+            <form th:if="${contract.status == 'ADMIN_REVIEWED'}"
+                  th:action="@{/contracts/{id}/send-customer(id=${contract.id})}"
+                  method="post"
+                  style="display:inline;">
+                <button type="submit">Send To Customer</button>
+            </form>
+
+            <form th:if="${contract.status == 'SENT_TO_CUSTOMER'}"
+                  th:action="@{/contracts/{id}/customer-sign(id=${contract.id})}"
+                  method="post"
+                  style="display:inline;">
+                <button type="submit">Customer Signed</button>
+            </form>
+
+            <form th:if="${contract.status != 'SIGNED' && contract.status != 'CANCELLED'}"
+                  th:action="@{/contracts/{id}/delete(id=${contract.id})}"
+                  method="post"
+                  style="display:inline;">
+                <button type="submit">Delete</button>
+            </form>
         </td>
     </tr>
+
     <tr th:if="${#lists.isEmpty(contracts)}">
         <td colspan="7">No contracts found.</td>
     </tr>
     </tbody>
 </table>
 
-<div th:if="${!adminOfficerView}">
-<h3>Pending Admin Review</h3>
+<div th:if="${contractPage != null and contractPage.totalPages > 1}">
+    <a th:if="${contractPage.hasPrevious()}"
+       th:href="@{/contracts(page=${contractPage.number - 1}, keyword=${keyword}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir})}">
+        Previous
+    </a>
 
-<p>
-    Pending:
-    <strong th:text="${countPendingAdminContract != null ? countPendingAdminContract : 0}">0</strong>
-</p>
+    <span th:text="${contractPage.number + 1}">1</span>
+    /
+    <span th:text="${contractPage.totalPages}">1</span>
 
-<table border="1">
-    <thead>
-    <tr>
-        <th>Contract Code</th>
-        <th>Quotation Code</th>
-        <th>Customer</th>
-        <th>Sale</th>
-        <th>Final Amount</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="contract : ${pendingAdminContracts}">
-        <td th:text="${contract.contractCode}">CT-001</td>
-        <td th:text="${contract.quotationCode}">QT-001</td>
-        <td th:text="${contract.customerName}">Customer</td>
-        <td th:text="${contract.saleName}">Sale</td>
-        <td th:text="${contract.finalAmount}">0</td>
-        <td>
-            <a th:href="@{/contracts/{id}(id=${contract.id})}">View</a>
-        </td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(pendingAdminContracts)}">
-        <td colspan="6">No pending contracts.</td>
-    </tr>
-    </tbody>
-</table>
+    <a th:if="${contractPage.hasNext()}"
+       th:href="@{/contracts(page=${contractPage.number + 1}, keyword=${keyword}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir})}">
+        Next
+    </a>
 </div>
 
 <br>
