@@ -12,13 +12,16 @@
 
     <form th:action="@{/quotation/save}" th:object="${quotationRequest}" method="post">
         <input type="hidden" th:field="*{customerId}">
+        <input type="hidden" th:field="*{opportunityId}">
 
         <div class="card mb-4">
             <div class="card-header fw-bold">Customer Information</div>
             <div class="card-body row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Customer Name</label>
-                    <input class="form-control" th:value="${customer.name}" readonly>
+                    <input class="form-control"
+                           th:value="${customer.fullName != null ? customer.fullName : (customer.name != null ? customer.name : customer.companyName)}"
+                           readonly>
                 </div>
 
                 <div class="col-md-6 mb-3">
@@ -37,11 +40,11 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Opportunity</label>
-                    <select class="form-select" th:field="*{opportunityId}">
-                        <option value="">-- Không chọn opportunity --</option>
-
+                    <select class="form-select" name="opportunityPicker" disabled>
+                        <option th:if="${quotationRequest.opportunityId == null}" value="">-- Không chọn opportunity --</option>
                         <option th:each="o : ${opportunities}"
                                 th:value="${o.id}"
+                                th:selected="${quotationRequest.opportunityId != null and quotationRequest.opportunityId == o.id}"
                                 th:text="${o.opportunityCode}">
                         </option>
                     </select>

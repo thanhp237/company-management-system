@@ -11,6 +11,7 @@ import com.group3.company_management.core.entity.QuotationDetail;
 import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.entity.Voucher;
 import com.group3.company_management.core.repository.CustomerRepository;
+import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.repository.ProductRepository;
 import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.repository.UserRepository;
@@ -23,20 +24,25 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class QuotationServiceImpl implements QuotationService {
+    private static final Set<String> QUOTATION_STAGES = Set.of("QUALIFIED", "PROPOSAL", "NEGOTIATION");
 
     private final VoucherRepository voucherRepository;
     private final QuotationRepository quotationRepository;
     private final CustomerRepository customerRepository;
+    private final OpportunityRepository opportunityRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
     @Override
     @Transactional
     public Long createQuotation(QuotationRequest request, String username) {
+        validateOpportunityQuotation(request, username);
 
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
@@ -93,6 +99,43 @@ public class QuotationServiceImpl implements QuotationService {
         Quotation saved = quotationRepository.save(quotation);
 
         return saved.getId();
+    }
+
+    private void validateOpportunityQuotation(QuotationRequest request, String username) {
+        if (request.getOpportunityId() == null) {
+            return;
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        var opportunity = opportunityRepository.findDetailById(request.getOpportunityId())
+                .orElseThrow(() -> new RuntimeException("Opportunity not found"));
+
+        if (!canManageOpportunity(user)
+                && (opportunity.getAssignedTo() == null
+                || !username.equals(opportunity.getAssignedTo().getUsername()))) {
+            throw new RuntimeException("You are not allowed to create quotation for this opportunity");
+        }
+        if (opportunity.getStage() == null
+                || !QUOTATION_STAGES.contains(opportunity.getStage().toUpperCase(Locale.ROOT))) {
+            throw new RuntimeException("Opportunity stage is not ready for quotation");
+        }
+        if (quotationRepository.findFirstByOpportunityIdOrderByCreatedAtDesc(request.getOpportunityId()).isPresent()) {
+            throw new RuntimeException("Quotation already exists for this opportunity");
+        }
+        if (request.getCustomerId() != null
+                && opportunity.getCustomer() != null
+                && !request.getCustomerId().equals(opportunity.getCustomer().getId())) {
+            throw new RuntimeException("Quotation customer does not match opportunity customer");
+        }
+    }
+
+    private boolean canManageOpportunity(User user) {
+        if (user.getRole() == null || user.getRole().getRoleCode() == null) {
+            return false;
+        }
+        String roleCode = user.getRole().getRoleCode().toUpperCase(Locale.ROOT);
+        return "ADMIN".equals(roleCode) || "MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode);
     }
 
     @Override

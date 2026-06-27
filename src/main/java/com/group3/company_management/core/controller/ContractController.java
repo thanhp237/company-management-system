@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/contracts")
@@ -31,16 +33,29 @@ public class ContractController {
 
     @GetMapping
     public String listContracts(Authentication authentication, Model model) {
-        List<ContractResponse> contracts = contractService.getMyContracts(authentication.getName());
-        List<ContractResponse> pendingAdminContracts = contractService.getPendingAdminContracts();
+        List<ContractResponse> contracts = List.of();
+        List<ContractResponse> pendingAdminContracts = List.of();
         boolean adminOfficerView = hasRole(authentication, "ROLE_ADMIN_OFFICER")
                 || hasRole(authentication, "ROLE_ADMINOFFICER")
                 || hasRole(authentication, "ROLE_ADMIN");
+
+        try {
+            contracts = contractService.getMyContracts(authentication.getName());
+            pendingAdminContracts = contractService.getPendingAdminContracts();
+        } catch (RuntimeException exception) {
+            model.addAttribute("errorMessage", exception.getMessage());
+            if (adminOfficerView) {
+                pendingAdminContracts = contractService.getPendingAdminContracts();
+            }
+        }
 
         model.addAttribute("contracts", contracts);
         model.addAttribute("pendingAdminContracts", pendingAdminContracts);
         model.addAttribute("countContract", contracts.size());
         model.addAttribute("countPendingAdminContract", pendingAdminContracts.size());
+        model.addAttribute("signedCount", countByStatus(contracts, "SIGNED"));
+        model.addAttribute("processingCount", countProcessing(contracts));
+        model.addAttribute("statusClasses", statusClasses());
         model.addAttribute("adminOfficerView", adminOfficerView);
 
         return "contracts/list";
@@ -55,6 +70,7 @@ public class ContractController {
             ContractResponse contract = contractService.getContractDetail(id);
             model.addAttribute("contract", contract);
             model.addAttribute("contractRuleRequest", toRuleRequest(contract));
+            model.addAttribute("statusClasses", statusClasses());
             return "contracts/contract";
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
@@ -197,6 +213,29 @@ public class ContractController {
                 .anyMatch(role::equals);
     }
 
+    private long countByStatus(List<ContractResponse> contracts, String status) {
+        return contracts.stream()
+                .filter(contract -> status.equals(contract.getStatus()))
+                .count();
+    }
+
+    private long countProcessing(List<ContractResponse> contracts) {
+        return contracts.stream()
+                .filter(contract -> !"SIGNED".equals(contract.getStatus()))
+                .filter(contract -> !"CANCELLED".equals(contract.getStatus()))
+                .count();
+    }
+
+    private Map<String, String> statusClasses() {
+        Map<String, String> classes = new LinkedHashMap<>();
+        classes.put("SIGNED", " signed");
+        classes.put("PENDING_ADMIN_OFFICER", " pending");
+        classes.put("ADMIN_REVIEWED", " reviewed");
+        classes.put("SENT_TO_CUSTOMER", " sent");
+        classes.put("CANCELLED", " cancelled");
+        return classes;
+    }
+
     private ContractRuleRequest toRuleRequest(ContractResponse contract) {
         ContractRuleRequest request = new ContractRuleRequest();
         request.setContractStartDate(contract.getContractStartDate());
@@ -205,6 +244,57 @@ public class ContractController {
         request.setDeliveryTerms(contract.getDeliveryTerms());
         request.setLegalTerms(contract.getLegalTerms());
         request.setAdminNote(contract.getAdminNote());
+        request.setSigningDate(contract.getSigningDate());
+        request.setSigningPlace(contract.getSigningPlace());
+        request.setSellerCompanyName(contract.getSellerCompanyName());
+        request.setSellerTaxCode(contract.getSellerTaxCode());
+        request.setSellerAddress(contract.getSellerAddress());
+        request.setSellerPhone(contract.getSellerPhone());
+        request.setSellerFax(contract.getSellerFax());
+        request.setSellerBankAccount(contract.getSellerBankAccount());
+        request.setSellerBankName(contract.getSellerBankName());
+        request.setSellerRepresentativeName(contract.getSellerRepresentativeName());
+        request.setSellerRepresentativeTitle(contract.getSellerRepresentativeTitle());
+        request.setSellerIdentityNumber(contract.getSellerIdentityNumber());
+        request.setSellerIdentityIssuedPlace(contract.getSellerIdentityIssuedPlace());
+        request.setSellerIdentityIssuedDate(contract.getSellerIdentityIssuedDate());
+        request.setSellerAuthorizationInfo(contract.getSellerAuthorizationInfo());
+        request.setBuyerCompanyName(contract.getBuyerCompanyName());
+        request.setBuyerTaxCode(contract.getBuyerTaxCode());
+        request.setBuyerAddress(contract.getBuyerAddress());
+        request.setBuyerPhone(contract.getBuyerPhone());
+        request.setBuyerFax(contract.getBuyerFax());
+        request.setBuyerBankAccount(contract.getBuyerBankAccount());
+        request.setBuyerBankName(contract.getBuyerBankName());
+        request.setBuyerRepresentativeName(contract.getBuyerRepresentativeName());
+        request.setBuyerRepresentativeTitle(contract.getBuyerRepresentativeTitle());
+        request.setBuyerIdentityNumber(contract.getBuyerIdentityNumber());
+        request.setBuyerIdentityIssuedPlace(contract.getBuyerIdentityIssuedPlace());
+        request.setBuyerIdentityIssuedDate(contract.getBuyerIdentityIssuedDate());
+        request.setBuyerAuthorizationInfo(contract.getBuyerAuthorizationInfo());
+        request.setAmountInWords(contract.getAmountInWords());
+        request.setPaymentDueDate(contract.getPaymentDueDate());
+        request.setPaymentMethod(contract.getPaymentMethod());
+        request.setDeliverySchedule(contract.getDeliverySchedule());
+        request.setShippingResponsibility(contract.getShippingResponsibility());
+        request.setUnloadingCost(contract.getUnloadingCost());
+        request.setStorageFeePerDay(contract.getStorageFeePerDay());
+        request.setInspectionAgency(contract.getInspectionAgency());
+        request.setWarrantyProductScope(contract.getWarrantyProductScope());
+        request.setWarrantyMonths(contract.getWarrantyMonths());
+        request.setPenaltyRate(contract.getPenaltyRate());
+        request.setContractCopies(contract.getContractCopies());
+        request.setCopiesPerParty(contract.getCopiesPerParty());
+        request.setGeneralTerms(contract.getGeneralTerms());
+        if (request.getBuyerCompanyName() == null) {
+            request.setBuyerCompanyName(contract.getCustomerName());
+        }
+        if (request.getBuyerAddress() == null) {
+            request.setBuyerAddress(contract.getCustomerAddress());
+        }
+        if (request.getBuyerPhone() == null) {
+            request.setBuyerPhone(contract.getCustomerPhone());
+        }
         return request;
     }
 

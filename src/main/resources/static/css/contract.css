@@ -465,6 +465,26 @@
     gap: 14px;
 }
 
+.contract-rule-section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #edf1ee;
+}
+
+.contract-rule-section:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
+.contract-rule-section h3 {
+    margin: 0 0 12px;
+    color: #007a3d;
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
 .contract-rule-grid .wide {
     grid-column: span 2;
 }
@@ -492,6 +512,13 @@
     font-size: 14px;
     padding: 11px 12px;
     outline: none;
+}
+
+.contract-rule-grid input:focus,
+.contract-rule-grid textarea:focus {
+    border-color: #0b8a49;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.1);
 }
 
 .contract-rule-grid input {

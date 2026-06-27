@@ -369,6 +369,188 @@
     font-size: 11px;
 }
 
+.product-form-taskbar {
+    margin-bottom: 18px;
+}
+
+.product-form-shell {
+    overflow: hidden;
+    border: 1px solid #dfe7e2;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 18px 42px rgba(31, 45, 57, 0.08);
+}
+
+.product-form-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    border-bottom: 1px solid #edf1ee;
+    background: #f7faf8;
+}
+
+.product-form-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: #ddf6e8;
+    color: #007a3d;
+    font-size: 18px;
+}
+
+.product-form-header h2 {
+    margin: 0;
+    color: #101923;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.product-form-header p {
+    margin: 4px 0 0;
+    color: #657386;
+    font-size: 13px;
+}
+
+.product-form {
+    padding: 18px;
+}
+
+.product-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.product-form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.product-form-grid label > span {
+    color: #536271;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.product-form-grid .wide {
+    grid-column: span 2;
+}
+
+.product-form-grid input[type="text"],
+.product-form-grid input[type="number"],
+.product-form-grid select,
+.product-form-grid textarea {
+    width: 100%;
+    border: 1px solid #d8e1dc;
+    border-radius: 8px;
+    background: #f8faf8;
+    color: #17202b;
+    font-size: 14px;
+    padding: 11px 12px;
+    outline: none;
+}
+
+.product-form-grid input[type="text"],
+.product-form-grid input[type="number"],
+.product-form-grid select {
+    min-height: 42px;
+}
+
+.product-form-grid input:focus,
+.product-form-grid select:focus,
+.product-form-grid textarea:focus {
+    border-color: #0b8a49;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.1);
+}
+
+.product-active-toggle {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 12px !important;
+    padding: 14px;
+    border: 1px solid #dfe7e2;
+    border-radius: 8px;
+    background: #f8faf8;
+}
+
+.product-active-toggle input {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    accent-color: #007a3d;
+}
+
+.product-active-toggle strong,
+.product-active-toggle small {
+    display: block;
+}
+
+.product-active-toggle strong {
+    color: #101923;
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: none;
+}
+
+.product-active-toggle small {
+    margin-top: 2px;
+    color: #657386;
+    font-size: 12px;
+}
+
+.product-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #edf1ee;
+}
+
+.product-submit-button,
+.product-cancel-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.product-submit-button {
+    border: 0;
+    background: #007a3d;
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(0, 122, 61, 0.2);
+}
+
+.product-submit-button:hover {
+    background: #006a35;
+}
+
+.product-cancel-button {
+    border: 1px solid #d8e1dc;
+    background: #fff;
+    color: #314252;
+}
+
+.product-cancel-button:hover {
+    background: #eef2ef;
+    color: #17202b;
+}
+
 @media (max-width: 1100px) {
     .product-stat-grid,
     .product-category-grid {
@@ -396,8 +578,22 @@
 
     .product-stat-grid,
     .product-filterbar,
+    .product-form-grid,
     .product-category-grid {
         grid-template-columns: 1fr;
+    }
+
+    .product-form-grid .wide {
+        grid-column: span 1;
+    }
+
+    .product-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .product-submit-button,
+    .product-cancel-button {
+        width: 100%;
     }
 
     .product-pagination {

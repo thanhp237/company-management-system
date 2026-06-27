@@ -1304,6 +1304,201 @@ a:hover {
     color: #9a5a00;
 }
 
+.pipeline-detail-page {
+    width: min(1180px, 100%);
+}
+
+.detail-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    color: #536271;
+    font-weight: 800;
+}
+
+.pipeline-detail-taskbar h1 {
+    color: #101923;
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.pipeline-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 18px;
+    align-items: start;
+    margin-top: 18px;
+}
+
+.pipeline-detail-main,
+.pipeline-detail-side {
+    display: grid;
+    gap: 16px;
+}
+
+.pipeline-detail-side {
+    position: sticky;
+    top: 92px;
+}
+
+.detail-card,
+.detail-action-card {
+    overflow: hidden;
+    border: 1px solid #dfe7e2;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 18px 42px rgba(31, 45, 57, 0.08);
+}
+
+.detail-card {
+    padding: 18px;
+}
+
+.detail-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #edf1ee;
+}
+
+.detail-card-title i {
+    color: #007a3d;
+}
+
+.detail-card-title h2,
+.detail-action-card h2 {
+    margin: 0;
+    color: #101923;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.detail-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px 22px;
+}
+
+.detail-info-grid .wide {
+    grid-column: span 3;
+}
+
+.detail-info-grid span {
+    display: block;
+    margin-bottom: 6px;
+    color: #657386;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.detail-info-grid .stage-pill {
+    display: inline-flex;
+    width: auto;
+    margin-bottom: 0;
+    padding: 0 12px;
+    color: #9a5a00;
+    font-size: 11px;
+}
+
+.detail-info-grid strong {
+    color: #101923;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.detail-action-card {
+    padding: 18px;
+    background: #007a3d;
+    color: #fff;
+}
+
+.detail-action-card h2 {
+    margin-bottom: 14px;
+    color: #fff;
+}
+
+.detail-action-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 8px;
+    background: #fff;
+    color: #007a3d;
+    font-weight: 900;
+}
+
+.detail-action-primary:hover {
+    background: #eaffef;
+    color: #006a35;
+}
+
+.detail-action-note {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #eaffef;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.detail-action-note i {
+    margin-top: 2px;
+}
+
+.pipeline-stage-form {
+    display: grid;
+    gap: 12px;
+}
+
+.pipeline-stage-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pipeline-stage-form label span {
+    color: #536271;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pipeline-stage-form select {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid #d8e1dc;
+    border-radius: 8px;
+    background: #f8faf8;
+    color: #17202b;
+    font-size: 14px;
+    padding: 0 12px;
+    outline: none;
+}
+
+.pipeline-stage-form button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    border: 0;
+    border-radius: 8px;
+    background: #007a3d;
+    color: #fff;
+    font-weight: 900;
+}
+
 @media (max-width: 1100px) {
     .management-filterbar {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1315,6 +1510,14 @@ a:hover {
 
     .pipeline-stage-strip {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pipeline-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .pipeline-detail-side {
+        position: static;
     }
 }
 
@@ -1392,6 +1595,14 @@ a:hover {
     }
 
     .filter-wide {
+        grid-column: span 1;
+    }
+
+    .detail-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-info-grid .wide {
         grid-column: span 1;
     }
 }

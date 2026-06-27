@@ -38,7 +38,7 @@
                 </p>
             </div>
             <span class="contract-status detail"
-                  th:classappend="${contract.status == 'SIGNED'} ? ' signed' : (${contract.status == 'PENDING_ADMIN_OFFICER'} ? ' pending' : (${contract.status == 'ADMIN_REVIEWED'} ? ' reviewed' : (${contract.status == 'SENT_TO_CUSTOMER'} ? ' sent' : (${contract.status == 'CANCELLED'} ? ' cancelled' : ' draft')))"
+                  th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
                   th:text="${contract.status}">DRAFT</span>
         </div>
 
@@ -195,33 +195,228 @@
                       method="post">
                     <div class="contract-card-title">
                         <i class="fas fa-pen-to-square"></i>
-                        <h2>Cập nhật điều khoản thẩm định</h2>
+                        <h2>Cập nhật thông tin hợp đồng</h2>
                     </div>
-                    <div class="contract-rule-grid">
-                        <label>
-                            <span>Ngày bắt đầu</span>
-                            <input type="date" th:field="*{contractStartDate}" required>
-                        </label>
-                        <label>
-                            <span>Ngày kết thúc</span>
-                            <input type="date" th:field="*{contractEndDate}" required>
-                        </label>
-                        <label class="wide">
-                            <span>Điều khoản thanh toán</span>
-                            <textarea th:field="*{paymentTerms}" rows="4" required></textarea>
-                        </label>
-                        <label class="wide">
-                            <span>Điều khoản giao hàng</span>
-                            <textarea th:field="*{deliveryTerms}" rows="4"></textarea>
-                        </label>
-                        <label class="wide">
-                            <span>Điều khoản pháp lý</span>
-                            <textarea th:field="*{legalTerms}" rows="4" required></textarea>
-                        </label>
-                        <label class="wide">
-                            <span>Ghi chú Admin</span>
-                            <textarea th:field="*{adminNote}" rows="3"></textarea>
-                        </label>
+                    <div class="contract-rule-section">
+                        <h3>Thông tin ký kết</h3>
+                        <div class="contract-rule-grid">
+                            <label>
+                                <span>Ngày ký</span>
+                                <input type="date" th:field="*{signingDate}">
+                            </label>
+                            <label>
+                                <span>Nơi ký</span>
+                                <input type="text" th:field="*{signingPlace}" placeholder="VD: TP. Hồ Chí Minh">
+                            </label>
+                            <label>
+                                <span>Ngày bắt đầu</span>
+                                <input type="date" th:field="*{contractStartDate}" required>
+                            </label>
+                            <label>
+                                <span>Ngày kết thúc</span>
+                                <input type="date" th:field="*{contractEndDate}" required>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="contract-rule-section">
+                        <h3>Bên bán (Bên A)</h3>
+                        <div class="contract-rule-grid">
+                            <label>
+                                <span>Tên doanh nghiệp</span>
+                                <input type="text" th:field="*{sellerCompanyName}">
+                            </label>
+                            <label>
+                                <span>Mã số doanh nghiệp</span>
+                                <input type="text" th:field="*{sellerTaxCode}">
+                            </label>
+                            <label class="wide">
+                                <span>Địa chỉ trụ sở</span>
+                                <input type="text" th:field="*{sellerAddress}">
+                            </label>
+                            <label>
+                                <span>Điện thoại</span>
+                                <input type="text" th:field="*{sellerPhone}">
+                            </label>
+                            <label>
+                                <span>Fax</span>
+                                <input type="text" th:field="*{sellerFax}">
+                            </label>
+                            <label>
+                                <span>Tài khoản số</span>
+                                <input type="text" th:field="*{sellerBankAccount}">
+                            </label>
+                            <label>
+                                <span>Mở tại ngân hàng</span>
+                                <input type="text" th:field="*{sellerBankName}">
+                            </label>
+                            <label>
+                                <span>Đại diện pháp luật</span>
+                                <input type="text" th:field="*{sellerRepresentativeName}">
+                            </label>
+                            <label>
+                                <span>Chức vụ</span>
+                                <input type="text" th:field="*{sellerRepresentativeTitle}">
+                            </label>
+                            <label>
+                                <span>CMND/CCCD</span>
+                                <input type="text" th:field="*{sellerIdentityNumber}">
+                            </label>
+                            <label>
+                                <span>Nơi cấp</span>
+                                <input type="text" th:field="*{sellerIdentityIssuedPlace}">
+                            </label>
+                            <label>
+                                <span>Ngày cấp</span>
+                                <input type="date" th:field="*{sellerIdentityIssuedDate}">
+                            </label>
+                            <label class="wide">
+                                <span>Giấy ủy quyền</span>
+                                <textarea th:field="*{sellerAuthorizationInfo}" rows="2"></textarea>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="contract-rule-section">
+                        <h3>Bên mua (Bên B)</h3>
+                        <div class="contract-rule-grid">
+                            <label>
+                                <span>Tên doanh nghiệp</span>
+                                <input type="text" th:field="*{buyerCompanyName}">
+                            </label>
+                            <label>
+                                <span>Mã số doanh nghiệp</span>
+                                <input type="text" th:field="*{buyerTaxCode}">
+                            </label>
+                            <label class="wide">
+                                <span>Địa chỉ trụ sở</span>
+                                <input type="text" th:field="*{buyerAddress}">
+                            </label>
+                            <label>
+                                <span>Điện thoại</span>
+                                <input type="text" th:field="*{buyerPhone}">
+                            </label>
+                            <label>
+                                <span>Fax</span>
+                                <input type="text" th:field="*{buyerFax}">
+                            </label>
+                            <label>
+                                <span>Tài khoản số</span>
+                                <input type="text" th:field="*{buyerBankAccount}">
+                            </label>
+                            <label>
+                                <span>Mở tại ngân hàng</span>
+                                <input type="text" th:field="*{buyerBankName}">
+                            </label>
+                            <label>
+                                <span>Đại diện pháp luật</span>
+                                <input type="text" th:field="*{buyerRepresentativeName}">
+                            </label>
+                            <label>
+                                <span>Chức vụ</span>
+                                <input type="text" th:field="*{buyerRepresentativeTitle}">
+                            </label>
+                            <label>
+                                <span>CMND/CCCD</span>
+                                <input type="text" th:field="*{buyerIdentityNumber}">
+                            </label>
+                            <label>
+                                <span>Nơi cấp</span>
+                                <input type="text" th:field="*{buyerIdentityIssuedPlace}">
+                            </label>
+                            <label>
+                                <span>Ngày cấp</span>
+                                <input type="date" th:field="*{buyerIdentityIssuedDate}">
+                            </label>
+                            <label class="wide">
+                                <span>Giấy ủy quyền</span>
+                                <textarea th:field="*{buyerAuthorizationInfo}" rows="2"></textarea>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="contract-rule-section">
+                        <h3>Thanh toán và giao hàng</h3>
+                        <div class="contract-rule-grid">
+                            <label class="wide">
+                                <span>Số tiền bằng chữ</span>
+                                <input type="text" th:field="*{amountInWords}">
+                            </label>
+                            <label>
+                                <span>Hạn thanh toán</span>
+                                <input type="date" th:field="*{paymentDueDate}">
+                            </label>
+                            <label>
+                                <span>Hình thức thanh toán</span>
+                                <input type="text" th:field="*{paymentMethod}" placeholder="VD: Chuyển khoản">
+                            </label>
+                            <label class="wide">
+                                <span>Điều khoản thanh toán</span>
+                                <textarea th:field="*{paymentTerms}" rows="3" required></textarea>
+                            </label>
+                            <label class="wide">
+                                <span>Lịch giao hàng</span>
+                                <textarea th:field="*{deliverySchedule}" rows="3"></textarea>
+                            </label>
+                            <label>
+                                <span>Bên chịu phí vận chuyển</span>
+                                <input type="text" th:field="*{shippingResponsibility}">
+                            </label>
+                            <label>
+                                <span>Chi phí bốc xếp</span>
+                                <input type="text" th:field="*{unloadingCost}">
+                            </label>
+                            <label>
+                                <span>Phí lưu kho/ngày</span>
+                                <input type="text" th:field="*{storageFeePerDay}">
+                            </label>
+                            <label>
+                                <span>Cơ quan kiểm tra trung gian</span>
+                                <input type="text" th:field="*{inspectionAgency}">
+                            </label>
+                            <label class="wide">
+                                <span>Điều khoản giao hàng</span>
+                                <textarea th:field="*{deliveryTerms}" rows="3"></textarea>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="contract-rule-section">
+                        <h3>Bảo hành, phạt vi phạm và điều khoản chung</h3>
+                        <div class="contract-rule-grid">
+                            <label class="wide">
+                                <span>Phạm vi bảo hành</span>
+                                <input type="text" th:field="*{warrantyProductScope}">
+                            </label>
+                            <label>
+                                <span>Thời gian bảo hành (tháng)</span>
+                                <input type="number" min="0" th:field="*{warrantyMonths}">
+                            </label>
+                            <label>
+                                <span>Mức phạt vi phạm (%)</span>
+                                <input type="text" th:field="*{penaltyRate}">
+                            </label>
+                            <label>
+                                <span>Số bản hợp đồng</span>
+                                <input type="number" min="1" th:field="*{contractCopies}">
+                            </label>
+                            <label>
+                                <span>Mỗi bên giữ</span>
+                                <input type="number" min="1" th:field="*{copiesPerParty}">
+                            </label>
+                            <label class="wide">
+                                <span>Điều khoản pháp lý</span>
+                                <textarea th:field="*{legalTerms}" rows="4" required></textarea>
+                            </label>
+                            <label class="wide">
+                                <span>Điều khoản chung</span>
+                                <textarea th:field="*{generalTerms}" rows="4"></textarea>
+                            </label>
+                            <label class="wide">
+                                <span>Ghi chú Admin</span>
+                                <textarea th:field="*{adminNote}" rows="3"></textarea>
+                            </label>
+                        </div>
                     </div>
                     <button class="contract-primary-button" type="submit">
                         <i class="fas fa-check"></i>

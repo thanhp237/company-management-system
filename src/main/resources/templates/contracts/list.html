@@ -58,12 +58,12 @@
             </article>
             <article class="contract-stat-card signed">
                 <span>Đã ký</span>
-                <strong th:text="${contracts != null ? contracts.?[status == 'SIGNED'].size() : 0}">0</strong>
+                <strong th:text="${signedCount != null ? signedCount : 0}">0</strong>
                 <small><i class="fas fa-circle-check"></i> Trong danh sách hiện tại</small>
             </article>
             <article class="contract-stat-card draft">
                 <span>Đang xử lý</span>
-                <strong th:text="${contracts != null ? contracts.?[status != 'SIGNED' and status != 'CANCELLED'].size() : 0}">0</strong>
+                <strong th:text="${processingCount != null ? processingCount : 0}">0</strong>
                 <small><i class="fas fa-spinner"></i> Còn trong workflow</small>
             </article>
         </section>
@@ -110,7 +110,7 @@
                         <td th:text="${contract.quotationCode != null ? contract.quotationCode : 'N/A'}">QT-001</td>
                         <td>
                             <span class="contract-status"
-                                  th:classappend="${contract.status == 'SIGNED'} ? ' signed' : (${contract.status == 'PENDING_ADMIN_OFFICER'} ? ' pending' : (${contract.status == 'ADMIN_REVIEWED'} ? ' reviewed' : (${contract.status == 'SENT_TO_CUSTOMER'} ? ' sent' : (${contract.status == 'CANCELLED'} ? ' cancelled' : ' draft')))"
+                                  th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
                                   th:text="${contract.status}">DRAFT</span>
                         </td>
                         <td>
