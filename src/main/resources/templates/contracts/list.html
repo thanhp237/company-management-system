@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Contracts</title>
+</head>
+<body>
+
+<h2>Contracts</h2>
+
+<p th:if="${successMessage}" th:text="${successMessage}"></p>
+<p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+<div th:if="${adminOfficerView}">
+    <h3>Pending Contracts For Admin Officer</h3>
+
+    <p>
+        Pending:
+        <strong th:text="${countPendingAdminContract != null ? countPendingAdminContract : 0}">0</strong>
+    </p>
+
+    <p>Only contracts with status PENDING_ADMIN_OFFICER are shown here.</p>
+
+    <table border="1">
+        <thead>
+        <tr>
+            <th>Contract Code</th>
+            <th>Quotation Code</th>
+            <th>Customer</th>
+            <th>Sale</th>
+            <th>Final Amount</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="contract : ${pendingAdminContracts}">
+            <td th:text="${contract.contractCode}">CT-001</td>
+            <td th:text="${contract.quotationCode}">QT-001</td>
+            <td th:text="${contract.customerName}">Customer</td>
+            <td th:text="${contract.saleName}">Sale</td>
+            <td th:text="${contract.finalAmount}">0</td>
+            <td>
+                <a th:href="@{/contracts/{id}(id=${contract.id})}">Open</a>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(pendingAdminContracts)}">
+            <td colspan="6">No pending contracts.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<p>
+    <span th:text="${adminOfficerView ? 'My Handled Contracts:' : 'My Contracts:'}">My Contracts:</span>
+    <strong th:text="${countContract != null ? countContract : 0}">0</strong>
+</p>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Contract Code</th>
+        <th>Quotation Code</th>
+        <th>Customer</th>
+        <th>Status</th>
+        <th>Final Amount</th>
+        <th>Created At</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="contract : ${contracts}">
+        <td th:text="${contract.contractCode}">CT-001</td>
+        <td th:text="${contract.quotationCode}">QT-001</td>
+        <td th:text="${contract.customerName}">Customer</td>
+        <td th:text="${contract.status}">DRAFT</td>
+        <td th:text="${contract.finalAmount}">0</td>
+        <td th:text="${contract.createdAt != null ? #temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">N/A</td>
+        <td>
+            <a th:href="@{/contracts/{id}(id=${contract.id})}">View</a>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(contracts)}">
+        <td colspan="7">No contracts found.</td>
+    </tr>
+    </tbody>
+</table>
+
+<div th:if="${!adminOfficerView}">
+<h3>Pending Admin Review</h3>
+
+<p>
+    Pending:
+    <strong th:text="${countPendingAdminContract != null ? countPendingAdminContract : 0}">0</strong>
+</p>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Contract Code</th>
+        <th>Quotation Code</th>
+        <th>Customer</th>
+        <th>Sale</th>
+        <th>Final Amount</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="contract : ${pendingAdminContracts}">
+        <td th:text="${contract.contractCode}">CT-001</td>
+        <td th:text="${contract.quotationCode}">QT-001</td>
+        <td th:text="${contract.customerName}">Customer</td>
+        <td th:text="${contract.saleName}">Sale</td>
+        <td th:text="${contract.finalAmount}">0</td>
+        <td>
+            <a th:href="@{/contracts/{id}(id=${contract.id})}">View</a>
+        </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(pendingAdminContracts)}">
+        <td colspan="6">No pending contracts.</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<br>
+
+<a th:href="@{/pipeline}">Back to Pipeline</a>
+
+</body>
+</html>
