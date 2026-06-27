@@ -9,4 +9,5 @@ public class QuotationDetailRequest {
 
     private Long productId;
     private Integer quantity;
+
 }

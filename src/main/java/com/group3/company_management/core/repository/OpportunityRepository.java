@@ -63,4 +63,5 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
     long countByStage(String stage);
 
     long countByStageAndAssignedToUsername(String stage, String username);
+    List<Opportunity> findByCustomerId(Long customerId);
 }

@@ -5,7 +5,7 @@ import com.group3.company_management.core.dto.QuotationResponse;
 
 public interface QuotationService {
 
-    Long createQuotation(QuotationRequest request);
+    Long createQuotation(QuotationRequest request, String username);
 
     QuotationResponse getQuotationDetail(Long id);
 
