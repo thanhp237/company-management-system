@@ -10,8 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
 </head>
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>
@@ -19,22 +20,22 @@
     <th:block th:insert="~{layouts/sidebar}"></th:block>
 </div>
 
-<main class="admin-workspace with-sidebar">
-    <div class="management-page">
+<main class="admin-workspace with-sidebar user-workspace">
+    <div class="management-page user-management-page">
         <th:block th:replace="~{fragments/admin-taskbars :: userTaskbar}"></th:block>
         <th:block th:replace="~{fragments/management-filters :: userFilters}"></th:block>
 
-        <section class="management-table-shell">
+        <section class="management-table-shell user-table-shell">
             <div class="table-responsive">
-                <table class="management-table">
+                <table class="management-table user-table">
                     <thead>
                     <tr>
-                        <th>User / Identity</th>
-                        <th>Employee Code</th>
-                        <th>Phone</th>
-                        <th>System Role</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
+                        <th>Nhân viên</th>
+                        <th>Mã nhân viên</th>
+                        <th>Số điện thoại</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -63,21 +64,21 @@
                                         th:classappend="${user.status == 'ACTIVE'} ? ' active' : ' inactive'"
                                         th:attr="data-current=${user.status}"
                                         onchange="if (confirm('Want to change status?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
-                                    <option value="ACTIVE" th:selected="${user.status == 'ACTIVE'}">ACTIVE</option>
-                                    <option value="INACTIVE" th:selected="${user.status == 'INACTIVE'}">INACTIVE</option>
+                                    <option value="ACTIVE" th:selected="${user.status == 'ACTIVE'}">Hoạt động</option>
+                                    <option value="INACTIVE" th:selected="${user.status == 'INACTIVE'}">Tạm khóa</option>
                                 </select>
                             </form>
                         </td>
                         <td>
                             <div class="row-actions">
-                                <a th:href="@{/users/add(id=${user.id})}" title="Edit user" aria-label="Edit user">
+                                <a th:href="@{/users/add(id=${user.id})}" title="Sửa người dùng" aria-label="Sửa người dùng">
                                     <i class="fas fa-pen"></i>
                                 </a>
                                 <a th:href="@{/users/delete/{id}(id=${user.id})}"
                                    class="danger"
-                                   title="Delete user"
-                                   aria-label="Delete user"
-                                   onclick="return confirm('Delete this account?')">
+                                   title="Xóa người dùng"
+                                   aria-label="Xóa người dùng"
+                                   onclick="return confirm('Xóa tài khoản này?')">
                                     <i class="fas fa-trash-can"></i>
                                 </a>
                             </div>
@@ -87,7 +88,7 @@
                         <td colspan="6">
                             <div class="empty-state">
                                 <i class="fas fa-users-slash"></i>
-                                <span>No accounts found.</span>
+                                <span>Không tìm thấy tài khoản phù hợp.</span>
                             </div>
                         </td>
                     </tr>
@@ -96,7 +97,7 @@
             </div>
 
             <div class="management-pagination" th:if="${userPage != null and userPage.totalPages > 0}">
-                <span th:text="${'Showing ' + #lists.size(users) + ' of ' + userPage.totalElements + ' users'}">Showing users</span>
+                <span th:text="${'Đang hiển thị ' + #lists.size(users) + ' / ' + userPage.totalElements + ' nhân viên'}">Đang hiển thị người dùng</span>
                 <div class="pagination-buttons">
                     <a th:if="${!userPage.hasPrevious()}" class="disabled" href="#">
                         <i class="fas fa-chevron-left"></i>

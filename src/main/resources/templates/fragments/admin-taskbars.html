@@ -2,17 +2,17 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<div th:fragment="userTaskbar" class="management-taskbar">
+<div th:fragment="userTaskbar" class="management-taskbar user-taskbar">
     <div>
-        <p class="management-eyebrow">System access</p>
-        <h1>User Directory</h1>
-        <p class="management-subtitle">Manage enterprise accounts, roles, and account status.</p>
+        <p class="management-eyebrow">Quản trị người dùng</p>
+        <h1>Danh sách nhân viên</h1>
+        <p class="management-subtitle">Quản lý tài khoản, vai trò và trạng thái truy cập trong hệ thống CRM.</p>
     </div>
 
     <div class="management-actions">
         <a class="btn btn-primary management-primary-action" th:href="@{/users/add}">
             <i class="fas fa-user-plus"></i>
-            <span>Invite New User</span>
+            <span>Thêm người dùng</span>
         </a>
     </div>
 </div>
