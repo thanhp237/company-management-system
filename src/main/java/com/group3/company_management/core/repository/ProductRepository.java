@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     boolean existsByProductCodeIgnoreCase(String productCode);
-
     boolean existsByProductCodeIgnoreCaseAndIdNot(String productCode, Long id);
 
     @Query("""
