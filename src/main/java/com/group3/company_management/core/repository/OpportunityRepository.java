@@ -64,5 +64,5 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
 
     long countByStageAndAssignedToUsername(String stage, String username);
     @Query("SELECT o FROM Opportunity o WHERE o.customer.id = :customerId")
-    List<Opportunity> findFirstOpportunityByCustomerId(@Param("customerId") Long customerId);
+    List<Opportunity>  findFirstOpportunityByCustomerId(@Param("customerId") Long customerId);
 }

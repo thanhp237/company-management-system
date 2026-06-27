@@ -32,6 +32,8 @@ public class ContractResponse {
 
     private String customerAddress;
 
+    private Boolean customerAccountCreated;
+
     private BigDecimal contractAmount;
 
     private BigDecimal discountAmount;
@@ -61,6 +63,90 @@ public class ContractResponse {
     private String legalTerms;
 
     private String adminNote;
+
+    private LocalDate signingDate;
+
+    private String signingPlace;
+
+    private String sellerCompanyName;
+
+    private String sellerTaxCode;
+
+    private String sellerAddress;
+
+    private String sellerPhone;
+
+    private String sellerFax;
+
+    private String sellerBankAccount;
+
+    private String sellerBankName;
+
+    private String sellerRepresentativeName;
+
+    private String sellerRepresentativeTitle;
+
+    private String sellerIdentityNumber;
+
+    private String sellerIdentityIssuedPlace;
+
+    private LocalDate sellerIdentityIssuedDate;
+
+    private String sellerAuthorizationInfo;
+
+    private String buyerCompanyName;
+
+    private String buyerTaxCode;
+
+    private String buyerAddress;
+
+    private String buyerPhone;
+
+    private String buyerFax;
+
+    private String buyerBankAccount;
+
+    private String buyerBankName;
+
+    private String buyerRepresentativeName;
+
+    private String buyerRepresentativeTitle;
+
+    private String buyerIdentityNumber;
+
+    private String buyerIdentityIssuedPlace;
+
+    private LocalDate buyerIdentityIssuedDate;
+
+    private String buyerAuthorizationInfo;
+
+    private String amountInWords;
+
+    private LocalDate paymentDueDate;
+
+    private String paymentMethod;
+
+    private String deliverySchedule;
+
+    private String shippingResponsibility;
+
+    private String unloadingCost;
+
+    private String storageFeePerDay;
+
+    private String inspectionAgency;
+
+    private String warrantyProductScope;
+
+    private Integer warrantyMonths;
+
+    private String penaltyRate;
+
+    private Integer contractCopies;
+
+    private Integer copiesPerParty;
+
+    private String generalTerms;
 
     private List<ContractItemResponse> items;
 }

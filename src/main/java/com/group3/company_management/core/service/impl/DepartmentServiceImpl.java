@@ -48,11 +48,24 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional
     public void saveDepartment(Department department) {
-        if (departmentRepository.existsByCode(department.getCode())) {
+        department.setCode(validate(department.getCode(), "Code is required"));
+        department.setName(validate(department.getName(), "Name is required"));
+
+        boolean duplicateCode = department.getId() == null
+                ? departmentRepository.existsByCode(department.getCode())
+                : departmentRepository.existsByCodeAndIdNot(department.getCode(), department.getId());
+
+        if (duplicateCode) {
             throw new RuntimeException("Department code already exists");
         }
-        String code = validate(department.getCode(),"Code not blank");
-        String name = validate(department.getName(),"Name not blank");
+
+        if (department.getDescription() != null) {
+            department.setDescription(department.getDescription().trim());
+        }
+
+        if (department.getStatus() == null || department.getStatus().trim().isEmpty()) {
+            department.setStatus("ACTIVE");
+        }
 
         departmentRepository.save(department);
     }

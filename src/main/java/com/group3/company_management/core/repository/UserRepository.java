@@ -28,7 +28,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Find user by username, excluding soft-deleted users
     @Query("SELECT u FROM User u WHERE u.username = :username AND u.isDeleted = false")
     Optional<User> findByUsernameAndNotDeleted(@Param("username") String username);
-
+    @Query("""
+    select u
+    from User u
+    where u.role.roleCode in :roles
+    and u.isDeleted = false
+""")
+    List<User> findUsersByRoleNames(@Param("roles") List<String> roles);
     boolean existsByUsernameAndIsDeletedFalse(String username);
 
     boolean existsByEmailAndIsDeletedFalse(String email);

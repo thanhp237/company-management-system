@@ -15,7 +15,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByActiveTrue();
 
     boolean existsByProductCodeIgnoreCase(String productCode);
-
     boolean existsByProductCodeIgnoreCaseAndIdNot(String productCode, Long id);
 
     @Query("""

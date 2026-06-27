@@ -1,0 +1,37 @@
+.department-description {
+    max-width: 280px;
+    color: #5f6e7d;
+    line-height: 1.45;
+}
+
+.department-status {
+    min-height: 28px;
+    min-width: 118px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.department-status.active {
+    background: #dff8ea;
+    color: #007a3d;
+}
+
+.department-status.inactive {
+    background: #ffe9e7;
+    color: #c1322a;
+}
+
+.department-form-textarea {
+    min-height: 112px;
+    padding-top: 12px;
+    resize: vertical;
+}
+
+.department-form-card {
+    max-width: 780px;
+}

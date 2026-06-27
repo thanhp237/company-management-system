@@ -64,6 +64,10 @@ public class DashboardController {
             case "ROLE_ACCOUNTANT":
                 return "redirect:/dashboard/accountant";
 
+            case "ROLE_ADMIN_OFFICER":
+            case "ROLE_ADMINOFFICER":
+                return "redirect:/dashboard/admin-officer";
+
             case "ROLE_SALES_MANAGER":
                 return "redirect:/dashboard/sales-manager";
 

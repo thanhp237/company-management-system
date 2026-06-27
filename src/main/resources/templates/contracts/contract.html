@@ -1,214 +1,484 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Contract Detail</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết hợp đồng - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/contract.css}">
 </head>
 <body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
 
-<h2>Contract Detail</h2>
+<main class="admin-workspace with-sidebar contract-workspace">
+    <div class="management-page contract-detail-page">
+        <a class="contract-back-link" th:href="@{/contracts}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back</span>
+        </a>
 
-<a th:href="@{/contracts}">Back to Contracts</a>
+        <div class="contract-detail-header">
+            <div>
+                <p class="management-eyebrow">Chi tiết hợp đồng</p>
+                <h1 th:text="${contract.contractCode}">CON-001</h1>
+                <p>
+                    <span th:text="${contract.customerName != null ? contract.customerName : 'Chưa có khách hàng'}">Khách hàng</span>
+                    <span> • </span>
+                    <span th:text="${contract.createdAt != null ? 'Ngày tạo: ' + #temporals.format(contract.createdAt, 'dd/MM/yyyy') : 'Chưa có ngày tạo'}">Ngày tạo</span>
+                </p>
+            </div>
+            <span class="contract-status detail"
+                  th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
+                  th:text="${contract.status}">DRAFT</span>
+        </div>
 
-<p th:if="${successMessage}" th:text="${successMessage}"></p>
-<p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+        <div th:if="${successMessage}" class="management-alert success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${successMessage}">Cập nhật thành công.</span>
+        </div>
+        <div th:if="${errorMessage}" class="management-alert danger">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
 
-<h3>Contract Information</h3>
+        <div class="contract-detail-layout">
+            <div class="contract-detail-main">
+                <section class="contract-detail-card">
+                    <div class="contract-card-title">
+                        <i class="fas fa-file-lines"></i>
+                        <h2>Thông tin hợp đồng</h2>
+                    </div>
+                    <div class="contract-info-grid">
+                        <div>
+                            <span>Khách hàng</span>
+                            <strong th:text="${contract.customerName != null ? contract.customerName : 'N/A'}">Khách hàng</strong>
+                        </div>
+                        <div>
+                            <span>Mã báo giá</span>
+                            <strong>
+                                <span th:text="${contract.quotationCode != null ? contract.quotationCode : 'N/A'}">QT-001</span>
+                                <a th:if="${contract.quotationId != null}"
+                                   th:href="@{/quotation/detail/{id}(id=${contract.quotationId})}">
+                                    Xem
+                                </a>
+                            </strong>
+                        </div>
+                        <div>
+                            <span>Sale phụ trách</span>
+                            <strong th:text="${contract.saleName != null ? contract.saleName : 'N/A'}">Sale</strong>
+                        </div>
+                        <div>
+                            <span>Admin Officer</span>
+                            <strong th:text="${contract.adminOfficerName != null ? contract.adminOfficerName : 'Chưa phân công'}">Admin</strong>
+                        </div>
+                        <div>
+                            <span>Ngày ký</span>
+                            <strong th:text="${contract.signedAt != null ? #temporals.format(contract.signedAt, 'dd/MM/yyyy HH:mm') : 'Chưa ký'}">Chưa ký</strong>
+                        </div>
+                        <div>
+                            <span>Giai đoạn</span>
+                            <strong th:text="${contract.status == 'SIGNED' ? 'Hoàn tất ký' : 'Đang xử lý'}">Đang xử lý</strong>
+                        </div>
+                    </div>
+                </section>
 
-<table border="1">
-    <tr>
-        <th>Contract Code</th>
-        <td th:text="${contract.contractCode}">CT-001</td>
-    </tr>
-    <tr>
-        <th>Status</th>
-        <td th:text="${contract.status}">DRAFT</td>
-    </tr>
-    <tr>
-        <th>Quotation Code</th>
-        <td>
-            <span th:text="${contract.quotationCode}">QT-001</span>
-            <a th:if="${contract.quotationId != null}"
-               th:href="@{/quotation/detail/{id}(id=${contract.quotationId})}">
-                View Quotation
-            </a>
-        </td>
-    </tr>
-    <tr>
-        <th>Sale</th>
-        <td th:text="${contract.saleName != null ? contract.saleName : 'N/A'}">Sale</td>
-    </tr>
-    <tr>
-        <th>Admin Officer</th>
-        <td th:text="${contract.adminOfficerName != null ? contract.adminOfficerName : 'N/A'}">Admin</td>
-    </tr>
-    <tr>
-        <th>Created At</th>
-        <td th:text="${contract.createdAt != null ? #temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">N/A</td>
-    </tr>
-    <tr>
-        <th>Signed At</th>
-        <td th:text="${contract.signedAt != null ? #temporals.format(contract.signedAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">N/A</td>
-    </tr>
-</table>
+                <section class="contract-detail-card">
+                    <div class="contract-card-title">
+                        <i class="fas fa-building-user"></i>
+                        <h2>Thông tin khách hàng</h2>
+                    </div>
+                    <div class="contract-info-grid">
+                        <div>
+                            <span>Email</span>
+                            <strong th:text="${contract.customerEmail != null ? contract.customerEmail : 'N/A'}">email@example.com</strong>
+                        </div>
+                        <div>
+                            <span>Điện thoại</span>
+                            <strong th:text="${contract.customerPhone != null ? contract.customerPhone : 'N/A'}">Phone</strong>
+                        </div>
+                        <div class="wide">
+                            <span>Địa chỉ</span>
+                            <strong th:text="${contract.customerAddress != null ? contract.customerAddress : 'N/A'}">Address</strong>
+                        </div>
+                    </div>
+                </section>
 
-<h3>Customer Information</h3>
+                <section class="contract-detail-card">
+                    <div class="contract-card-title">
+                        <i class="fas fa-boxes-stacked"></i>
+                        <h2>Sản phẩm từ báo giá</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="contract-item-table">
+                            <thead>
+                            <tr>
+                                <th>Sản phẩm / Dịch vụ</th>
+                                <th>Mô tả</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="item : ${contract.items}">
+                                <td>
+                                    <strong th:text="${item.productName}">Product</strong>
+                                    <small th:text="${item.productCode}">P001</small>
+                                </td>
+                                <td th:text="${item.description != null ? item.description : 'N/A'}">Description</td>
+                                <td th:text="${item.quantity}">1</td>
+                                <td th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT') : '0'}">0</td>
+                                <td>
+                                    <strong th:text="${item.totalPrice != null ? #numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT') : '0'}">0</strong>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(contract.items)}">
+                                <td colspan="5">
+                                    <div class="contract-empty compact">
+                                        <i class="fas fa-box-open"></i>
+                                        <span>Không có sản phẩm hoặc dịch vụ.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
 
-<table border="1">
-    <tr>
-        <th>Name</th>
-        <td th:text="${contract.customerName}">Customer</td>
-    </tr>
-    <tr>
-        <th>Email</th>
-        <td th:text="${contract.customerEmail}">email@example.com</td>
-    </tr>
-    <tr>
-        <th>Phone</th>
-        <td th:text="${contract.customerPhone}">Phone</td>
-    </tr>
-    <tr>
-        <th>Address</th>
-        <td th:text="${contract.customerAddress}">Address</td>
-    </tr>
-</table>
+                <section class="contract-detail-card">
+                    <div class="contract-card-title">
+                        <i class="fas fa-scale-balanced"></i>
+                        <h2>Điều khoản Admin Officer</h2>
+                    </div>
+                    <div class="contract-info-grid">
+                        <div>
+                            <span>Ngày bắt đầu</span>
+                            <strong th:text="${contract.contractStartDate != null ? contract.contractStartDate : 'N/A'}">N/A</strong>
+                        </div>
+                        <div>
+                            <span>Ngày kết thúc</span>
+                            <strong th:text="${contract.contractEndDate != null ? contract.contractEndDate : 'N/A'}">N/A</strong>
+                        </div>
+                        <div class="wide">
+                            <span>Điều khoản thanh toán</span>
+                            <p th:text="${contract.paymentTerms != null ? contract.paymentTerms : 'N/A'}">N/A</p>
+                        </div>
+                        <div class="wide">
+                            <span>Điều khoản giao hàng</span>
+                            <p th:text="${contract.deliveryTerms != null ? contract.deliveryTerms : 'N/A'}">N/A</p>
+                        </div>
+                        <div class="wide">
+                            <span>Điều khoản pháp lý</span>
+                            <p th:text="${contract.legalTerms != null ? contract.legalTerms : 'N/A'}">N/A</p>
+                        </div>
+                        <div class="wide">
+                            <span>Ghi chú Admin</span>
+                            <p th:text="${contract.adminNote != null ? contract.adminNote : 'N/A'}">N/A</p>
+                        </div>
+                    </div>
+                </section>
 
-<h3>Products / Services From Quotation</h3>
+                <form class="contract-detail-card contract-rule-form"
+                      th:if="${contract.status == 'PENDING_ADMIN_OFFICER'}"
+                      th:action="@{/contracts/{id}/rules(id=${contract.id})}"
+                      th:object="${contractRuleRequest}"
+                      method="post">
+                    <div class="contract-card-title">
+                        <i class="fas fa-pen-to-square"></i>
+                        <h2>Cập nhật thông tin hợp đồng</h2>
+                    </div>
+                    <div class="contract-rule-section">
+                        <h3>Thông tin ký kết</h3>
+                        <div class="contract-rule-grid">
+                            <label>
+                                <span>Ngày ký</span>
+                                <input type="date" th:field="*{signingDate}">
+                            </label>
+                            <label>
+                                <span>Nơi ký</span>
+                                <input type="text" th:field="*{signingPlace}" placeholder="VD: TP. Hồ Chí Minh">
+                            </label>
+                            <label>
+                                <span>Ngày bắt đầu</span>
+                                <input type="date" th:field="*{contractStartDate}" required>
+                            </label>
+                            <label>
+                                <span>Ngày kết thúc</span>
+                                <input type="date" th:field="*{contractEndDate}" required>
+                            </label>
+                        </div>
+                    </div>
 
-<table border="1">
-    <thead>
-    <tr>
-        <th>Product Code</th>
-        <th>Product Name</th>
-        <th>Description</th>
-        <th>Quantity</th>
-        <th>Unit Price</th>
-        <th>Total Price</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="item : ${contract.items}">
-        <td th:text="${item.productCode}">P001</td>
-        <td th:text="${item.productName}">Product</td>
-        <td th:text="${item.description}">Description</td>
-        <td th:text="${item.quantity}">1</td>
-        <td th:text="${item.unitPrice}">0</td>
-        <td th:text="${item.totalPrice}">0</td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(contract.items)}">
-        <td colspan="6">No products or services found.</td>
-    </tr>
-    </tbody>
-</table>
+                    <div class="contract-rule-section">
+                        <h3>Bên bán (Bên A)</h3>
+                        <div class="contract-rule-grid">
+                            <label>
+                                <span>Tên doanh nghiệp</span>
+                                <input type="text" th:field="*{sellerCompanyName}">
+                            </label>
+                            <label>
+                                <span>Mã số doanh nghiệp</span>
+                                <input type="text" th:field="*{sellerTaxCode}">
+                            </label>
+                            <label class="wide">
+                                <span>Địa chỉ trụ sở</span>
+                                <input type="text" th:field="*{sellerAddress}">
+                            </label>
+                            <label>
+                                <span>Điện thoại</span>
+                                <input type="text" th:field="*{sellerPhone}">
+                            </label>
+                            <label>
+                                <span>Fax</span>
+                                <input type="text" th:field="*{sellerFax}">
+                            </label>
+                            <label>
+                                <span>Tài khoản số</span>
+                                <input type="text" th:field="*{sellerBankAccount}">
+                            </label>
+                            <label>
+                                <span>Mở tại ngân hàng</span>
+                                <input type="text" th:field="*{sellerBankName}">
+                            </label>
+                            <label>
+                                <span>Đại diện pháp luật</span>
+                                <input type="text" th:field="*{sellerRepresentativeName}">
+                            </label>
+                            <label>
+                                <span>Chức vụ</span>
+                                <input type="text" th:field="*{sellerRepresentativeTitle}">
+                            </label>
+                            <label>
+                                <span>CMND/CCCD</span>
+                                <input type="text" th:field="*{sellerIdentityNumber}">
+                            </label>
+                            <label>
+                                <span>Nơi cấp</span>
+                                <input type="text" th:field="*{sellerIdentityIssuedPlace}">
+                            </label>
+                            <label>
+                                <span>Ngày cấp</span>
+                                <input type="date" th:field="*{sellerIdentityIssuedDate}">
+                            </label>
+                            <label class="wide">
+                                <span>Giấy ủy quyền</span>
+                                <textarea th:field="*{sellerAuthorizationInfo}" rows="2"></textarea>
+                            </label>
+                        </div>
+                    </div>
 
-<h3>Amount Summary</h3>
+                    <div class="contract-rule-section">
+                        <h3>Bên mua (Bên B)</h3>
+                        <div class="contract-rule-grid">
+                            <label>
+                                <span>Tên doanh nghiệp</span>
+                                <input type="text" th:field="*{buyerCompanyName}">
+                            </label>
+                            <label>
+                                <span>Mã số doanh nghiệp</span>
+                                <input type="text" th:field="*{buyerTaxCode}">
+                            </label>
+                            <label class="wide">
+                                <span>Địa chỉ trụ sở</span>
+                                <input type="text" th:field="*{buyerAddress}">
+                            </label>
+                            <label>
+                                <span>Điện thoại</span>
+                                <input type="text" th:field="*{buyerPhone}">
+                            </label>
+                            <label>
+                                <span>Fax</span>
+                                <input type="text" th:field="*{buyerFax}">
+                            </label>
+                            <label>
+                                <span>Tài khoản số</span>
+                                <input type="text" th:field="*{buyerBankAccount}">
+                            </label>
+                            <label>
+                                <span>Mở tại ngân hàng</span>
+                                <input type="text" th:field="*{buyerBankName}">
+                            </label>
+                            <label>
+                                <span>Đại diện pháp luật</span>
+                                <input type="text" th:field="*{buyerRepresentativeName}">
+                            </label>
+                            <label>
+                                <span>Chức vụ</span>
+                                <input type="text" th:field="*{buyerRepresentativeTitle}">
+                            </label>
+                            <label>
+                                <span>CMND/CCCD</span>
+                                <input type="text" th:field="*{buyerIdentityNumber}">
+                            </label>
+                            <label>
+                                <span>Nơi cấp</span>
+                                <input type="text" th:field="*{buyerIdentityIssuedPlace}">
+                            </label>
+                            <label>
+                                <span>Ngày cấp</span>
+                                <input type="date" th:field="*{buyerIdentityIssuedDate}">
+                            </label>
+                            <label class="wide">
+                                <span>Giấy ủy quyền</span>
+                                <textarea th:field="*{buyerAuthorizationInfo}" rows="2"></textarea>
+                            </label>
+                        </div>
+                    </div>
 
-<table border="1">
-    <tr>
-        <th>Contract Amount</th>
-        <td th:text="${contract.contractAmount}">0</td>
-    </tr>
-    <tr>
-        <th>Discount</th>
-        <td th:text="${contract.discountAmount}">0</td>
-    </tr>
-    <tr>
-        <th>Final Amount</th>
-        <td th:text="${contract.finalAmount}">0</td>
-    </tr>
-</table>
+                    <div class="contract-rule-section">
+                        <h3>Thanh toán và giao hàng</h3>
+                        <div class="contract-rule-grid">
+                            <label class="wide">
+                                <span>Số tiền bằng chữ</span>
+                                <input type="text" th:field="*{amountInWords}">
+                            </label>
+                            <label>
+                                <span>Hạn thanh toán</span>
+                                <input type="date" th:field="*{paymentDueDate}">
+                            </label>
+                            <label>
+                                <span>Hình thức thanh toán</span>
+                                <input type="text" th:field="*{paymentMethod}" placeholder="VD: Chuyển khoản">
+                            </label>
+                            <label class="wide">
+                                <span>Điều khoản thanh toán</span>
+                                <textarea th:field="*{paymentTerms}" rows="3" required></textarea>
+                            </label>
+                            <label class="wide">
+                                <span>Lịch giao hàng</span>
+                                <textarea th:field="*{deliverySchedule}" rows="3"></textarea>
+                            </label>
+                            <label>
+                                <span>Bên chịu phí vận chuyển</span>
+                                <input type="text" th:field="*{shippingResponsibility}">
+                            </label>
+                            <label>
+                                <span>Chi phí bốc xếp</span>
+                                <input type="text" th:field="*{unloadingCost}">
+                            </label>
+                            <label>
+                                <span>Phí lưu kho/ngày</span>
+                                <input type="text" th:field="*{storageFeePerDay}">
+                            </label>
+                            <label>
+                                <span>Cơ quan kiểm tra trung gian</span>
+                                <input type="text" th:field="*{inspectionAgency}">
+                            </label>
+                            <label class="wide">
+                                <span>Điều khoản giao hàng</span>
+                                <textarea th:field="*{deliveryTerms}" rows="3"></textarea>
+                            </label>
+                        </div>
+                    </div>
 
-<h3>Admin Officer Contract Rules</h3>
+                    <div class="contract-rule-section">
+                        <h3>Bảo hành, phạt vi phạm và điều khoản chung</h3>
+                        <div class="contract-rule-grid">
+                            <label class="wide">
+                                <span>Phạm vi bảo hành</span>
+                                <input type="text" th:field="*{warrantyProductScope}">
+                            </label>
+                            <label>
+                                <span>Thời gian bảo hành (tháng)</span>
+                                <input type="number" min="0" th:field="*{warrantyMonths}">
+                            </label>
+                            <label>
+                                <span>Mức phạt vi phạm (%)</span>
+                                <input type="text" th:field="*{penaltyRate}">
+                            </label>
+                            <label>
+                                <span>Số bản hợp đồng</span>
+                                <input type="number" min="1" th:field="*{contractCopies}">
+                            </label>
+                            <label>
+                                <span>Mỗi bên giữ</span>
+                                <input type="number" min="1" th:field="*{copiesPerParty}">
+                            </label>
+                            <label class="wide">
+                                <span>Điều khoản pháp lý</span>
+                                <textarea th:field="*{legalTerms}" rows="4" required></textarea>
+                            </label>
+                            <label class="wide">
+                                <span>Điều khoản chung</span>
+                                <textarea th:field="*{generalTerms}" rows="4"></textarea>
+                            </label>
+                            <label class="wide">
+                                <span>Ghi chú Admin</span>
+                                <textarea th:field="*{adminNote}" rows="3"></textarea>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="contract-primary-button" type="submit">
+                        <i class="fas fa-check"></i>
+                        <span>Lưu điều khoản và xác nhận</span>
+                    </button>
+                </form>
+            </div>
 
-<table border="1">
-    <tr>
-        <th>Start Date</th>
-        <td th:text="${contract.contractStartDate != null ? contract.contractStartDate : 'N/A'}">N/A</td>
-    </tr>
-    <tr>
-        <th>End Date</th>
-        <td th:text="${contract.contractEndDate != null ? contract.contractEndDate : 'N/A'}">N/A</td>
-    </tr>
-    <tr>
-        <th>Payment Terms</th>
-        <td th:text="${contract.paymentTerms != null ? contract.paymentTerms : 'N/A'}">N/A</td>
-    </tr>
-    <tr>
-        <th>Delivery Terms</th>
-        <td th:text="${contract.deliveryTerms != null ? contract.deliveryTerms : 'N/A'}">N/A</td>
-    </tr>
-    <tr>
-        <th>Legal Terms</th>
-        <td th:text="${contract.legalTerms != null ? contract.legalTerms : 'N/A'}">N/A</td>
-    </tr>
-    <tr>
-        <th>Admin Note</th>
-        <td th:text="${contract.adminNote != null ? contract.adminNote : 'N/A'}">N/A</td>
-    </tr>
-</table>
+            <aside class="contract-detail-side">
+                <section class="contract-action-card">
+                    <h2>Thao tác nhanh</h2>
+                    <form th:if="${contract.status == 'DRAFT'}"
+                          th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}"
+                          method="post"
+                          onsubmit="return confirm('Gửi hợp đồng này cho Admin Officer?');">
+                        <button type="submit"><i class="fas fa-user-shield"></i> Gửi Admin Officer</button>
+                    </form>
 
-<form th:if="${contract.status == 'PENDING_ADMIN_OFFICER'}"
-      th:action="@{/contracts/{id}/rules(id=${contract.id})}"
-      th:object="${contractRuleRequest}"
-      method="post">
-    <h4>Fill / Update Rules</h4>
+                    <form th:if="${contract.status == 'ADMIN_REVIEWED'}"
+                          th:action="@{/contracts/{id}/send-customer(id=${contract.id})}"
+                          method="post"
+                          onsubmit="return confirm('Gửi hợp đồng này cho khách hàng?');">
+                        <button type="submit"><i class="fas fa-paper-plane"></i> Gửi khách hàng</button>
+                    </form>
 
-    Start Date:<br>
-    <input type="date" th:field="*{contractStartDate}" required>
-    <br><br>
+                    <form th:if="${contract.status == 'SENT_TO_CUSTOMER'}"
+                          th:action="@{/contracts/{id}/customer-sign(id=${contract.id})}"
+                          method="post"
+                          onsubmit="return confirm('Đánh dấu khách hàng đã ký hợp đồng?');">
+                        <button type="submit"><i class="fas fa-signature"></i> Khách đã ký</button>
+                    </form>
 
-    End Date:<br>
-    <input type="date" th:field="*{contractEndDate}" required>
-    <br><br>
+                    <form th:if="${contract.status == 'DRAFT' or contract.status == 'PENDING_ADMIN_OFFICER' or contract.status == 'ADMIN_REVIEWED' or contract.status == 'SENT_TO_CUSTOMER'}"
+                          th:action="@{/contracts/{id}/cancel(id=${contract.id})}"
+                          method="post"
+                          onsubmit="return confirm('Hủy hợp đồng này?');">
+                        <button class="danger" type="submit"><i class="fas fa-ban"></i> Hủy hợp đồng</button>
+                    </form>
+                </section>
 
-    Payment Terms:<br>
-    <textarea th:field="*{paymentTerms}" rows="4" cols="80" required></textarea>
-    <br><br>
+                <section class="contract-summary-card">
+                    <h2>Thông tin thanh toán</h2>
+                    <dl>
+                        <div>
+                            <dt>Tạm tính</dt>
+                            <dd th:text="${contract.contractAmount != null ? #numbers.formatDecimal(contract.contractAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</dd>
+                        </div>
+                        <div>
+                            <dt>Giảm giá</dt>
+                            <dd th:text="${contract.discountAmount != null ? #numbers.formatDecimal(contract.discountAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</dd>
+                        </div>
+                        <div class="total">
+                            <dt>Tổng giá trị</dt>
+                            <dd th:text="${contract.finalAmount != null ? #numbers.formatDecimal(contract.finalAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</dd>
+                        </div>
+                    </dl>
+                </section>
+            </aside>
+        </div>
+    </div>
+</main>
 
-    Delivery Terms:<br>
-    <textarea th:field="*{deliveryTerms}" rows="4" cols="80"></textarea>
-    <br><br>
-
-    Legal Terms:<br>
-    <textarea th:field="*{legalTerms}" rows="4" cols="80" required></textarea>
-    <br><br>
-
-    Admin Note:<br>
-    <textarea th:field="*{adminNote}" rows="4" cols="80"></textarea>
-    <br><br>
-
-    <button type="submit">Save Rules And Confirm Admin Review</button>
-</form>
-
-<h3>Actions</h3>
-
-<form th:if="${contract.status == 'DRAFT'}"
-      th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}"
-      method="post"
-      onsubmit="return confirm('Submit this contract to Admin Officer?');">
-    <button type="submit">Submit To Admin Officer</button>
-</form>
-
-<form th:if="${contract.status == 'ADMIN_REVIEWED'}"
-      th:action="@{/contracts/{id}/send-customer(id=${contract.id})}"
-      method="post"
-      onsubmit="return confirm('Send this contract to customer?');">
-    <button type="submit">Send To Customer</button>
-</form>
-
-<form th:if="${contract.status == 'SENT_TO_CUSTOMER'}"
-      th:action="@{/contracts/{id}/customer-sign(id=${contract.id})}"
-      method="post"
-      onsubmit="return confirm('Mark this contract as signed by customer?');">
-    <button type="submit">Customer Sign Contract</button>
-</form>
-
-<form th:if="${contract.status == 'DRAFT' or contract.status == 'PENDING_ADMIN_OFFICER' or contract.status == 'ADMIN_REVIEWED' or contract.status == 'SENT_TO_CUSTOMER'}"
-      th:action="@{/contracts/{id}/cancel(id=${contract.id})}"
-      method="post"
-      onsubmit="return confirm('Cancel this contract?');">
-    <button type="submit">Cancel Contract</button>
-</form>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

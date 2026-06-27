@@ -85,6 +85,132 @@ public class Contract {
     @Column(name = "admin_note", columnDefinition = "TEXT")
     private String adminNote;
 
+    @Column(name = "signing_date")
+    private LocalDate signingDate;
+
+    @Column(name = "signing_place", length = 255)
+    private String signingPlace;
+
+    @Column(name = "seller_company_name", length = 255)
+    private String sellerCompanyName;
+
+    @Column(name = "seller_tax_code", length = 100)
+    private String sellerTaxCode;
+
+    @Column(name = "seller_address", columnDefinition = "TEXT")
+    private String sellerAddress;
+
+    @Column(name = "seller_phone", length = 50)
+    private String sellerPhone;
+
+    @Column(name = "seller_fax", length = 50)
+    private String sellerFax;
+
+    @Column(name = "seller_bank_account", length = 100)
+    private String sellerBankAccount;
+
+    @Column(name = "seller_bank_name", length = 255)
+    private String sellerBankName;
+
+    @Column(name = "seller_representative_name", length = 255)
+    private String sellerRepresentativeName;
+
+    @Column(name = "seller_representative_title", length = 100)
+    private String sellerRepresentativeTitle;
+
+    @Column(name = "seller_identity_number", length = 50)
+    private String sellerIdentityNumber;
+
+    @Column(name = "seller_identity_issued_place", length = 255)
+    private String sellerIdentityIssuedPlace;
+
+    @Column(name = "seller_identity_issued_date")
+    private LocalDate sellerIdentityIssuedDate;
+
+    @Column(name = "seller_authorization_info", columnDefinition = "TEXT")
+    private String sellerAuthorizationInfo;
+
+    @Column(name = "buyer_company_name", length = 255)
+    private String buyerCompanyName;
+
+    @Column(name = "buyer_tax_code", length = 100)
+    private String buyerTaxCode;
+
+    @Column(name = "buyer_address", columnDefinition = "TEXT")
+    private String buyerAddress;
+
+    @Column(name = "buyer_phone", length = 50)
+    private String buyerPhone;
+
+    @Column(name = "buyer_fax", length = 50)
+    private String buyerFax;
+
+    @Column(name = "buyer_bank_account", length = 100)
+    private String buyerBankAccount;
+
+    @Column(name = "buyer_bank_name", length = 255)
+    private String buyerBankName;
+
+    @Column(name = "buyer_representative_name", length = 255)
+    private String buyerRepresentativeName;
+
+    @Column(name = "buyer_representative_title", length = 100)
+    private String buyerRepresentativeTitle;
+
+    @Column(name = "buyer_identity_number", length = 50)
+    private String buyerIdentityNumber;
+
+    @Column(name = "buyer_identity_issued_place", length = 255)
+    private String buyerIdentityIssuedPlace;
+
+    @Column(name = "buyer_identity_issued_date")
+    private LocalDate buyerIdentityIssuedDate;
+
+    @Column(name = "buyer_authorization_info", columnDefinition = "TEXT")
+    private String buyerAuthorizationInfo;
+
+    @Column(name = "amount_in_words", columnDefinition = "TEXT")
+    private String amountInWords;
+
+    @Column(name = "payment_due_date")
+    private LocalDate paymentDueDate;
+
+    @Column(name = "payment_method", length = 255)
+    private String paymentMethod;
+
+    @Column(name = "delivery_schedule", columnDefinition = "TEXT")
+    private String deliverySchedule;
+
+    @Column(name = "shipping_responsibility", length = 255)
+    private String shippingResponsibility;
+
+    @Column(name = "unloading_cost", length = 255)
+    private String unloadingCost;
+
+    @Column(name = "storage_fee_per_day", length = 255)
+    private String storageFeePerDay;
+
+    @Column(name = "inspection_agency", length = 255)
+    private String inspectionAgency;
+
+    @Column(name = "warranty_product_scope", columnDefinition = "TEXT")
+    private String warrantyProductScope;
+
+    @Column(name = "warranty_months")
+    private Integer warrantyMonths;
+
+    @Column(name = "penalty_rate", length = 50)
+    private String penaltyRate;
+
+    @Column(name = "contract_copies")
+    private Integer contractCopies;
+
+    @Column(name = "copies_per_party")
+    private Integer copiesPerParty;
+
+    @Column(name = "general_terms", columnDefinition = "TEXT")
+    private String generalTerms;
+
     @PrePersist
     public void prePersist() {
         if (status == null) {

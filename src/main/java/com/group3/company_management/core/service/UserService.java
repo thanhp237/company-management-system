@@ -41,4 +41,5 @@ public interface UserService {
     Page<UserResponse> searchPage(String keyword, String status, String roleCode, int page, int size);
 
     Long countUsers();
+    List<User> getUsersByRoles(List<String> roles);
 }
