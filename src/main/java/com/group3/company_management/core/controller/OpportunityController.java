@@ -1,8 +1,10 @@
 package com.group3.company_management.core.controller;
 
+import com.group3.company_management.core.entity.CustomerActivity;
 import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.service.OpportunityService;
+import com.group3.company_management.core.controller.CustomerActivityController;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
@@ -94,11 +96,26 @@ public class OpportunityController {
             model.addAttribute("existingQuotation", existingQuotation);
             model.addAttribute("canCreateQuotation", canCreateQuotation(authentication, opportunity, existingQuotation));
             return "pipeline/detail";
+
+            
+
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/pipeline";
         }
     }
+
+// @PostMapping("/{id}/activity")
+//             public String updateActivityNote(
+//                 @PathVariable Long id,
+//                 @RequestParam String note) {
+        
+//                 activityService.updateActivityNote(id, note);
+        
+//                 return "redirect:/customer-activities/" + id;
+//         }
+    
+    
 
     @PostMapping("/{id}/stage")
     public String updateStage(

@@ -56,4 +56,15 @@ public class CustomerActivityController {
 
         return "activity/detail";
     }
+
+    @PostMapping("/{id}/note")
+public String updateNote(
+        @PathVariable Long id,
+        @RequestParam String note,
+        @RequestParam Long opportunityId) {
+
+    activityService.updateActivityNote(id, note);
+
+    return "redirect:/pipeline/" + opportunityId;
+}
 }

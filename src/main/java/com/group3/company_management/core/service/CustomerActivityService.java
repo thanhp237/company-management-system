@@ -7,8 +7,11 @@ import org.springframework.data.domain.Page;
 
 import java.util.List;
 
+
 public interface CustomerActivityService {
 
+
+    
     Page<CustomerActivity> getActivities(
             String activityType,
             int page,
@@ -17,6 +20,8 @@ public interface CustomerActivityService {
     CustomerActivity getActivityById(Long id);
 
     List<CustomerActivity> getActivitiesByCustomerId(Long customerId);
+    void updateActivityNote(Long id, String note);
+    
 
     CustomerActivity save(CustomerActivity activity);
 

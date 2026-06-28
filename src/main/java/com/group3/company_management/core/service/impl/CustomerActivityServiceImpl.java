@@ -15,6 +15,7 @@ public class CustomerActivityServiceImpl
         implements CustomerActivityService {
 
     private final CustomerActivityRepository repository;
+    
 
     @Override
     public Page<CustomerActivity> getActivities(
@@ -44,6 +45,20 @@ public class CustomerActivityServiceImpl
                         new IllegalArgumentException(
                                 "Activity not found."));
     }
+    @Override
+public void updateActivityNote(Long id,
+                               String activityNote) {
+
+    CustomerActivity activity =
+            repository.findById(id)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Activity not found."));
+
+    activity.setActivityNote(activityNote);
+
+    repository.save(activity);
+}
 
     @Override
     public List<CustomerActivity> getActivitiesByCustomerId(
