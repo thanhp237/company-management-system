@@ -38,82 +38,91 @@ public class CustomerImportServiceImpl implements CustomerImportService {
     }
 
     @Override
-    public void importCustomer(MultipartFile file,String name) {
+    public void importCustomer(MultipartFile file, String name) {
 
         validateExcelFile(file);
 
-        List<LeadDTO> leads = new ArrayList<>();
-
-        try (Workbook workbook =
-                     new XSSFWorkbook(file.getInputStream())) {
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
 
             Sheet sheet = workbook.getSheetAt(0);
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            Row header = sheet.getRow(0);
 
+            if (header == null ||
+                    !"Full Name".equalsIgnoreCase(getCellValue(header.getCell(0))) ||
+                    !"Gender".equalsIgnoreCase(getCellValue(header.getCell(1))) ||
+                    !"Phone".equalsIgnoreCase(getCellValue(header.getCell(2))) ||
+                    !"Email".equalsIgnoreCase(getCellValue(header.getCell(3))) ||
+                    !"Address".equalsIgnoreCase(getCellValue(header.getCell(4))) ||
+                    !"Company Name".equalsIgnoreCase(getCellValue(header.getCell(5))) ||
+                    !"Tax Code".equalsIgnoreCase(getCellValue(header.getCell(6))) ||
+                    !"Customer Source".equalsIgnoreCase(getCellValue(header.getCell(7))) ||
+                    !"Customer Type".equalsIgnoreCase(getCellValue(header.getCell(8)))) {
+
+                throw new RuntimeException(
+                        "Invalid Excel template. Please download and use the provided template."
+                );
+            }
+
+            User creator = userRepository.findByUsername(name)
+                    .orElseThrow(() -> new RuntimeException("Current user not found"));
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
 
                 Row row = sheet.getRow(i);
 
-
-                if (row == null ||
-                        !"Full Name".equalsIgnoreCase(getCellValue(row.getCell(0)))) {
-
-                    throw new RuntimeException(
-                            "Invalid Excel template. Please download and use the provided template."
-                    );
-                }
                 if (row == null) {
                     continue;
                 }
-                if(leadRepository.existsByPhone(getCellValue(row.getCell(2)))){
-                    continue;
-                }if(leadRepository.existsByEmail(getCellValue(row.getCell(3)))){
-                    continue;
-                }if(leadRepository.existsByTaxCode(getCellValue(row.getCell(6)))){
+
+                String fullName = getCellValue(row.getCell(0));
+                String gender = getCellValue(row.getCell(1));
+                String phone = getCellValue(row.getCell(2));
+                String email = getCellValue(row.getCell(3));
+                String address = getCellValue(row.getCell(4));
+                String companyName = getCellValue(row.getCell(5));
+                String taxCode = getCellValue(row.getCell(6));
+                String customerSource = getCellValue(row.getCell(7));
+                String customerType = getCellValue(row.getCell(8));
+
+                if (fullName.isBlank()) {
                     continue;
                 }
 
-
-
-                if ((getCellValue(row.getCell(0))).isBlank()) {
+                if (!phone.isBlank() && leadRepository.existsByPhone(phone)) {
                     continue;
                 }
-                LeadDTO dto = new LeadDTO();
 
-                dto.setFullName(getCellValue(row.getCell(0)));
-                dto.setGender(getCellValue(row.getCell(1)));
-                dto.setPhone(getCellValue(row.getCell(2)));
-                dto.setEmail(getCellValue(row.getCell(3)));
-                dto.setAddress(getCellValue(row.getCell(4)));
-                dto.setCompanyName(getCellValue(row.getCell(5)));
-                dto.setTaxCode(getCellValue(row.getCell(6)));
-                dto.setCustomerSource(getCellValue(row.getCell(7)));
-                dto.setCustomerType(getCellValue(row.getCell(8)));
+                if (!email.isBlank() && leadRepository.existsByEmail(email)) {
+                    continue;
+                }
 
-                leads.add(dto);
+                if (!taxCode.isBlank() && leadRepository.existsByTaxCode(taxCode)) {
+                    continue;
+                }
+
                 Customer customer = new Customer();
-                 customer.setFullName(dto.getFullName());
-                customer.setPhone(dto.getPhone());
-                customer.setEmail(dto.getEmail());
-                customer.setAddress(dto.getAddress());
-                customer.setCompanyName(dto.getCompanyName());
-               customer.setTaxCode(dto.getTaxCode());
-               customer.setCustomerSource(dto.getCustomerSource());
-               customer.setCustomerType((dto.getCustomerType()));
-               customer.setName(customer.getFullName());
-                customer.setCreatedAt(LocalDateTime.now());
-                customer.setGender(dto.getGender());
-                customer.setCustomerStatus("NEW");
-               customer.setCreatedBy(userRepository.findByUsername(name).get().getId());
-               leadRepository.save(customer);
 
+                customer.setFullName(fullName);
+                customer.setName(fullName);
+                customer.setGender(gender);
+                customer.setPhone(phone);
+                customer.setEmail(email);
+                customer.setAddress(address);
+                customer.setCompanyName(companyName);
+                customer.setTaxCode(taxCode);
+                customer.setCustomerSource(customerSource);
+                customer.setCustomerType(customerType);
+                customer.setCustomerStatus("NEW");
+                customer.setCreatedAt(LocalDateTime.now());
+                customer.setCreatedBy(creator.getId());
+
+                leadRepository.save(customer);
             }
 
         } catch (Exception e) {
             throw new RuntimeException("Import failed: " + e.getMessage());
         }
-
-
     }
     @Override
     public void saveCustomer(Customer customer) {
