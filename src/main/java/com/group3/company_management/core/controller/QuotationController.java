@@ -93,7 +93,7 @@ public class QuotationController {
     }
 
     @PostMapping("/{id}/accept")
-    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String acceptQuotation(@PathVariable Long id,
                                   Authentication authentication,
                                   RedirectAttributes redirectAttributes) {

@@ -38,20 +38,26 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
-        // ROLE-BASED REDIRECT
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        response.sendRedirect(resolveDashboardUrl(authentication.getAuthorities()));
+    }
 
-        String redirectUrl = "/dashboard/employee"; // default
-
+    private String resolveDashboardUrl(Collection<? extends GrantedAuthority> authorities) {
         for (GrantedAuthority authority : authorities) {
             String role = authority.getAuthority();
 
-            if (role.equals("ROLE_CUSTOMER")) {
-                redirectUrl = "/dashboard/customer";
-                break;
-            }
+            return switch (role) {
+                case "ROLE_ADMIN" -> "/dashboard/admin";
+                case "ROLE_SALES" -> "/dashboard/sales";
+                case "ROLE_MARKETING" -> "/dashboard/marketing";
+                case "ROLE_ACCOUNTANT" -> "/dashboard/accountant";
+                case "ROLE_ADMIN_OFFICER", "ROLE_ADMINOFFICER" -> "/dashboard/admin-officer";
+                case "ROLE_SALES_MANAGER", "ROLE_MANAGER" -> "/dashboard/sales-manager";
+                case "ROLE_DIRECTOR" -> "/dashboard/director";
+                case "ROLE_CUSTOMER" -> "/dashboard/customer";
+                default -> "/dashboard";
+            };
         }
 
-        response.sendRedirect(redirectUrl);
+        return "/dashboard";
     }
 }

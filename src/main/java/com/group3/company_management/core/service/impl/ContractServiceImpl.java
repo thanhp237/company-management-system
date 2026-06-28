@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.List;
+import java.util.Locale;
 import com.group3.company_management.core.dto.ContractStatisticsResponse;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -127,9 +128,13 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public void submitToAdmin(Long contractId) {
+    public void submitToAdmin(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
+        Employee employee = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        validateSalesStepAccess(contract, employee);
 
         if (contract.getStatus() != Contract.ContractStatus.DRAFT) {
             throw new RuntimeException("Only draft contract can be submitted to admin officer");
@@ -224,7 +229,7 @@ public class ContractServiceImpl implements ContractService {
         Employee sale = employeeRepository.findByUser_Username(username)
                 .orElseThrow(() -> new RuntimeException("Sale employee not found"));
 
-        if (!canReviewContract(sale) && (contract.getSale() == null || !contract.getSale().getId().equals(sale.getId()))) {
+        if (!canViewAllContracts(sale) && (contract.getSale() == null || !contract.getSale().getId().equals(sale.getId()))) {
             throw new RuntimeException("Only owner sale can send contract to customer");
         }
 
@@ -239,9 +244,13 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public void customerSignContract(Long contractId) {
+    public void customerSignContract(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
+        Employee employee = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        validateSalesStepAccess(contract, employee);
 
         if (contract.getStatus() != Contract.ContractStatus.SENT_TO_CUSTOMER) {
             throw new RuntimeException("Only contract sent to customer can be signed");
@@ -254,9 +263,13 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public void cancelContract(Long contractId) {
+    public void cancelContract(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
+        Employee employee = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        validateSalesStepAccess(contract, employee);
 
         if (contract.getStatus() == Contract.ContractStatus.SIGNED) {
             throw new RuntimeException("Signed contract cannot be cancelled");
@@ -288,7 +301,9 @@ public class ContractServiceImpl implements ContractService {
         Specification<Contract> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (canReviewContract(employee)) {
+            if (canViewAllContracts(employee)) {
+                // Managers and admins can review the full contract workspace.
+            } else if (canReviewContract(employee)) {
                 predicates.add(cb.equal(root.get("adminOfficer").get("id"), employee.getId()));
             } else {
                 predicates.add(cb.equal(root.get("sale").get("id"), employee.getId()));
@@ -325,11 +340,24 @@ public class ContractServiceImpl implements ContractService {
 
         Long employeeId = employee.getId();
 
-        if (canReviewContract(employee)) {
+        if (canViewAllContracts(employee)) {
             return ContractStatisticsResponse.builder()
-                    .total(contractRepository.countByAdminOfficerId(employeeId))
+                    .total(contractRepository.count())
+                    .draft(contractRepository.countByStatus(Contract.ContractStatus.DRAFT))
+                    .pending(contractRepository.countByStatus(Contract.ContractStatus.PENDING_ADMIN_OFFICER))
+                    .reviewed(contractRepository.countByStatus(Contract.ContractStatus.ADMIN_REVIEWED))
+                    .sent(contractRepository.countByStatus(Contract.ContractStatus.SENT_TO_CUSTOMER))
+                    .signed(contractRepository.countByStatus(Contract.ContractStatus.SIGNED))
+                    .cancelled(contractRepository.countByStatus(Contract.ContractStatus.CANCELLED))
+                    .build();
+        }
+
+        if (canReviewContract(employee)) {
+            long pendingForReview = contractRepository.countByStatus(Contract.ContractStatus.PENDING_ADMIN_OFFICER);
+            return ContractStatisticsResponse.builder()
+                    .total(contractRepository.countByAdminOfficerId(employeeId) + pendingForReview)
                     .draft(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.DRAFT))
-                    .pending(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.PENDING_ADMIN_OFFICER))
+                    .pending(pendingForReview)
                     .reviewed(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.ADMIN_REVIEWED))
                     .sent(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.SENT_TO_CUSTOMER))
                     .signed(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.SIGNED))
@@ -353,6 +381,10 @@ public class ContractServiceImpl implements ContractService {
     public void deleteContract(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
+        Employee employee = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        validateSalesStepAccess(contract, employee);
 
         if (contract.getStatus() == Contract.ContractStatus.SIGNED) {
             throw new RuntimeException("Signed contract cannot be deleted");
@@ -522,6 +554,28 @@ public class ContractServiceImpl implements ContractService {
         return ADMIN_OFFICER_TYPE.equalsIgnoreCase(employee.getEmployeeType())
                 || ADMIN_OFFICER_TYPE_ALIAS.equalsIgnoreCase(employee.getEmployeeType())
                 || ADMIN_TYPE.equalsIgnoreCase(employee.getEmployeeType());
+    }
+
+    private boolean canViewAllContracts(Employee employee) {
+        String roleCode = roleCode(employee);
+        return "ADMIN".equals(roleCode) || "MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode);
+    }
+
+    private void validateSalesStepAccess(Contract contract, Employee employee) {
+        if (canViewAllContracts(employee)) {
+            return;
+        }
+        if (contract.getSale() == null || employee == null || !employee.getId().equals(contract.getSale().getId())) {
+            throw new RuntimeException("You are not allowed to update this contract");
+        }
+    }
+
+    private String roleCode(Employee employee) {
+        if (employee == null || employee.getUser() == null || employee.getUser().getRole() == null
+                || employee.getUser().getRole().getRoleCode() == null) {
+            return "";
+        }
+        return employee.getUser().getRole().getRoleCode().trim().toUpperCase(Locale.ROOT);
     }
 
     private boolean hasContractRules(Contract contract) {

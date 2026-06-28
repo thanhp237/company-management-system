@@ -14,6 +14,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // 1. Lấy danh sách lịch hẹn của riêng từng nhân viên Sales (Sắp xếp theo thời gian tăng dần)
     List<Appointment> findByEmployeeIdOrderByAppointmentTimeAsc(Long employeeId);
 
+    long countByEmployeeUsername(String username);
+
+    long countByEmployeeUsernameAndStatus(String username, String status);
+
     // 2. Tìm các lịch hẹn sắp diễn ra trong vòng 1 ngày tới mà CHƯA gửi thông báo nhắc nhở
     @Query("SELECT a FROM Appointment a WHERE a.status = 'PENDING' " +
            "AND a.reminderSent = false " +

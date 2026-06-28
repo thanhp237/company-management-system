@@ -42,6 +42,9 @@ public class OpportunityController {
             @RequestParam(defaultValue = "0") int page,
             Authentication authentication,
             Model model) {
+        if (!canAccessPipeline(authentication)) {
+            return "redirect:/contracts";
+        }
         String username = authentication.getName();
         Page<Opportunity> opportunityPage = opportunityService.getPipelinePage(null, null, page, 10, username);
         List<Opportunity> opportunities = opportunityPage.getContent();
@@ -64,6 +67,9 @@ public class OpportunityController {
             @RequestParam(defaultValue = "0") int page,
             Authentication authentication,
             Model model) {
+        if (!canAccessPipeline(authentication)) {
+            return "redirect:/contracts";
+        }
         String username = authentication.getName();
         Page<Opportunity> opportunityPage = opportunityService.getPipelinePage(keyword, stage, page, 10, username);
         List<Opportunity> opportunities = opportunityPage.getContent();
@@ -86,6 +92,9 @@ public class OpportunityController {
             Authentication authentication,
             Model model,
             RedirectAttributes redirectAttributes) {
+        if (!canAccessPipeline(authentication)) {
+            return "redirect:/contracts";
+        }
         try {
             String username = authentication.getName();
             Opportunity opportunity = opportunityService.getOpportunityDetail(id, username);
@@ -123,6 +132,9 @@ public class OpportunityController {
             Authentication authentication,
             Model model,
             RedirectAttributes redirectAttributes) {
+        if (!canAccessPipeline(authentication)) {
+            return "redirect:/contracts";
+        }
         try {
             String username = authentication.getName();
             Opportunity opportunity = opportunityService.getOpportunityDetail(id, username);
@@ -148,6 +160,9 @@ public class OpportunityController {
             @PathVariable Long id,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
+        if (!canAccessPipeline(authentication)) {
+            return "redirect:/contracts";
+        }
         try {
             opportunityService.confirmEvaluation(id, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Opportunity evaluated successfully.");
@@ -176,6 +191,9 @@ public class OpportunityController {
             @RequestParam String stage,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
+        if (!canAccessPipeline(authentication)) {
+            return "redirect:/contracts";
+        }
         try {
             opportunityService.updateStage(id, stage, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Pipeline stage updated successfully.");
@@ -195,7 +213,11 @@ public class OpportunityController {
         }
 
         return QUOTATION_STAGES.contains(opportunity.getStage().toUpperCase())
-                && hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_ADMIN");
+                && hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_SALES_MANAGER", "ROLE_ADMIN");
+    }
+
+    private boolean canAccessPipeline(Authentication authentication) {
+        return hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_SALES_MANAGER", "ROLE_ADMIN");
     }
 
     private boolean hasAnyRole(Authentication authentication, String... roles) {
@@ -227,7 +249,7 @@ public class OpportunityController {
         }
         return "WON".equalsIgnoreCase(opportunity.getStage())
                 && quotationReadyForContract(quotation)
-                && hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_ADMIN");
+                && hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_SALES_MANAGER", "ROLE_ADMIN");
     }
 
     private boolean quotationReadyForContract(Quotation quotation) {

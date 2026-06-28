@@ -18,15 +18,15 @@ public interface ContractService {
 
     List<ContractResponse> getPendingAdminContracts();
 
-    void submitToAdmin(Long contractId);
+    void submitToAdmin(Long contractId, String username);
 
     void updateContractRules(Long contractId, ContractRuleRequest request, String adminUsername);
 
     void sendToCustomer(Long contractId, String username);
 
-    void customerSignContract(Long contractId);
+    void customerSignContract(Long contractId, String username);
 
-    void cancelContract(Long contractId);
+    void cancelContract(Long contractId, String username);
     Page<ContractResponse> searchContracts(
             String username,
             String keyword,

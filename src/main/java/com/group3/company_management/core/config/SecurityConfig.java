@@ -133,24 +133,54 @@ public class SecurityConfig {
                                                 .requestMatchers("/dashboard/accountant/**")
                                                 .hasRole("ACCOUNTANT")
 
+                                                .requestMatchers("/dashboard/admin-officer/**")
+                                                .hasAnyRole("ADMIN_OFFICER", "ADMINOFFICER")
+
                                                 .requestMatchers("/dashboard/sales-manager/**")
-                                                .hasRole("SALES_MANAGER")
+                                                .hasAnyRole("SALES_MANAGER", "MANAGER")
 
                                                 .requestMatchers("/dashboard/director/**")
                                                 .hasRole("DIRECTOR")
 
+                                                .requestMatchers("/dashboard/customer/**")
+                                                .hasRole("CUSTOMER")
+
+                                                .requestMatchers("/dashboard/employee/**")
+                                                .hasAnyRole("ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "SALES", "MARKETING", "SALES_MANAGER", "MANAGER", "ACCOUNTANT", "DIRECTOR")
+
                                                 .requestMatchers("/dashboard/**")
                                                 .authenticated()
                                                 .requestMatchers("/customer/login", "/customer/logout").permitAll()
+                                                .requestMatchers("/customer/portal/**")
+                                                .hasRole("CUSTOMER")
+                                                .requestMatchers("/users/**")
+                                                .hasRole("ADMIN")
+
+                                                .requestMatchers("/customers", "/customers/**")
+                                                .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")
+
+                                                .requestMatchers("/customer", "/customer/**")
+                                                .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")
+
+                                                .requestMatchers("/products", "/products/**")
+                                                .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")
+
+                                                .requestMatchers("/pipeline", "/pipeline/**")
+                                                .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN")
+
+                                                .requestMatchers("/customer-activities", "/customer-activities/**", "/appointments", "/appointments/**")
+                                                .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN")
+
+                                                .requestMatchers("/contracts/**")
+                                                .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN", "ADMIN_OFFICER", "ADMINOFFICER")
+
                                                 .requestMatchers(
                                                                 "/dashboard/**",
-                                                                "/users/**",
                                                                 "/departments/**",
                                                                 "/change-password",
                                                                 "/first-change-password")
                                                 .authenticated()
 
-                                                .requestMatchers("/customer/portal/**").authenticated()
                                                 .anyRequest().authenticated()
 
                                 )

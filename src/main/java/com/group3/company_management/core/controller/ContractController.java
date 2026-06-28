@@ -20,7 +20,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/contracts")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SALES', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN')")
+@PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN')")
 public class ContractController {
 
     private final ContractService contractService;
@@ -41,6 +41,9 @@ public class ContractController {
         );
         boolean adminOfficerView = hasRole(authentication, "ROLE_ADMIN_OFFICER")
                 || hasRole(authentication, "ROLE_ADMINOFFICER");
+        List<ContractResponse> pendingAdminContracts = adminOfficerView
+                ? contractService.getPendingAdminContracts()
+                : List.of();
 
         model.addAttribute("adminOfficerView", adminOfficerView);
 
@@ -52,8 +55,8 @@ public class ContractController {
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("sortDir", sortDir);
         model.addAttribute("statuses", Contract.ContractStatus.values());
-        model.addAttribute("pendingAdminContracts", List.of());
-        model.addAttribute("countPendingAdminContract", 0);
+        model.addAttribute("pendingAdminContracts", pendingAdminContracts);
+        model.addAttribute("countPendingAdminContract", pendingAdminContracts.size());
         model.addAttribute("countContract", contractPage.getTotalElements());
 
         return "contracts/list";
@@ -77,7 +80,7 @@ public class ContractController {
     }
 
     @PostMapping("/create-from-quotation/{quotationId}")
-    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String createFromQuotation(
             @PathVariable Long quotationId,
             Authentication authentication,
@@ -93,12 +96,13 @@ public class ContractController {
     }
 
     @PostMapping("/{id}/submit-admin")
-    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String submitToAdmin(
             @PathVariable Long id,
+            Authentication authentication,
             RedirectAttributes redirectAttributes) {
         try {
-            contractService.submitToAdmin(id);
+            contractService.submitToAdmin(id, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Contract submitted to admin officer.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
@@ -125,7 +129,7 @@ public class ContractController {
     }
 
     @PostMapping("/{id}/send-customer")
-    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String sendToCustomer(
             @PathVariable Long id,
             Authentication authentication,
@@ -141,12 +145,13 @@ public class ContractController {
     }
 
     @PostMapping("/{id}/customer-sign")
-    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String customerSignContract(
             @PathVariable Long id,
+            Authentication authentication,
             RedirectAttributes redirectAttributes) {
         try {
-            contractService.customerSignContract(id);
+            contractService.customerSignContract(id, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Contract signed by customer.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
@@ -156,12 +161,13 @@ public class ContractController {
     }
 
     @PostMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String cancelContract(
             @PathVariable Long id,
+            Authentication authentication,
             RedirectAttributes redirectAttributes) {
         try {
-            contractService.cancelContract(id);
+            contractService.cancelContract(id, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Contract cancelled successfully.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
@@ -170,7 +176,7 @@ public class ContractController {
         return "redirect:/contracts/" + id;
     }
     @PostMapping("/{id}/delete")
-    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String deleteContract(
             @PathVariable Long id,
             Authentication authentication,

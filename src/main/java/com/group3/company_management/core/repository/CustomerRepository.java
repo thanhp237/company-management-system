@@ -36,6 +36,12 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      * Find all active customers
      */
     List<Customer> findByCustomerStatusOrderByCreatedAtDesc(String status);
+
+    long countByCustomerStatusIgnoreCase(String status);
+
+    long countByAssignedSalesId(Long assignedSalesId);
+
+    long countByOwnerId(Long ownerId);
     
     /**
      * Find all customers (excluding soft deleted)
