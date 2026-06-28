@@ -1,63 +1,117 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${isEdit} ? 'Edit Product' : 'Add Product'">Add Product</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit} ? 'Chỉnh sửa sản phẩm - CompanyMS' : 'Thêm sản phẩm - CompanyMS'">Sản phẩm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/product.css}">
 </head>
 <body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
 
-<h2 th:text="${isEdit} ? 'Edit Product' : 'Add New Product'">Add New Product</h2>
+<main class="admin-workspace with-sidebar product-workspace">
+    <div class="management-page product-page">
+        <div class="management-taskbar product-taskbar product-form-taskbar">
+            <div>
+                <p class="management-eyebrow">Bán hàng / Danh mục sản phẩm</p>
+                <h1 th:text="${isEdit} ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'">Thêm sản phẩm mới</h1>
+                <p class="management-subtitle">Quản lý mã sản phẩm, nhóm danh mục, giá bán và trạng thái kinh doanh.</p>
+            </div>
+            <div class="management-actions">
+                <a class="btn btn-outline-secondary management-secondary-action" th:href="@{/products}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Danh sách</span>
+                </a>
+            </div>
+        </div>
 
-<p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+        <div th:if="${errorMessage}" class="management-alert danger">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
 
-<form th:action="@{/products/save}" th:object="${productForm}" method="post">
-    <input type="hidden" th:field="*{id}">
+        <section class="product-form-shell">
+            <div class="product-form-header">
+                <div class="product-form-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div>
+                    <h2 th:text="${isEdit} ? 'Thông tin sản phẩm' : 'Tạo sản phẩm trong catalog'">Thông tin sản phẩm</h2>
+                    <p>Những thông tin này sẽ được dùng khi lập báo giá, pipeline và hợp đồng.</p>
+                </div>
+            </div>
 
-    <table>
-        <tr>
-            <td><label>Product code:</label></td>
-            <td><input type="text" th:field="*{productCode}" required></td>
-        </tr>
-        <tr>
-            <td><label>Name:</label></td>
-            <td><input type="text" th:field="*{name}" required></td>
-        </tr>
-        <tr>
-            <td><label>Category:</label></td>
-            <td>
-                <select th:field="*{category}" required>
-                    <option value="">-- Select Category --</option>
-                    <option th:each="categoryItem : ${categories}"
-                            th:value="${categoryItem}"
-                            th:text="${categoryItem}"></option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td><label>Description:</label></td>
-            <td><textarea th:field="*{description}" rows="4" cols="40"></textarea></td>
-        </tr>
-        <tr>
-            <td><label>Unit price:</label></td>
-            <td><input type="number" th:field="*{unitPrice}" min="0" step="0.01" required></td>
-        </tr>
-        <tr>
-            <td><label>Active:</label></td>
-            <td><input type="checkbox" th:field="*{active}"></td>
-        </tr>
-    </table>
+            <form class="product-form" th:object="${productForm}" method="post">
+                <input type="hidden" th:field="*{id}">
 
-    <br>
-    <div>
-        <a th:href="@{/products}">Back to List</a>
-        <button type="submit" th:formaction="@{/products/save}" th:disabled="${isEdit}">
-            Create Product
-        </button>
-        <button type="submit" th:formaction="@{/products/update}" th:disabled="${!isEdit}">
-            Edit Product
-        </button>
+                <div class="product-form-grid">
+                    <label>
+                        <span>Mã sản phẩm</span>
+                        <input type="text" th:field="*{productCode}" placeholder="VD: SKU-2026-001" required>
+                    </label>
+
+                    <label>
+                        <span>Tên sản phẩm</span>
+                        <input type="text" th:field="*{name}" placeholder="VD: SmartDoor" required>
+                    </label>
+
+                    <label>
+                        <span>Danh mục</span>
+                        <select th:field="*{category}" required>
+                            <option value="">Chọn danh mục</option>
+                            <option th:each="categoryItem : ${categories}"
+                                    th:value="${categoryItem}"
+                                    th:text="${categoryItem}"></option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>Đơn giá</span>
+                        <input type="number" th:field="*{unitPrice}" min="0" step="0.01" placeholder="0.00" required>
+                    </label>
+
+                    <label class="wide">
+                        <span>Mô tả</span>
+                        <textarea th:field="*{description}" rows="5" placeholder="Mô tả ngắn về cấu hình, dịch vụ hoặc ghi chú bán hàng"></textarea>
+                    </label>
+
+                    <label class="product-active-toggle wide">
+                        <input type="checkbox" th:field="*{active}">
+                        <span>
+                            <strong>Đang kinh doanh</strong>
+                            <small>Sản phẩm active sẽ xuất hiện trong danh sách chọn khi tạo báo giá.</small>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="product-form-actions">
+                    <a class="product-cancel-button" th:href="@{/products}">
+                        <i class="fas fa-xmark"></i>
+                        <span>Hủy</span>
+                    </a>
+                    <button class="product-submit-button"
+                            type="submit"
+                            th:formaction="${isEdit} ? @{/products/update} : @{/products/save}">
+                        <i class="fas" th:classappend="${isEdit} ? ' fa-floppy-disk' : ' fa-plus'"></i>
+                        <span th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo sản phẩm'">Lưu</span>
+                    </button>
+                </div>
+            </form>
+        </section>
     </div>
-</form>
+</main>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

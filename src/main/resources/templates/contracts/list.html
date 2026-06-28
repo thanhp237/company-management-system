@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/contractlist.css}">
+    <link rel="stylesheet" th:href="@{/main.css}">
+
+    <style>
+        body {
+            background: #f5f7fb;
+            color: #1f2937;
+            font-family: Arial, sans-serif;
+        }
+
+        .contract-workspace {
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .with-sidebar {
+            margin-left: 260px;
+        }
+
+        .contract-page {
+            max-width: 1220px;
+            margin: 0 auto;
+        }
+
+        .page-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .page-title p {
+            margin: 6px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .soft-btn {
+            border: 1px solid #d7dee8;
+            background: #fff;
+            color: #374151;
+            border-radius: 8px;
+            padding: 9px 14px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .green-btn {
+            border: none;
+            background: #16a34a;
+            color: #fff;
+            border-radius: 8px;
+            padding: 9px 14px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-box {
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            font-weight: 700;
+        }
+
+        .alert-success-custom {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error-custom {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .icon-total { background: #e0f2fe; color: #0284c7; }
+        .icon-pending { background: #fef3c7; color: #d97706; }
+        .icon-signed { background: #dcfce7; color: #16a34a; }
+        .icon-cancelled { background: #fee2e2; color: #dc2626; }
+
+        .stat-info span {
+            display: block;
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .stat-info strong {
+            display: block;
+            color: #111827;
+            font-size: 24px;
+            line-height: 1.1;
+        }
+
+        .filter-panel,
+        .table-panel {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.04);
+            margin-bottom: 18px;
+        }
+
+        .filter-panel {
+            padding: 16px;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .form-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            border-color: #d7dee8;
+            min-height: 40px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 18px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            color: #111827;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .panel-header p {
+            margin: 4px 0 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .table {
+            margin: 0;
+        }
+
+        .table thead th {
+            background: #f9fafb;
+            color: #6b7280;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 16px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            border-color: #f1f5f9;
+            font-size: 14px;
+        }
+
+        .contract-code {
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .muted-text {
+            color: #6b7280;
+        }
+
+        .amount {
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .status-badge {
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 800;
+            display: inline-block;
+        }
+
+        .st-draft { background: #f3f4f6; color: #4b5563; }
+        .st-pending { background: #fef3c7; color: #92400e; }
+        .st-reviewed { background: #dbeafe; color: #1d4ed8; }
+        .st-sent { background: #ede9fe; color: #6d28d9; }
+        .st-signed { background: #dcfce7; color: #166534; }
+        .st-cancelled { background: #fee2e2; color: #991b1b; }
+
+        .row-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .icon-action {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid #d7dee8;
+            background: #fff;
+            color: #374151;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .icon-action.primary {
+            background: #16a34a;
+            color: #fff;
+            border-color: #16a34a;
+        }
+
+        .icon-action.warning {
+            background: #f59e0b;
+            color: #fff;
+            border-color: #f59e0b;
+        }
+
+        .icon-action.danger {
+            background: #dc2626;
+            color: #fff;
+            border-color: #dc2626;
+        }
+
+        .row-actions form {
+            display: inline;
+        }
+
+        .empty-state {
+            padding: 34px 16px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            display: block;
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #9ca3af;
+        }
+
+        .pagination-shell {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .page-link-custom {
+            min-width: 34px;
+            height: 34px;
+            border: 1px solid #d7dee8;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #374151;
+            text-decoration: none;
+            background: #fff;
+            font-weight: 700;
+        }
+
+        .page-link-custom.active {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #fff;
+        }
+
+        .page-link-custom.disabled {
+            opacity: .45;
+            pointer-events: none;
+        }
+
+        @media (max-width: 992px) {
+            .with-sidebar {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .filter-form {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .contract-workspace {
+                padding: 16px;
+            }
+
+            .page-top {
+                flex-direction: column;
+            }
+
+            .stats-grid,
+            .filter-form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="contract-workspace with-sidebar">
+    <div class="contract-page">
+
+        <div class="page-top">
+            <div class="page-title">
+                <h1>Workspace Hợp đồng</h1>
+                <p>Theo dõi và quản lý hợp đồng doanh nghiệp.</p>
+            </div>
+
+            <div class="top-actions">
+                <a class="soft-btn" th:href="@{/pipeline}">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Pipeline
+                </a>
+                <a class="green-btn" th:href="@{/quotation}">
+                    <i class="fa-solid fa-plus"></i>
+                    Tạo hợp đồng mới
+                </a>
+            </div>
+        </div>
+
+        <div class="alert-box alert-success-custom" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="alert-box alert-error-custom" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-total">
+                    <i class="fa-regular fa-file-lines"></i>
+                </div>
+                <div class="stat-info">
+                    <span>Tổng hợp đồng</span>
+                    <strong th:text="${statistics != null ? statistics.total : countContract}">0</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon icon-pending">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <span>Đang chờ xử lý</span>
+                    <strong th:text="${statistics != null ? statistics.pending : countPendingAdminContract}">0</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon icon-signed">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="stat-info">
+                    <span>Đã ký</span>
+                    <strong th:text="${statistics != null ? statistics.signed : 0}">0</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon icon-cancelled">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+                <div class="stat-info">
+                    <span>Đã hủy</span>
+                    <strong th:text="${statistics != null ? statistics.cancelled : 0}">0</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="filter-panel">
+            <form class="filter-form" th:action="@{/contracts}" method="get">
+                <div>
+                    <label class="form-label">Tìm kiếm</label>
+                    <input class="form-control"
+                           type="text"
+                           name="keyword"
+                           placeholder="Mã hợp đồng hoặc tên khách hàng"
+                           th:value="${keyword}">
+                </div>
+
+                <div>
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" name="status">
+                        <option value="">Tất cả</option>
+                        <option value="DRAFT" th:selected="${status != null and status.toString() == 'DRAFT'}">Draft</option>
+                        <option value="PENDING_ADMIN_OFFICER" th:selected="${status != null and status.toString() == 'PENDING_ADMIN_OFFICER'}">Pending</option>
+                        <option value="ADMIN_REVIEWED" th:selected="${status != null and status.toString() == 'ADMIN_REVIEWED'}">Reviewed</option>
+                        <option value="SENT_TO_CUSTOMER" th:selected="${status != null and status.toString() == 'SENT_TO_CUSTOMER'}">Sent</option>
+                        <option value="SIGNED" th:selected="${status != null and status.toString() == 'SIGNED'}">Signed</option>
+                        <option value="CANCELLED" th:selected="${status != null and status.toString() == 'CANCELLED'}">Cancelled</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">Sắp xếp theo</label>
+                    <select class="form-select" name="sortBy">
+                        <option value="createdAt" th:selected="${sortBy == null or sortBy == 'createdAt'}">Ngày tạo</option>
+                        <option value="contractCode" th:selected="${sortBy == 'contractCode'}">Mã hợp đồng</option>
+                        <option value="finalAmount" th:selected="${sortBy == 'finalAmount'}">Giá trị</option>
+                        <option value="status" th:selected="${sortBy == 'status'}">Trạng thái</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label">Thứ tự</label>
+                    <select class="form-select" name="sortDir">
+                        <option value="desc" th:selected="${sortDir == null or sortDir == 'desc'}">Mới nhất</option>
+                        <option value="asc" th:selected="${sortDir == 'asc'}">Cũ nhất</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button class="green-btn" type="submit">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        Lọc
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="table-panel" th:if="${adminOfficerView}">
+            <div class="panel-header">
+                <div>
+                    <h2>Hợp đồng chờ Admin Officer</h2>
+                    <p>Danh sách hợp đồng cần nhập điều khoản và xác nhận.</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Mã hợp đồng</th>
+                        <th>Mã báo giá</th>
+                        <th>Khách hàng</th>
+                        <th>Sales</th>
+                        <th>Giá trị cuối</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="contract : ${pendingAdminContracts}">
+                        <td class="contract-code" th:text="${contract.contractCode}">CON-001</td>
+                        <td class="muted-text" th:text="${contract.quotationCode != null ? contract.quotationCode : 'N/A'}">QT-001</td>
+                        <td th:text="${contract.customerName != null ? contract.customerName : 'N/A'}">Customer</td>
+                        <td th:text="${contract.saleName != null ? contract.saleName : 'N/A'}">Sale</td>
+                        <td class="amount" th:text="${contract.finalAmount != null ? contract.finalAmount : 0}">0</td>
+                        <td>
+                            <div class="row-actions justify-content-end">
+                                <a class="icon-action primary"
+                                   th:href="@{/contracts/{id}(id=${contract.id})}"
+                                   title="Xử lý hợp đồng">
+                                    <i class="fa-solid fa-clipboard-check"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(pendingAdminContracts)}">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fa-regular fa-folder-open"></i>
+                                Không có hợp đồng chờ xử lý.
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="table-panel">
+            <div class="panel-header">
+                <div>
+                    <h2 th:text="${adminOfficerView ? 'Hợp đồng đã xử lý' : 'Danh sách hợp đồng & Trạng thái'}">
+                        Danh sách hợp đồng & Trạng thái
+                    </h2>
+                    <p>Quản lý danh sách hợp đồng, trạng thái và bước cuối của Sales.</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Mã hợp đồng</th>
+                        <th>Mã báo giá</th>
+                        <th>Khách hàng</th>
+                        <th>Trạng thái</th>
+                        <th>Giá trị cuối</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="contract : ${contracts}">
+                        <td class="contract-code" th:text="${contract.contractCode}">CON-001</td>
+                        <td class="muted-text" th:text="${contract.quotationCode != null ? contract.quotationCode : 'N/A'}">QT-001</td>
+                        <td th:text="${contract.customerName != null ? contract.customerName : 'N/A'}">Customer</td>
+
+                        <td>
+                            <span class="status-badge st-draft" th:if="${contract.status == 'DRAFT'}">Draft</span>
+                            <span class="status-badge st-pending" th:if="${contract.status == 'PENDING_ADMIN_OFFICER'}">Pending</span>
+                            <span class="status-badge st-reviewed" th:if="${contract.status == 'ADMIN_REVIEWED'}">Reviewed</span>
+                            <span class="status-badge st-sent" th:if="${contract.status == 'SENT_TO_CUSTOMER'}">Sent</span>
+                            <span class="status-badge st-signed" th:if="${contract.status == 'SIGNED'}">Signed</span>
+                            <span class="status-badge st-cancelled" th:if="${contract.status == 'CANCELLED'}">Cancelled</span>
+                        </td>
+
+                        <td class="amount" th:text="${contract.finalAmount != null ? contract.finalAmount : 0}">0</td>
+
+                        <td class="muted-text"
+                            th:text="${contract.createdAt != null ? #temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                            N/A
+                        </td>
+
+                        <td>
+                            <div class="row-actions justify-content-end">
+                                <a class="icon-action"
+                                   th:href="@{/contracts/{id}(id=${contract.id})}"
+                                   title="Xem chi tiết">
+                                    <i class="fa-regular fa-eye"></i>
+                                </a>
+
+                                <form th:if="${contract.status == 'ADMIN_REVIEWED'}"
+                                      th:action="@{/contracts/{id}/send-customer(id=${contract.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('Gửi hợp đồng này cho khách hàng?');">
+                                    <button class="icon-action warning" type="submit" title="Gửi khách hàng">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </button>
+                                </form>
+
+                                <form th:if="${contract.status == 'SENT_TO_CUSTOMER'}"
+                                      th:action="@{/contracts/{id}/customer-sign(id=${contract.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('Đánh dấu khách hàng đã ký hợp đồng?');">
+                                    <button class="icon-action primary" type="submit" title="Khách đã ký">
+                                        <i class="fa-solid fa-signature"></i>
+                                    </button>
+                                </form>
+
+                                <form th:if="${contract.status != 'SIGNED' and contract.status != 'CANCELLED'}"
+                                      th:action="@{/contracts/{id}/delete(id=${contract.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('Hủy hợp đồng này?');">
+                                    <button class="icon-action danger" type="submit" title="Hủy hợp đồng">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(contracts)}">
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fa-regular fa-folder-open"></i>
+                                Chưa có hợp đồng phù hợp.
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-shell" th:if="${contractPage != null and contractPage.totalPages > 0}">
+                <span th:text="${'Hiển thị ' + #lists.size(contracts) + ' / ' + contractPage.totalElements + ' hợp đồng'}">
+                    Hiển thị hợp đồng
+                </span>
+
+                <div class="pagination-buttons">
+                    <a class="page-link-custom"
+                       th:classappend="${!contractPage.hasPrevious()} ? ' disabled'"
+                       th:href="@{/contracts(page=${contractPage.number - 1}, keyword=${keyword}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+
+                    <th:block th:with="start=${contractPage.number - 2 < 0 ? 0 : contractPage.number - 2},
+                                       end=${contractPage.number + 2 > contractPage.totalPages - 1 ? contractPage.totalPages - 1 : contractPage.number + 2}">
+                        <a class="page-link-custom"
+                           th:each="pageIndex : ${#numbers.sequence(start, end)}"
+                           th:text="${pageIndex + 1}"
+                           th:classappend="${pageIndex == contractPage.number} ? ' active'"
+                           th:href="@{/contracts(page=${pageIndex}, keyword=${keyword}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                            1
+                        </a>
+                    </th:block>
+
+                    <a class="page-link-custom"
+                       th:classappend="${!contractPage.hasNext()} ? ' disabled'"
+                       th:href="@{/contracts(page=${contractPage.number + 1}, keyword=${keyword}, status=${status}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

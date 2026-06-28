@@ -26,9 +26,13 @@
             <option value="HOT">Hot</option>
             <option value="FAIL">Fail</option>
         </select>
+        <input type="submit" value="Submit"/>
 
-<input type="submit" value="Submit"/>
+        <a th:href="@{/quotation/create/{id}(id=${customer.id})}">
+            Create Quotation
+        </a>
     </form>
+
     <a th:href="@{/customer}">Back</a>
 </body>
 </html>

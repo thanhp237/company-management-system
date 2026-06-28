@@ -19,15 +19,18 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 select d
 from Department d
 where d.isDeleted = false
-and (d.name like concat('%', :keyword, '%')
-or d.code like concat('%', :keyword, '%'))
-and (d.status = :filer or :filer = 'all')
+and (:keyword = '' or lower(d.name) like lower(concat('%', :keyword, '%'))
+    or lower(d.code) like lower(concat('%', :keyword, '%')))
+and (d.status = :filter or :filter = 'all')
 """)
     Page<Department> search(
             @Param("keyword") String keyword,
-            @Param("filer") String filer,
-            Pageable pageable);
+            @Param("filter") String filter,
+            Pageable pageable
+    );
     boolean existsByCode(String code);
+
+    boolean existsByCodeAndIdNot(String code, Long id);
     Optional<Department> findByName(String name);
     @Query("""
 select d

@@ -26,4 +26,21 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    public void sendCustomerAccountEmail(String to, String username, String rawPassword) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Your customer account has been created");
+        message.setText("""
+                Your customer account has been created.
+
+                Login URL: /customer/login
+                Username: %s
+                Temporary password: %s
+
+                Please login and change your password after signing in.
+                """.formatted(username, rawPassword));
+
+        mailSender.send(message);
+    }
 }

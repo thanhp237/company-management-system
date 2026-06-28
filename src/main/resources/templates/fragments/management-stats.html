@@ -2,31 +2,31 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<div th:fragment="userStats" class="management-stat-grid">
-    <article class="management-stat-card success">
-        <span>Total Accounts</span>
+<div th:fragment="userStats" class="management-stat-grid user-stat-grid">
+    <article class="management-stat-card success user-stat-card">
+        <span>Tổng tài khoản</span>
         <strong th:text="${countAccount != null ? countAccount : 0}">0</strong>
         <small>
             <i class="fas fa-layer-group"></i>
-            Directory records
+            Bản ghi phù hợp
         </small>
     </article>
 
-    <article class="management-stat-card info">
-        <span>Active On Page</span>
+    <article class="management-stat-card info user-stat-card">
+        <span>Đang hoạt động</span>
         <strong th:text="${users != null ? users.?[status == 'ACTIVE'].size() : 0}">0</strong>
         <small>
             <i class="fas fa-check-circle"></i>
-            Current page only
+            Trong trang hiện tại
         </small>
     </article>
 
-    <article class="management-stat-card danger">
-        <span>Inactive On Page</span>
+    <article class="management-stat-card danger user-stat-card">
+        <span>Tạm khóa</span>
         <strong th:text="${users != null ? users.?[status == 'INACTIVE'].size() : 0}">0</strong>
         <small>
             <i class="fas fa-lock"></i>
-            Review required
+            Cần kiểm tra
         </small>
     </article>
 </div>

@@ -2,10 +2,10 @@ package com.group3.company_management.core.service.impl;
 
 import com.group3.company_management.core.dto.LeadDTO;
 import com.group3.company_management.core.entity.Customer;
-import com.group3.company_management.core.entity.Department;
-import com.group3.company_management.core.entity.Role;
+import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.repository.LeadRepository;
+import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.repository.RoleRepository;
 import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.CustomerImportService;
@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -21,14 +22,19 @@ import java.util.List;
 
 @Service
 public class CustomerImportServiceImpl implements CustomerImportService {
- private LeadRepository leadRepository;
-    private  UserRepository userRepository;
+    private LeadRepository leadRepository;
+    private UserRepository userRepository;
     private RoleRepository roleRepository;
+    private OpportunityRepository opportunityRepository;
 
-    public CustomerImportServiceImpl(RoleRepository roleRepository, UserRepository userRepository, LeadRepository leadRepository) {
+    public CustomerImportServiceImpl(RoleRepository roleRepository,
+                                     UserRepository userRepository,
+                                     LeadRepository leadRepository,
+                                     OpportunityRepository opportunityRepository) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.leadRepository = leadRepository;
+        this.opportunityRepository = opportunityRepository;
     }
 
     @Override
@@ -86,7 +92,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
 
                 leads.add(dto);
                 Customer customer = new Customer();
-                customer.setFullName(dto.getFullName());
+                 customer.setFullName(dto.getFullName());
                 customer.setPhone(dto.getPhone());
                 customer.setEmail(dto.getEmail());
                 customer.setAddress(dto.getAddress());
@@ -97,6 +103,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
                customer.setName(customer.getFullName());
                 customer.setCreatedAt(LocalDateTime.now());
                 customer.setGender(dto.getGender());
+                customer.setCustomerStatus("NEW");
                customer.setCreatedBy(userRepository.findByUsername(name).get().getId());
                leadRepository.save(customer);
 
@@ -131,6 +138,37 @@ public class CustomerImportServiceImpl implements CustomerImportService {
     public User findUser(Long id){
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
+    }
+
+    @Override
+    @Transactional
+    public void assignCustomersToSale(List<Long> customerIds, Long saleId) {
+        if (customerIds == null || customerIds.isEmpty()) {
+            return;
+        }
+
+        User sale = userRepository.findById(saleId)
+                .orElseThrow(() -> new RuntimeException("Sale not found"));
+
+        for (Long customerId : customerIds) {
+            Customer customer = findCustomerById(customerId);
+            customer.setAssignedSalesId(sale.getId());
+            leadRepository.save(customer);
+
+            Opportunity opportunity = opportunityRepository.findByCustomerId(customer.getId())
+                    .orElseGet(() -> Opportunity.builder()
+                            .opportunityCode(buildOpportunityCode(customer))
+                            .customer(customer)
+                            .stage("NEW")
+                            .build());
+
+            opportunity.setAssignedTo(sale);
+            opportunityRepository.save(opportunity);
+        }
+    }
+
+    private String buildOpportunityCode(Customer customer) {
+        return "OPP-CUS-%06d".formatted(customer.getId());
     }
 
 

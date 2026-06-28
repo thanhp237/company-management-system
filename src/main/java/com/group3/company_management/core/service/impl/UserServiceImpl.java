@@ -155,7 +155,10 @@ public class UserServiceImpl implements UserService {
     public List<Role> getAllRoles() {
         return roleRepository.findAll();
     }
-
+    @Override
+    public List<User> getUsersByRoles(List<String> roles) {
+        return userRepository.findUsersByRoleNames(roles);
+    }
     private User findActiveUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));

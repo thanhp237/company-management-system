@@ -1,68 +1,181 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${isEdit} ? 'Edit User' : 'Add User'">Add User</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit} ? 'Chỉnh sửa nhân viên - CompanyMS' : 'Thêm nhân viên - CompanyMS'">Thêm nhân viên - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
 </head>
 
 <body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
 
-<h2 th:text="${isEdit} ? 'Edit User' : 'Add New User'">Add New User</h2>
+<main class="admin-workspace with-sidebar user-workspace">
+    <div class="management-page user-form-page">
+        <div class="management-taskbar user-taskbar">
+            <div>
+                <p class="management-eyebrow" th:text="${isEdit} ? 'Cập nhật tài khoản' : 'Tạo tài khoản mới'">Tạo tài khoản mới</p>
+                <h1 th:text="${isEdit} ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên'">Thêm nhân viên</h1>
+                <p class="management-subtitle">
+                    Thiết lập thông tin đăng nhập, hồ sơ liên hệ và vai trò truy cập trong hệ thống CRM.
+                </p>
+            </div>
 
-<p th:if="${errorMessage}" th:text="${errorMessage}" style="color: red;"></p>
+            <div class="management-actions">
+                <a class="btn btn-outline-secondary management-secondary-action" th:href="@{/users}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Quay lại</span>
+                </a>
+            </div>
+        </div>
 
-<form th:action="@{/users/save}" th:object="${userForm}" method="post">
-    <input type="hidden" th:field="*{id}">
-    <input type="hidden" th:field="*{departmentId}">
-    <input type="hidden" th:field="*{groupId}">
-    <table>
-        <tr>
-            <td><label>Username:</label></td>
-            <td><input type="text" th:field="*{username}" required></td>
-        </tr>
-        <tr th:if="${!isEdit}">
-            <td><label>Password:</label></td>
-            <td><input type="password" th:field="*{password}" required></td>
-        </tr>
-        <tr>
-            <td><label>Email:</label></td>
-            <td><input type="email" th:field="*{email}" required></td>
-        </tr>
-        <tr>
-            <td><label>Full name:</label></td>
-            <td><input type="text" th:field="*{fullName}"></td>
-        </tr>
-        <tr>
-            <td><label>Phone:</label></td>
-            <td><input type="text" th:field="*{phone}"></td>
-        </tr>
-        <tr>
-            <td><label>Role:</label></td>
-            <td>
-                <select th:field="*{roleId}" required>
-                    <option value="">-- Select Role --</option>
-                    <option th:each="role : ${roles}"
-                            th:value="${role.id}"
-                            th:text="${role.roleName}"></option>
-                </select>
-            </td>
-        </tr>
-    </table>
+        <div th:if="${errorMessage}" class="management-alert danger user-form-alert">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Không thể lưu tài khoản.</span>
+        </div>
 
-    <br>
-    <div>
-        <a th:href="@{/users}">Back to List</a>
-        <button type="submit" name="action" value="create" th:formaction="@{/users/save}" th:disabled="${isEdit}">
-            Create User
-        </button>
-        <button type="submit" name="action" value="createAndSend" th:formaction="@{/users/save}" th:disabled="${isEdit}">
-            Create & Send Email
-        </button>
-        <button type="submit" th:formaction="@{/users/update}" th:disabled="${!isEdit}">Edit User</button>
+        <form class="user-form-shell"
+              th:action="@{/users/save}"
+              th:object="${userForm}"
+              method="post">
+            <input type="hidden" th:field="*{id}">
+            <input type="hidden" th:field="*{departmentId}">
+            <input type="hidden" th:field="*{groupId}">
+            <input type="hidden" th:field="*{status}">
+
+            <section class="user-form-card">
+                <div class="user-form-card-header">
+                    <span class="user-form-card-icon">
+                        <i class="fas fa-id-badge"></i>
+                    </span>
+                    <div>
+                        <h2>Thông tin tài khoản</h2>
+                        <p>Những trường có dấu sao là bắt buộc để nhân viên đăng nhập và được phân quyền.</p>
+                    </div>
+                </div>
+
+                <div class="user-form-grid">
+                    <label class="user-field">
+                        <span>Tên đăng nhập <strong>*</strong></span>
+                        <input type="text"
+                               th:field="*{username}"
+                               autocomplete="username"
+                               placeholder="VD: nguyenvana"
+                               required>
+                    </label>
+
+                    <label class="user-field" th:if="${!isEdit}">
+                        <span>Mật khẩu <strong>*</strong></span>
+                        <input type="password"
+                               th:field="*{password}"
+                               autocomplete="new-password"
+                               placeholder="Nhập mật khẩu ban đầu"
+                               required>
+                    </label>
+
+                    <label class="user-field">
+                        <span>Email <strong>*</strong></span>
+                        <input type="email"
+                               th:field="*{email}"
+                               autocomplete="email"
+                               placeholder="name@company.com"
+                               required>
+                    </label>
+
+                    <label class="user-field">
+                        <span>Họ và tên</span>
+                        <input type="text"
+                               th:field="*{fullName}"
+                               autocomplete="name"
+                               placeholder="Nhập họ tên nhân viên">
+                    </label>
+
+                    <label class="user-field">
+                        <span>Số điện thoại</span>
+                        <input type="tel"
+                               th:field="*{phone}"
+                               autocomplete="tel"
+                               placeholder="VD: 0901234567">
+                    </label>
+
+                    <label class="user-field">
+                        <span>Vai trò <strong>*</strong></span>
+                        <select th:field="*{roleId}" required>
+                            <option value="">Chọn vai trò</option>
+                            <option th:each="role : ${roles}"
+                                    th:value="${role.id}"
+                                    th:text="${role.roleName}">Administrator</option>
+                        </select>
+                    </label>
+                </div>
+            </section>
+
+            <aside class="user-form-side">
+                <div class="user-form-side-card">
+                    <span class="user-form-status" th:classappend="${isEdit} ? ' edit' : ' create'">
+                        <i th:class="${isEdit} ? 'fas fa-pen' : 'fas fa-user-plus'"></i>
+                        <span th:text="${isEdit} ? 'Chế độ chỉnh sửa' : 'Tạo mới nhân viên'">Tạo mới nhân viên</span>
+                    </span>
+
+                    <h2 th:text="${isEdit} ? 'Lưu thay đổi tài khoản' : 'Hoàn tất tạo tài khoản'">Hoàn tất tạo tài khoản</h2>
+                    <p th:if="${!isEdit}">
+                        Bạn có thể chỉ tạo tài khoản, hoặc tạo và gửi thông tin đăng nhập qua email cho nhân viên.
+                    </p>
+                    <p th:if="${isEdit}">
+                        Cập nhật hồ sơ và vai trò. Mật khẩu hiện tại sẽ không bị thay đổi trên màn hình này.
+                    </p>
+
+                    <div class="user-form-actions">
+                        <button th:if="${!isEdit}"
+                                class="btn btn-primary user-submit-primary"
+                                type="submit"
+                                name="action"
+                                value="create"
+                                th:formaction="@{/users/save}">
+                            <i class="fas fa-check"></i>
+                            <span>Tạo tài khoản</span>
+                        </button>
+
+                        <button th:if="${!isEdit}"
+                                class="btn btn-outline-secondary user-submit-secondary"
+                                type="submit"
+                                name="action"
+                                value="createAndSend"
+                                th:formaction="@{/users/save}">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Tạo và gửi email</span>
+                        </button>
+
+                        <button th:if="${isEdit}"
+                                class="btn btn-primary user-submit-primary"
+                                type="submit"
+                                th:formaction="@{/users/update}">
+                            <i class="fas fa-floppy-disk"></i>
+                            <span>Lưu thay đổi</span>
+                        </button>
+
+                        <a class="btn btn-outline-secondary user-submit-secondary" th:href="@{/users}">
+                            <i class="fas fa-xmark"></i>
+                            <span>Hủy</span>
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        </form>
     </div>
-</form>
+</main>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

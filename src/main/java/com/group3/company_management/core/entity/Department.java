@@ -21,9 +21,15 @@ public class Department {
     @NotBlank(message = "Code id required")
     private String name;
     private Boolean isDeleted = false;
+    private String description;
+
+    @Column(name = "manager_id")
+    private Long managerId;
 
     private LocalDateTime deletedAt;
+    private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
     private String deletedBy;
     private String status = "ACTIVE";
     public Department() {
@@ -45,5 +51,20 @@ public class Department {
         this.deletedAt = deletedAt;
         this.deletedBy = deletedBy;
         this.status = status;
+    }
+
+    @PrePersist
+    public void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+
+        if (isDeleted == null) isDeleted = false;
+        if (status == null || status.trim().isEmpty()) status = "ACTIVE";
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

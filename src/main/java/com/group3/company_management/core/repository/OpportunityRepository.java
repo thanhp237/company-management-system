@@ -57,7 +57,12 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
     @Query("SELECT o FROM Opportunity o WHERE o.id = :id")
     Optional<Opportunity> findDetailById(@Param("id") Long id);
 
+    @EntityGraph(attributePaths = {"customer", "assignedTo"})
+    Optional<Opportunity> findByCustomerId(Long customerId);
+
     long countByStage(String stage);
 
     long countByStageAndAssignedToUsername(String stage, String username);
+    @Query("SELECT o FROM Opportunity o WHERE o.customer.id = :customerId")
+    List<Opportunity>  findFirstOpportunityByCustomerId(@Param("customerId") Long customerId);
 }

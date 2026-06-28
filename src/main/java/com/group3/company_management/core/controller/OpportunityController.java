@@ -2,12 +2,13 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.entity.CustomerActivity;
 import com.group3.company_management.core.entity.Opportunity;
-import com.group3.company_management.core.service.CustomerActivityService;
+import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.service.OpportunityService;
 import com.group3.company_management.core.controller.CustomerActivityController;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,14 +20,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/pipeline")
 @RequiredArgsConstructor
 public class OpportunityController {
 
+    private static final Set<String> QUOTATION_STAGES = Set.of("QUALIFIED", "PROPOSAL", "NEGOTIATION");
+
     private final OpportunityService opportunityService;
-    private final CustomerActivityService customerActivityService;
+    private final QuotationRepository quotationRepository;
 
     @GetMapping
     public String listPipeline(
@@ -80,20 +84,17 @@ public class OpportunityController {
         try {
             String username = authentication.getName();
             Opportunity opportunity = opportunityService.getOpportunityDetail(id, username);
-            List<CustomerActivity> activities = customerActivityService.getActivitiesByCustomerId(
-                    opportunity.getCustomer().getId());    // Case filter by customer ID : opportunity.getCustomerId()
-            Map<Long, List<String>> nextStagesByOpportunity = opportunityService
-                    .getNextStagesByOpportunity(List.of(opportunity));
+            Map<Long, List<String>> nextStagesByOpportunity =
+                    opportunityService.getNextStagesByOpportunity(List.of(opportunity));
+            var existingQuotation =
+                    quotationRepository.findFirstByOpportunityIdOrderByCreatedAtDesc(opportunity.getId()).orElse(null);
 
             model.addAttribute("opportunity", opportunity);
             model.addAttribute("stages", opportunityService.getStages());
             model.addAttribute("stageCounts", opportunityService.getStageCounts(username));
             model.addAttribute("nextStages", nextStagesByOpportunity.get(opportunity.getId()));
-            // Load customer activity history
-
-            model.addAttribute("activities", activities);
-
-            
+            model.addAttribute("existingQuotation", existingQuotation);
+            model.addAttribute("canCreateQuotation", canCreateQuotation(authentication, opportunity, existingQuotation));
             return "pipeline/detail";
 
             
@@ -130,5 +131,25 @@ public class OpportunityController {
         }
 
         return "redirect:/pipeline/" + id;
+    }
+
+    private boolean canCreateQuotation(Authentication authentication, Opportunity opportunity, Object existingQuotation) {
+        if (existingQuotation != null || opportunity == null || opportunity.getStage() == null) {
+            return false;
+        }
+
+        return QUOTATION_STAGES.contains(opportunity.getStage().toUpperCase())
+                && hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_ADMIN");
+    }
+
+    private boolean hasAnyRole(Authentication authentication, String... roles) {
+        if (authentication == null) {
+            return false;
+        }
+        Set<String> allowedRoles = Set.of(roles);
+        return authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(allowedRoles::contains);
     }
 }
