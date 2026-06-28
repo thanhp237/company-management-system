@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/contracts")
@@ -67,6 +68,7 @@ public class ContractController {
             ContractResponse contract = contractService.getContractDetail(id);
             model.addAttribute("contract", contract);
             model.addAttribute("contractRuleRequest", toRuleRequest(contract));
+            model.addAttribute("statusClasses", statusClasses());
             return "contracts/contract";
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
@@ -203,6 +205,59 @@ public class ContractController {
         request.setDeliveryTerms(contract.getDeliveryTerms());
         request.setLegalTerms(contract.getLegalTerms());
         request.setAdminNote(contract.getAdminNote());
+        request.setSigningDate(contract.getSigningDate());
+        request.setSigningPlace(contract.getSigningPlace());
+        request.setSellerCompanyName(contract.getSellerCompanyName());
+        request.setSellerTaxCode(contract.getSellerTaxCode());
+        request.setSellerAddress(contract.getSellerAddress());
+        request.setSellerPhone(contract.getSellerPhone());
+        request.setSellerFax(contract.getSellerFax());
+        request.setSellerBankAccount(contract.getSellerBankAccount());
+        request.setSellerBankName(contract.getSellerBankName());
+        request.setSellerRepresentativeName(contract.getSellerRepresentativeName());
+        request.setSellerRepresentativeTitle(contract.getSellerRepresentativeTitle());
+        request.setSellerIdentityNumber(contract.getSellerIdentityNumber());
+        request.setSellerIdentityIssuedPlace(contract.getSellerIdentityIssuedPlace());
+        request.setSellerIdentityIssuedDate(contract.getSellerIdentityIssuedDate());
+        request.setSellerAuthorizationInfo(contract.getSellerAuthorizationInfo());
+        request.setBuyerCompanyName(contract.getBuyerCompanyName());
+        request.setBuyerTaxCode(contract.getBuyerTaxCode());
+        request.setBuyerAddress(contract.getBuyerAddress());
+        request.setBuyerPhone(contract.getBuyerPhone());
+        request.setBuyerFax(contract.getBuyerFax());
+        request.setBuyerBankAccount(contract.getBuyerBankAccount());
+        request.setBuyerBankName(contract.getBuyerBankName());
+        request.setBuyerRepresentativeName(contract.getBuyerRepresentativeName());
+        request.setBuyerRepresentativeTitle(contract.getBuyerRepresentativeTitle());
+        request.setBuyerIdentityNumber(contract.getBuyerIdentityNumber());
+        request.setBuyerIdentityIssuedPlace(contract.getBuyerIdentityIssuedPlace());
+        request.setBuyerIdentityIssuedDate(contract.getBuyerIdentityIssuedDate());
+        request.setBuyerAuthorizationInfo(contract.getBuyerAuthorizationInfo());
+        request.setAmountInWords(contract.getAmountInWords());
+        request.setPaymentDueDate(contract.getPaymentDueDate());
+        request.setPaymentMethod(contract.getPaymentMethod());
+        request.setDeliverySchedule(contract.getDeliverySchedule());
+        request.setShippingResponsibility(contract.getShippingResponsibility());
+        request.setUnloadingCost(contract.getUnloadingCost());
+        request.setStorageFeePerDay(contract.getStorageFeePerDay());
+        request.setInspectionAgency(contract.getInspectionAgency());
+        request.setWarrantyProductScope(contract.getWarrantyProductScope());
+        request.setWarrantyMonths(contract.getWarrantyMonths());
+        request.setPenaltyRate(contract.getPenaltyRate());
+        request.setContractCopies(contract.getContractCopies());
+        request.setCopiesPerParty(contract.getCopiesPerParty());
+        request.setGeneralTerms(contract.getGeneralTerms());
         return request;
+    }
+
+    private Map<String, String> statusClasses() {
+        return Map.of(
+                "DRAFT", " draft",
+                "PENDING_ADMIN_OFFICER", " pending",
+                "ADMIN_REVIEWED", " reviewed",
+                "SENT_TO_CUSTOMER", " sent",
+                "SIGNED", " signed",
+                "CANCELLED", " cancelled"
+        );
     }
 }
