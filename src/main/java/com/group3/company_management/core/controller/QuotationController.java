@@ -10,10 +10,12 @@ import com.group3.company_management.core.repository.VoucherRepository;
 import com.group3.company_management.core.service.QuotationService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,6 +32,7 @@ public class QuotationController {
     private final OpportunityRepository opportunityRepository;
     @GetMapping("/create/{customerId}")
     public String createPage(@PathVariable Long customerId,
+                             @RequestParam(required = false) Long opportunityId,
                              Authentication authentication,
                              Model model) {
 
@@ -38,6 +41,7 @@ public class QuotationController {
 
         QuotationRequest quotationRequest = new QuotationRequest();
         quotationRequest.setCustomerId(customerId);
+        quotationRequest.setOpportunityId(opportunityId);
 
         quotationRequest.setQuotationDate(LocalDate.now());
         quotationRequest.setStatus("DRAFT");
@@ -85,6 +89,21 @@ public class QuotationController {
         model.addAttribute("quotation", quotation);
 
         return "quotation/detail";
+    }
+
+    @PostMapping("/{id}/accept")
+    @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+    public String acceptQuotation(@PathVariable Long id,
+                                  Authentication authentication,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            quotationService.acceptQuotation(id, authentication.getName());
+            redirectAttributes.addFlashAttribute("successMessage", "Quotation accepted successfully.");
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+
+        return "redirect:/quotation/detail/" + id;
     }
 
 

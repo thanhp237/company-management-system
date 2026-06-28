@@ -49,6 +49,21 @@
                     <i class="fas fa-eye"></i>
                     <span>Xem báo giá</span>
                 </a>
+                <form th:if="${canCreateContract}"
+                      th:action="@{/contracts/create-from-quotation/{quotationId}(quotationId=${existingQuotation.id})}"
+                      method="post"
+                      class="m-0">
+                    <button type="submit" class="btn management-primary-action">
+                        <i class="fas fa-file-signature"></i>
+                        <span>Tạo hợp đồng</span>
+                    </button>
+                </form>
+                <a th:if="${existingContract != null}"
+                   class="btn management-primary-action"
+                   th:href="@{/contracts/{id}(id=${existingContract.id})}">
+                    <i class="fas fa-file-contract"></i>
+                    <span>Xem hợp đồng</span>
+                </a>
                 <a th:if="${opportunity.customer != null and canAddActivity}"
                    class="btn management-secondary-action"
                    th:href="@{/customer-activities/add(customerId=${opportunity.customer.id},relatedType='OPPORTUNITY',relatedId=${opportunity.id},returnUrl=${'/pipeline/' + opportunity.id})}">
@@ -115,7 +130,21 @@
                         </div>
                         <div>
                             <span>Báo giá</span>
-                            <strong th:text="${existingQuotation != null ? existingQuotation.quotationCode : 'Chưa có'}">Chưa có</strong>
+                            <strong>
+                                <a th:if="${existingQuotation != null}"
+                                   th:href="@{/quotation/detail/{id}(id=${existingQuotation.id})}"
+                                   th:text="${existingQuotation.quotationCode}">QT001</a>
+                                <span th:if="${existingQuotation == null}">Chưa có</span>
+                            </strong>
+                        </div>
+                        <div>
+                            <span>Hợp đồng</span>
+                            <strong>
+                                <a th:if="${existingContract != null}"
+                                   th:href="@{/contracts/{id}(id=${existingContract.id})}"
+                                   th:text="${existingContract.contractCode}">CT001</a>
+                                <span th:if="${existingContract == null}">Chưa tạo</span>
+                            </strong>
                         </div>
                     </div>
                 </section>
@@ -149,29 +178,51 @@
             <aside class="pipeline-detail-side">
                 <section class="detail-action-card">
                     <h2>Thao tác nhanh</h2>
+                    <div class="detail-linked-card" th:if="${existingQuotation != null}">
+                        <span>Opportunity này đã tạo báo giá</span>
+                        <a th:href="@{/quotation/detail/{id}(id=${existingQuotation.id})}">
+                            <strong th:text="${existingQuotation.quotationCode}">QT001</strong>
+                            <small th:text="${existingQuotation.status}">DRAFT</small>
+                        </a>
+                    </div>
                     <a th:if="${canCreateQuotation}"
                        class="detail-action-primary"
                        th:href="@{/quotation/create/{customerId}(customerId=${opportunity.customer.id}, opportunityId=${opportunity.id})}">
                         <i class="fas fa-file-circle-plus"></i>
-                        <span>Tạo báo giá từ opportunity</span>
+                        <span>Tạo báo giá</span>
                     </a>
-                    <a th:if="${existingQuotation != null}"
+                    <form th:if="${canCreateContract}"
+                          th:action="@{/contracts/create-from-quotation/{quotationId}(quotationId=${existingQuotation.id})}"
+                          method="post"
+                          class="detail-action-form">
+                        <button type="submit" class="detail-action-primary">
+                            <i class="fas fa-file-signature"></i>
+                            <span>Tạo hợp đồng</span>
+                        </button>
+                    </form>
+                    <a th:if="${existingContract != null}"
                        class="detail-action-primary"
-                       th:href="@{/quotation/detail/{id}(id=${existingQuotation.id})}">
-                        <i class="fas fa-file-invoice"></i>
-                        <span>Xem báo giá hiện có</span>
+                       th:href="@{/contracts/{id}(id=${existingContract.id})}">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Xem hợp đồng</span>
                     </a>
+                    <div class="detail-action-note"
+                         th:if="${existingQuotation != null and existingContract == null and !canCreateContract}">
+                        <i class="fas fa-circle-info"></i>
+                        <span th:if="${opportunity.stage != 'WON'}">Chỉ tạo hợp đồng khi opportunity ở stage WON.</span>
+                        <span th:if="${opportunity.stage == 'WON' and !quotationReadyForContract}">Báo giá cần trạng thái APPROVED hoặc ACCEPTED để tạo hợp đồng.</span>
+                    </div>
                     <a th:if="${opportunity.customer != null and canAddActivity}"
                        class="detail-action-primary"
                        th:href="@{/customer-activities/add(customerId=${opportunity.customer.id},relatedType='OPPORTUNITY',relatedId=${opportunity.id},returnUrl=${'/pipeline/' + opportunity.id})}">
                         <i class="fas fa-comment-medical"></i>
-                        <span>Thêm activity khách hàng</span>
+                        <span>Thêm activity</span>
                     </a>
                     <a th:if="${opportunity.customer != null}"
                        class="detail-action-secondary"
                        th:href="@{/customers/{id}(id=${opportunity.customer.id})}">
                         <i class="fas fa-clock-rotate-left"></i>
-                        <span>Xem lịch sử khách hàng</span>
+                        <span>Lịch sử khách hàng</span>
                     </a>
                     <div class="detail-action-note" th:if="${!canAddActivity}">
                         <i class="fas fa-lock"></i>
@@ -180,7 +231,7 @@
                     <a class="detail-action-secondary"
                        th:href="@{/pipeline/{id}/evaluation(id=${opportunity.id})}">
                         <i class="fas fa-chart-simple"></i>
-                        <span>Đánh giá cơ hội</span>
+                        <span>Đánh giá</span>
                     </a>
                     <div class="detail-action-note" th:if="${existingQuotation == null and !canCreateQuotation}">
                         <i class="fas fa-lock"></i>

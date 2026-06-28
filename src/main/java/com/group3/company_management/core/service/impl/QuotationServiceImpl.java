@@ -147,6 +147,28 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     @Override
+    @Transactional
+    public void acceptQuotation(Long id, String username) {
+        Quotation quotation = quotationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Quotation not found"));
+
+        if (quotation.getStatus() == null || !"DRAFT".equalsIgnoreCase(quotation.getStatus())) {
+            throw new RuntimeException("Only draft quotation can be accepted");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long employeeId = user.getEmployee() != null ? user.getEmployee().getId() : null;
+        if (!canManageOpportunity(user)
+                && (employeeId == null || !employeeId.equals(quotation.getEmployeeId()))) {
+            throw new RuntimeException("You are not allowed to accept this quotation");
+        }
+
+        quotation.setStatus("APPROVED");
+        quotationRepository.save(quotation);
+    }
+
+    @Override
     public QuotationResponse previewQuotation(QuotationRequest request) {
 
         Customer customer = customerRepository.findById(request.getCustomerId())

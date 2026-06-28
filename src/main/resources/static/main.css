@@ -1418,11 +1418,17 @@ a:hover {
     padding: 18px;
     background: #007a3d;
     color: #fff;
+    display: grid;
+    gap: 10px;
 }
 
 .detail-action-card h2 {
-    margin-bottom: 14px;
+    margin-bottom: 4px;
     color: #fff;
+}
+
+.detail-action-form {
+    margin: 0;
 }
 
 .detail-action-primary {
@@ -1431,12 +1437,16 @@ a:hover {
     justify-content: center;
     gap: 8px;
     width: 100%;
-    min-height: 42px;
-    padding: 0 14px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 0;
     border-radius: 8px;
     background: #fff;
     color: #007a3d;
     font-weight: 900;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
 }
 
 .detail-action-primary:hover {
@@ -1451,13 +1461,15 @@ a:hover {
     gap: 8px;
     width: 100%;
     min-height: 42px;
-    margin-top: 10px;
-    padding: 0 14px;
+    padding: 10px 14px;
     border: 1px solid rgba(255, 255, 255, 0.28);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.08);
     color: #fff;
     font-weight: 900;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
 }
 
 .detail-action-secondary:hover {
@@ -1469,7 +1481,6 @@ a:hover {
 .detail-action-note {
     display: flex;
     gap: 8px;
-    margin-top: 12px;
     padding: 12px;
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.14);
@@ -1481,6 +1492,46 @@ a:hover {
 
 .detail-action-note i {
     margin-top: 2px;
+}
+
+.detail-action-primary i,
+.detail-action-secondary i {
+    flex: 0 0 auto;
+}
+
+.detail-linked-card {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.detail-linked-card > span {
+    color: #eaffef;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.detail-linked-card a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: #fff;
+}
+
+.detail-linked-card strong {
+    font-size: 15px;
+}
+
+.detail-linked-card small {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+    font-weight: 900;
 }
 
 .pipeline-stage-form {

@@ -6,11 +6,13 @@ import com.group3.company_management.core.dto.ContractResponse;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Employee;
+import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.entity.Product;
 import com.group3.company_management.core.entity.Quotation;
 import com.group3.company_management.core.entity.QuotationDetail;
 import com.group3.company_management.core.repository.ContractRepository;
 import com.group3.company_management.core.repository.EmployeeRepository;
+import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.service.ContractService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.List;
 import com.group3.company_management.core.dto.ContractStatisticsResponse;
 import jakarta.persistence.criteria.Join;
@@ -35,7 +38,7 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 public class ContractServiceImpl implements ContractService {
 
-    private static final String APPROVED_QUOTATION_STATUS = "APPROVED";
+    private static final Set<String> CONTRACT_READY_QUOTATION_STATUSES = Set.of("APPROVED", "ACCEPTED");
     private static final String ADMIN_OFFICER_TYPE = "ADMIN_OFFICER";
     private static final String ADMIN_OFFICER_TYPE_ALIAS = "ADMINOFFICER";
     private static final String ADMIN_TYPE = "ADMIN";
@@ -43,6 +46,7 @@ public class ContractServiceImpl implements ContractService {
     private final QuotationRepository quotationRepository;
     private final ContractRepository contractRepository;
     private final EmployeeRepository employeeRepository;
+    private final OpportunityRepository opportunityRepository;
 
     @Override
     @Transactional
@@ -50,8 +54,17 @@ public class ContractServiceImpl implements ContractService {
         Quotation quotation = quotationRepository.findById(quotationId)
                 .orElseThrow(() -> new RuntimeException("Quotation not found"));
 
-        if (!APPROVED_QUOTATION_STATUS.equalsIgnoreCase(quotation.getStatus())) {
-            throw new RuntimeException("Only approved quotation can create contract");
+        if (quotation.getStatus() == null
+                || !CONTRACT_READY_QUOTATION_STATUSES.contains(quotation.getStatus().trim().toUpperCase())) {
+            throw new RuntimeException("Only approved or accepted quotation can create contract");
+        }
+        if (quotation.getOpportunityId() == null) {
+            throw new RuntimeException("Quotation must belong to an opportunity before creating contract");
+        }
+        Opportunity opportunity = opportunityRepository.findById(quotation.getOpportunityId())
+                .orElseThrow(() -> new RuntimeException("Opportunity not found"));
+        if (opportunity.getStage() == null || !"WON".equalsIgnoreCase(opportunity.getStage())) {
+            throw new RuntimeException("Only WON opportunity can create contract");
         }
 
         contractRepository.findByQuotationId(quotationId)

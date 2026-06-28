@@ -9,5 +9,7 @@ public interface QuotationService {
 
     QuotationResponse getQuotationDetail(Long id);
 
+    void acceptQuotation(Long id, String username);
+
     QuotationResponse previewQuotation(QuotationRequest request);
 }

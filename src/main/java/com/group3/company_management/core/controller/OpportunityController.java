@@ -1,7 +1,10 @@
 package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.entity.CustomerActivity;
+import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Opportunity;
+import com.group3.company_management.core.entity.Quotation;
+import com.group3.company_management.core.repository.ContractRepository;
 import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.service.OpportunityService;
 import com.group3.company_management.core.controller.CustomerActivityController;
@@ -28,9 +31,11 @@ import java.util.Set;
 public class OpportunityController {
 
     private static final Set<String> QUOTATION_STAGES = Set.of("QUALIFIED", "PROPOSAL", "NEGOTIATION");
+    private static final Set<String> CONTRACT_QUOTATION_STATUSES = Set.of("APPROVED", "ACCEPTED");
 
     private final OpportunityService opportunityService;
     private final QuotationRepository quotationRepository;
+    private final ContractRepository contractRepository;
 
     @GetMapping
     public String listPipeline(
@@ -86,15 +91,21 @@ public class OpportunityController {
             Opportunity opportunity = opportunityService.getOpportunityDetail(id, username);
             Map<Long, List<String>> nextStagesByOpportunity =
                     opportunityService.getNextStagesByOpportunity(List.of(opportunity));
-            var existingQuotation =
+            Quotation existingQuotation =
                     quotationRepository.findFirstByOpportunityIdOrderByCreatedAtDesc(opportunity.getId()).orElse(null);
+            Contract existingContract = existingQuotation == null
+                    ? null
+                    : contractRepository.findByQuotationId(existingQuotation.getId()).orElse(null);
 
             model.addAttribute("opportunity", opportunity);
             model.addAttribute("stages", opportunityService.getStages());
             model.addAttribute("stageCounts", opportunityService.getStageCounts(username));
             model.addAttribute("nextStages", nextStagesByOpportunity.get(opportunity.getId()));
             model.addAttribute("existingQuotation", existingQuotation);
+            model.addAttribute("existingContract", existingContract);
             model.addAttribute("canCreateQuotation", canCreateQuotation(authentication, opportunity, existingQuotation));
+            model.addAttribute("canCreateContract", canCreateContract(authentication, opportunity, existingQuotation, existingContract));
+            model.addAttribute("quotationReadyForContract", quotationReadyForContract(existingQuotation));
             model.addAttribute("canAddActivity", !isClosedStage(opportunity.getStage()));
             return "pipeline/detail";
 
@@ -158,7 +169,10 @@ public class OpportunityController {
     }
 
     private boolean canCreateQuotation(Authentication authentication, Opportunity opportunity, Object existingQuotation) {
-        if (existingQuotation != null || opportunity == null || opportunity.getStage() == null) {
+        if (existingQuotation != null
+                || opportunity == null
+                || opportunity.getCustomer() == null
+                || opportunity.getStage() == null) {
             return false;
         }
 
@@ -183,6 +197,26 @@ public class OpportunityController {
         }
         String normalized = stage.trim().toUpperCase();
         return "WON".equals(normalized) || "LOST".equals(normalized);
+    }
+
+    private boolean canCreateContract(
+            Authentication authentication,
+            Opportunity opportunity,
+            Quotation quotation,
+            Contract existingContract) {
+        if (opportunity == null || quotation == null || existingContract != null) {
+            return false;
+        }
+        return "WON".equalsIgnoreCase(opportunity.getStage())
+                && quotationReadyForContract(quotation)
+                && hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_ADMIN");
+    }
+
+    private boolean quotationReadyForContract(Quotation quotation) {
+        if (quotation == null || quotation.getStatus() == null) {
+            return false;
+        }
+        return CONTRACT_QUOTATION_STATUSES.contains(quotation.getStatus().trim().toUpperCase());
     }
 
     private int calculateOpportunityScore(Opportunity opportunity) {
