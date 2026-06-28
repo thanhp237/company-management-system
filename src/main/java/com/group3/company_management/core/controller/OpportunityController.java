@@ -126,18 +126,36 @@ public class OpportunityController {
         try {
             String username = authentication.getName();
             Opportunity opportunity = opportunityService.getOpportunityDetail(id, username);
-            int score = calculateOpportunityScore(opportunity);
+            var evaluation = opportunityService.evaluateOpportunity(id, username);
+            int score = evaluation.getTotalScore();
 
             model.addAttribute("opportunity", opportunity);
+            model.addAttribute("evaluation", evaluation);
             model.addAttribute("score", score);
+            model.addAttribute("classification", evaluation.getClassification());
             model.addAttribute("confidence", score >= 80 ? "94%" : score >= 60 ? "78%" : "52%");
             model.addAttribute("rank", score >= 80 ? "A+" : score >= 60 ? "B" : "C");
             model.addAttribute("stageCounts", opportunityService.getStageCounts(username));
+
             return "pipeline/evaluation";
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/pipeline";
         }
+    }
+    @PostMapping("/{id}/evaluation")
+    public String confirmEvaluation(
+            @PathVariable Long id,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        try {
+            opportunityService.confirmEvaluation(id, authentication.getName());
+            redirectAttributes.addFlashAttribute("successMessage", "Opportunity evaluated successfully.");
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+
+        return "redirect:/pipeline/" + id;
     }
 
 // @PostMapping("/{id}/activity")
@@ -219,23 +237,5 @@ public class OpportunityController {
         return CONTRACT_QUOTATION_STATUSES.contains(quotation.getStatus().trim().toUpperCase());
     }
 
-    private int calculateOpportunityScore(Opportunity opportunity) {
-        int score = 52;
-        if (opportunity.getExpectedAmount() != null) {
-            score += 12;
-            if (opportunity.getExpectedAmount().signum() > 0) {
-                score += 8;
-            }
-        }
-        if (opportunity.getCustomer() != null) {
-            score += 10;
-        }
-        if (opportunity.getAssignedTo() != null) {
-            score += 6;
-        }
-        if (QUOTATION_STAGES.contains(opportunity.getStage().toUpperCase())) {
-            score += 8;
-        }
-        return Math.min(score, 96);
-    }
+
 }

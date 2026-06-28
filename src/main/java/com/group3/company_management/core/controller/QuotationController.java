@@ -87,6 +87,7 @@ public class QuotationController {
                 quotationService.getQuotationDetail(id);
 
         model.addAttribute("quotation", quotation);
+        model.addAttribute("backPipelineId", quotation.getOpportunityId());
 
         return "quotation/detail";
     }
@@ -105,6 +106,7 @@ public class QuotationController {
 
         return "redirect:/quotation/detail/" + id;
     }
+
 
 
 }
