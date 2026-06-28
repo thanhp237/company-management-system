@@ -31,6 +31,8 @@ public class Department {
 
     private LocalDateTime updatedAt;
     private String deletedBy;
+    @Column(name = "max_members")
+    private Integer maxMembers;
     private String status = "ACTIVE";
     public Department() {
 

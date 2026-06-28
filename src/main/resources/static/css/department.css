@@ -248,6 +248,16 @@
     font-size: 16px;
     font-weight: 900;
 }
+.department-card.full-department {
+    border: 2px solid #dc3545;
+    background: #fff5f5;
+}
+
+.department-capacity {
+    margin-top: 8px;
+    font-weight: 600;
+    color: #555;
+}
 
 .department-add-card small {
     margin-top: 6px;

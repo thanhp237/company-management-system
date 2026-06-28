@@ -1,10 +1,9 @@
 package com.group3.company_management.core.service.impl;
 
-import com.group3.company_management.core.dto.ProfileUpdateRequest;
-import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.entity.Department;
 import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.repository.DepartmentRepository;
+import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.DepartmentService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,23 +13,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final UserRepository userRepository;
 
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository) {
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, UserRepository userRepository) {
         this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Department> getAllDepartments() {
-        return departmentRepository.findByIsDeletedFalseOrderByNameAsc();
-
+    public List<User> getAssignableUsers(Long departmentId) {
+        return userRepository.findAssignableUsersForDepartment(departmentId);
     }
     private Department findActiveDepartmentById(Long id) {
         return departmentRepository.findByIdAndIsDeletedFalse(id)
@@ -39,15 +41,58 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 
     @Override
+    public List<Department> getAllDepartments() {
+        return List.of();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Department getDepartmentById(Long id) {
         return departmentRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Department not found"));
     }
+    @Override
+    @Transactional
+    public void addUsersToDepartment(List<Long> userIds, Long departmentId) {
+        if (userIds == null || userIds.isEmpty()) {
+            return;
+        }
+
+        Department dept = departmentRepository.findByIdAndIsDeletedFalse(departmentId)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+
+        if (!"ACTIVE".equalsIgnoreCase(dept.getStatus())) {
+            throw new RuntimeException("Không thể gán nhân viên vào phòng ban đã ngừng hoạt động");
+        }
+
+        List<User> users = userRepository.findAllById(userIds);
+
+        List<User> newUsers = users.stream()
+                .filter(User::isActive)
+                .filter(user -> !user.isAdmin())
+                .filter(user -> !departmentId.equals(user.getDepartmentId()))
+                .toList();
+
+        int currentSize = userRepository.countByDepartmentIdAndIsDeletedFalse(departmentId);
+
+        if (dept.getMaxMembers() != null && currentSize + newUsers.size() > dept.getMaxMembers()) {
+            throw new RuntimeException(
+                    "Vượt quá giới hạn phòng ban. Hiện có " + currentSize
+                            + ", chọn thêm " + newUsers.size()
+                            + ", tối đa " + dept.getMaxMembers()
+            );
+        }
+
+        for (User user : newUsers) {
+            user.setDepartmentId(dept.getId());
+        }
+
+        userRepository.saveAll(newUsers);
+    }
 
     @Override
     @Transactional
-    public void saveDepartment(Department department) {
+    public Department saveDepartment(Department department) {
         department.setCode(validate(department.getCode(), "Code is required"));
         department.setName(validate(department.getName(), "Name is required"));
 
@@ -58,6 +103,16 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (duplicateCode) {
             throw new RuntimeException("Department code already exists");
         }
+        if (department.getMaxMembers() != null && department.getMaxMembers() < 1) {
+            throw new RuntimeException("Max members must be greater than 0");
+        }
+
+        if (department.getId() != null && department.getMaxMembers() != null) {
+            int currentMembers = userRepository.countByDepartmentIdAndIsDeletedFalse(department.getId());
+            if (department.getMaxMembers() < currentMembers) {
+                throw new RuntimeException("Max members cannot be less than current members (" + currentMembers + ")");
+            }
+        }
 
         if (department.getDescription() != null) {
             department.setDescription(department.getDescription().trim());
@@ -67,7 +122,7 @@ public class DepartmentServiceImpl implements DepartmentService {
             department.setStatus("ACTIVE");
         }
 
-        departmentRepository.save(department);
+        return departmentRepository.save(department);
     }
 
     @Override
@@ -115,15 +170,44 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 
     @Override
+    @Transactional
     public void updateDepartmentStatus(Long id, String status) {
         if (id == null) {
-            throw new IllegalArgumentException("User ID is required");
+            throw new IllegalArgumentException("Department ID is required");
         }
 
+        if (!"ACTIVE".equalsIgnoreCase(status) && !"INACTIVE".equalsIgnoreCase(status)) {
+            throw new RuntimeException("Invalid department status");
+        }
 
-        Department department1 = findActiveDepartmentById(id);
-        department1.setStatus(status);
-        departmentRepository.save(department1);
+        Department department = findActiveDepartmentById(id);
+        department.setStatus(status.toUpperCase());
+        departmentRepository.save(department);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public int countMembers(Long departmentId) {
+        if (departmentId == null) {
+            return 0;
+        }
+        return userRepository.countByDepartmentIdAndIsDeletedFalse(departmentId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Integer> countMembersByDepartmentIds(Collection<Long> departmentIds) {
+        if (departmentIds == null || departmentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return userRepository.countActiveUsersByDepartmentIds(departmentIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> ((Number) row[1]).intValue()
+                ));
+    }
+
+
 
 }
