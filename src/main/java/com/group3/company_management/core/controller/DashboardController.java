@@ -115,7 +115,7 @@ public String employeeDashboard(Authentication authentication,
     model.addAttribute("pendingApprovals", 0);
     model.addAttribute("monthlyRevenue", 0);
 
-    return "dashboard/employee";
+    return "dashboard/employee-dashboard";
 }
 
     /**
@@ -133,6 +133,6 @@ public String employeeDashboard(Authentication authentication,
         // TODO: customer data
         model.addAttribute("orderCount", 0);
 
-        return "dashboard/customer";
+        return "dashboard/customer-dashboard";
     }
 }
