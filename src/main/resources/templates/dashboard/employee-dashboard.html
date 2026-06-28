@@ -417,123 +417,143 @@
 
         </div>
 
-          <!-- Sales -->
-            <div th:if="${role == 'SALES'}">
+<!-- ========================= -->
+<!-- SALES WORKSPACE ACTIONS -->
+<!-- ========================= -->
+<div th:if="${role == 'SALES'}" class="mt-3">
 
-    <div class="section-header">
-        <h2>Sales Performance</h2>
-    </div>
+    <h5>Sales Tools</h5>
 
-    <div class="row">
+    <ul>
+        <li><a th:href="@{/contracts/list}">Contracts List</a></li>
 
-        <div class="col-lg-4">
+        <li><a th:href="@{/quotation}">Quotations</a></li>
 
-            <div class="metric-card">
+        <li><a th:href="@{/quotation/create}">Create Quotation</a></li>
 
-                <div class="metric-value">
-                    18
-                </div>
+        <li>
+            <a th:href="@{/create-from-quotation/{quotationId}(quotationId=1)}">
+                Create From Quotation
+            </a>
+        </li>
 
-                <div class="metric-label">
-                    New Leads
-                </div>
+        <li>
+            <a th:href="@{/{id}/submit-admin(id=1)}">
+                Submit to Admin
+            </a>
+        </li>
 
-            </div>
+        <li><a th:href="@{/send-customer}">Send to Customer</a></li>
 
-        </div>
+        <li><a th:href="@{/customer-sign}">Customer Sign</a></li>
 
-        <div class="col-lg-4">
+        <li>
+            <a th:href="@{/{id}/cancel(id=1)}">
+                Cancel Request
+            </a>
+        </li>
 
-            <div class="metric-card">
-
-                Monthly Target
-
-            </div>
-
-        </div>
-
-        <div class="col-lg-4">
-
-            <div class="metric-card">
-
-                Conversion Rate
-
-            </div>
-
-        </div>
-
-    </div>
+    </ul>
 
 </div>
 
-   <!-- Marketing -->
 
-   <div th:if="${role == 'MARKETING'}">
+<!-- ========================= -->
+<!-- MARKETING WORKSPACE ACTIONS -->
+<!-- ========================= -->
+<div th:if="${role == 'MARKETING'}" class="mt-3">
 
-    <div class="section-header">
+    <h5>Marketing Tools</h5>
 
-        <h2>Marketing Campaign</h2>
+    <ul>
+        <li><a th:href="@{/products/list}">Product List</a></li>
 
-    </div>
+        <li><a th:href="@{/products/add}">Add Product</a></li>
 
-    <div class="metric-card">
+        <li><a th:href="@{/products/save}">Save Product</a></li>
 
-        Campaign Performance
+        <li><a th:href="@{/products/update}">Update Product</a></li>
 
-    </div>
-
-</div>
-       <!-- Accountant-->
-
-       <div th:if="${role == 'ACCOUNTANT'}">
-
-    <div class="section-header">
-
-        <h2>Finance</h2>
-
-    </div>
-
-    <div class="metric-card">
-
-        Pending Invoice
-
-    </div>
+        <li><a th:href="@{/products/delete/1}">Delete Product</a></li>
+    </ul>
 
 </div>
-           <!-- Admin officer-->
 
-           <div th:if="${role == 'ADMIN' || role == 'ADMIN_OFFICER'}">
 
-    <div class="section-header">
+<!-- ========================= -->
+<!-- ACCOUNTANT WORKSPACE ACTIONS -->
+<!-- ========================= -->
+<div th:if="${role == 'ACCOUNTANT'}" class="mt-3">
 
-        <h2>Admin Officer</h2>
+    <h5>Finance Tools</h5>
 
-    </div>
+    <ul>
+        <li><a th:href="@{/invoice/pending}">Pending Invoice</a></li>
 
-    <div class="metric-card">
-
-        Waiting Approval
-
-    </div>
-
-</div>
-               <!-- Sales MManager -->
-
-               <div th:if="${role == 'SALES_MANAGER'}">
-
-    <div class="section-header">
-
-        <h2>Sales Overview</h2>
-
-    </div>
-
-    <div class="metric-card">
-
-        Team KPI
-
-    </div>
+        <li><a th:href="@{/quotation/detail}">Quotation Detail</a></li>
+    </ul>
 
 </div>
+
+
+<!-- ========================= -->
+<!-- ADMIN OFFICER -->
+<!-- ========================= -->
+<div th:if="${role == 'ADMIN' || role == 'ADMIN_OFFICER'}" class="mt-3">
+
+    <h5>Admin Tools</h5>
+
+    <ul>
+        <li><a th:href="@{/notifications}">Notifications</a></li>
+
+        <li><a th:href="@{/api/notifications}">API Notifications</a></li>
+
+        <li><a th:href="@{/summary}">Summary</a></li>
+
+        <li>
+            <a th:href="@{/{id}/read(id=1)}">
+                Mark Notification as Read
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- SALES MANAGER -->
+<!-- ========================= -->
+<div th:if="${role == 'SALES_MANAGER'}" class="mt-3">
+
+    <h5>Sales Manager Tools</h5>
+
+    <ul>
+        <li>
+            <a th:href="@{/create-from-quotation/{quotationId}(quotationId=1)}">
+                Create From Quotation
+            </a>
+        </li>
+
+        <li>
+            <a th:href="@{/{id}/submit-admin(id=1)}">
+                Submit to Admin
+            </a>
+        </li>
+
+        <li><a th:href="@{/send-customer}">Send to Customer</a></li>
+
+        <li><a th:href="@{/customer-sign}">Customer Sign</a></li>
+
+        <li>
+            <a th:href="@{/{id}/cancel(id=1)}">
+                Cancel Request
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
                    <!-- Directors -->
                 <div th:if="${role == 'DIRECTOR'}">
 
