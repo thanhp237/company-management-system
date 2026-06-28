@@ -160,7 +160,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+        return roleRepository.findByStatusIgnoreCaseOrderByRoleNameAsc("ACTIVE");
     }
     @Override
     public List<User> getUsersByRoles(List<String> roles) {
@@ -172,8 +172,12 @@ public class UserServiceImpl implements UserService {
     }
 
     private Role findRoleById(Long id) {
-        return roleRepository.findById(id)
+        Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Role not found with ID: " + id));
+        if (!role.isActive()) {
+            throw new IllegalArgumentException("Role is inactive");
+        }
+        return role;
     }
 
     private void syncEmployeeProfile(User user, Role role) {

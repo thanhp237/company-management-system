@@ -8,8 +8,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleSummaryDTO {
+    private Long id;
     private Long stt;
     private String roleCode;
     private String roleName;
+    private String status;
     private Long totalCount;
+    private boolean systemRole;
+    private boolean canDelete;
 }

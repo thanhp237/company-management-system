@@ -268,6 +268,52 @@
     color: #516171;
 }
 
+.role-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.role-table .role-pill.system {
+    background: #edf6ff;
+    color: #1c69b3;
+}
+
+.role-table .role-pill.custom {
+    background: #e5f8ec;
+    color: #007a3d;
+}
+
+.role-count-link {
+    color: #007a3d;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.role-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #506070;
+}
+
+.role-icon-button.danger {
+    color: #c1322a;
+}
+
+.role-icon-button.disabled {
+    cursor: not-allowed;
+    color: #9aa7b2;
+}
+
+.role-icon-button:not(.disabled):hover {
+    background: #f4f7f5;
+    color: #007a3d;
+}
+
 .user-form-page {
     width: min(1120px, 100%);
 }

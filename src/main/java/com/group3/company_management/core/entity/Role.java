@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,4 +32,19 @@ public class Role {
 
     @Column(name = "role_name", nullable = false, length = 100)
     private String roleName;
+
+    @Column(name = "status", nullable = false, length = 20, columnDefinition = "varchar(20) default 'ACTIVE'")
+    @Builder.Default
+    private String status = "ACTIVE";
+
+    @PrePersist
+    protected void onCreate() {
+        if (status == null || status.trim().isEmpty()) {
+            status = "ACTIVE";
+        }
+    }
+
+    public boolean isActive() {
+        return status == null || "ACTIVE".equalsIgnoreCase(status);
+    }
 }
