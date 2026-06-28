@@ -20,7 +20,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.group3.company_management.core.dto.ContractStatisticsResponse;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.util.ArrayList;
 @Service
 @RequiredArgsConstructor
 public class ContractServiceImpl implements ContractService {
@@ -237,6 +247,102 @@ public class ContractServiceImpl implements ContractService {
 
         if (contract.getStatus() == Contract.ContractStatus.SIGNED) {
             throw new RuntimeException("Signed contract cannot be cancelled");
+        }
+
+        contract.setStatus(Contract.ContractStatus.CANCELLED);
+        contractRepository.save(contract);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ContractResponse> searchContracts(
+            String username,
+            String keyword,
+            Contract.ContractStatus status,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Employee employee = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        Sort sort = "asc".equalsIgnoreCase(sortDir)
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<Contract> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (canReviewContract(employee)) {
+                predicates.add(cb.equal(root.get("adminOfficer").get("id"), employee.getId()));
+            } else {
+                predicates.add(cb.equal(root.get("sale").get("id"), employee.getId()));
+            }
+
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (keyword != null && !keyword.isBlank()) {
+                String like = "%" + keyword.trim().toLowerCase() + "%";
+                Join<Contract, Customer> customer = root.join("customer", JoinType.LEFT);
+
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("contractCode")), like),
+                        cb.like(cb.lower(customer.get("name")), like),
+                        cb.like(cb.lower(customer.get("companyName")), like),
+                        cb.like(cb.lower(customer.get("fullName")), like),
+                        cb.like(cb.lower(customer.get("email")), like)
+                ));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return contractRepository.findAll(spec, pageable).map(this::mapToResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ContractStatisticsResponse getContractStatistics(String username) {
+        Employee employee = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        Long employeeId = employee.getId();
+
+        if (canReviewContract(employee)) {
+            return ContractStatisticsResponse.builder()
+                    .total(contractRepository.countByAdminOfficerId(employeeId))
+                    .draft(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.DRAFT))
+                    .pending(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.PENDING_ADMIN_OFFICER))
+                    .reviewed(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.ADMIN_REVIEWED))
+                    .sent(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.SENT_TO_CUSTOMER))
+                    .signed(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.SIGNED))
+                    .cancelled(contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.CANCELLED))
+                    .build();
+        }
+
+        return ContractStatisticsResponse.builder()
+                .total(contractRepository.countBySaleId(employeeId))
+                .draft(contractRepository.countBySaleIdAndStatus(employeeId, Contract.ContractStatus.DRAFT))
+                .pending(contractRepository.countBySaleIdAndStatus(employeeId, Contract.ContractStatus.PENDING_ADMIN_OFFICER))
+                .reviewed(contractRepository.countBySaleIdAndStatus(employeeId, Contract.ContractStatus.ADMIN_REVIEWED))
+                .sent(contractRepository.countBySaleIdAndStatus(employeeId, Contract.ContractStatus.SENT_TO_CUSTOMER))
+                .signed(contractRepository.countBySaleIdAndStatus(employeeId, Contract.ContractStatus.SIGNED))
+                .cancelled(contractRepository.countBySaleIdAndStatus(employeeId, Contract.ContractStatus.CANCELLED))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteContract(Long contractId, String username) {
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        if (contract.getStatus() == Contract.ContractStatus.SIGNED) {
+            throw new RuntimeException("Signed contract cannot be deleted");
         }
 
         contract.setStatus(Contract.ContractStatus.CANCELLED);

@@ -42,4 +42,5 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      */
     List<Customer> findAllByOrderByCreatedAtDesc();
     Customer findCustomerById(Long id);
+
 }
