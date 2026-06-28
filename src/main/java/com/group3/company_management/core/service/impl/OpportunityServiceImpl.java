@@ -17,12 +17,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import com.group3.company_management.core.dto.OpportunityEvaluationResult;
+import com.group3.company_management.core.entity.CustomerActivity;
+import com.group3.company_management.core.repository.CustomerActivityRepository;
 
+import java.math.BigDecimal;
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class OpportunityServiceImpl implements OpportunityService {
-
+    private final CustomerActivityRepository customerActivityRepository;
     private static final List<String> STAGES = List.of(
             "NEW",
             "QUALIFIED",
@@ -130,6 +134,96 @@ public class OpportunityServiceImpl implements OpportunityService {
         opportunity.setStage(nextStage);
         opportunityRepository.save(opportunity);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public OpportunityEvaluationResult evaluateOpportunity(Long id, String username) {
+        Opportunity opportunity = getOpportunityDetail(id, username);
+
+        List<CustomerActivity> activities =
+                customerActivityRepository.findByRelatedTypeIgnoreCaseAndRelatedIdOrderByCreatedAtDesc(
+                        "OPPORTUNITY",
+                        opportunity.getId()
+                );
+
+        if (activities.isEmpty() && opportunity.getCustomer() != null) {
+            activities = customerActivityRepository.findByCustomerIdOrderByCreatedAtDesc(
+                    opportunity.getCustomer().getId()
+            );
+        }
+
+        int budgetScore = calculateBudgetScore(opportunity);
+        int decisionMakerScore = calculateDecisionMakerScore(activities);
+        int needScore = calculateNeedScore(activities);
+        int engagementScore = calculateEngagementScore(activities);
+        int companySizeScore = calculateCompanySizeScore(activities);
+
+        int totalScore = budgetScore
+                + decisionMakerScore
+                + needScore
+                + engagementScore
+                + companySizeScore;
+
+        String classification;
+        String suggestedStage;
+
+        if (totalScore >= 70) {
+            classification = "QUALIFIED";
+            suggestedStage = "QUALIFIED";
+        } else if (totalScore >= 40) {
+            classification = "NEED_NURTURE";
+            suggestedStage = "NEW";
+        } else {
+            classification = "DISQUALIFIED";
+            suggestedStage = "LOST";
+        }
+
+        return OpportunityEvaluationResult.builder()
+                .budgetScore(budgetScore)
+                .decisionMakerScore(decisionMakerScore)
+                .needScore(needScore)
+                .engagementScore(engagementScore)
+                .companySizeScore(companySizeScore)
+                .totalScore(totalScore)
+                .classification(classification)
+                .suggestedStage(suggestedStage)
+                .reasons(List.of(
+                        "Budget: " + budgetScore + "/30",
+                        "Decision Maker: " + decisionMakerScore + "/20",
+                        "Need: " + needScore + "/20",
+                        "Engagement: " + engagementScore + "/15",
+                        "Company Size: " + companySizeScore + "/15"
+                ))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void confirmEvaluation(Long id, String username) {
+        Opportunity opportunity = opportunityRepository.findDetailById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Opportunity not found"));
+
+        User currentUser = findCurrentUser(username);
+        validateAssignedSales(opportunity, currentUser);
+
+        OpportunityEvaluationResult result = evaluateOpportunity(id, username);
+
+        String oldStage = opportunity.getStage();
+        opportunity.setStage(result.getSuggestedStage());
+        opportunityRepository.save(opportunity);
+
+        CustomerActivity audit = CustomerActivity.builder()
+                .customerId(opportunity.getCustomer().getId())
+                .activityType("NOTE")
+                .activityNote("Evaluation Result: score " + result.getTotalScore()
+                        + "/100, classification " + result.getClassification()
+                        + ". Stage: " + oldStage + " -> " + result.getSuggestedStage())
+                .relatedType("OPPORTUNITY")
+                .relatedId(opportunity.getId())
+                .employeeId(currentUser.getId())
+                .build();
+
+        customerActivityRepository.save(audit);
+    }
 
     private List<String> getNextStages(String stage) {
         return new ArrayList<>(NEXT_STAGES.getOrDefault(normalizeRequiredStage(stage), List.of()));
@@ -186,6 +280,110 @@ public class OpportunityServiceImpl implements OpportunityService {
         if (opportunity.getAssignedTo() == null ||
                 !user.getUsername().equals(opportunity.getAssignedTo().getUsername())) {
             throw new IllegalArgumentException("You are not allowed to access this opportunity");
+        }
+    }
+    private int calculateBudgetScore(Opportunity opportunity) {
+        if (opportunity.getExpectedAmount() == null) {
+            return 0;
+        }
+
+        if (opportunity.getExpectedAmount().compareTo(new BigDecimal("100000000")) >= 0) {
+            return 30;
+        }
+
+        if (opportunity.getExpectedAmount().compareTo(BigDecimal.ZERO) > 0) {
+            return 15;
+        }
+
+        return 0;
+    }
+
+    private int calculateDecisionMakerScore(List<CustomerActivity> activities) {
+        String text = joinActivityText(activities);
+
+        return containsAny(text,
+                "ceo",
+                "director",
+                "manager",
+                "giám đốc",
+                "truong phong",
+                "trưởng phòng",
+                "quan ly",
+                "quản lý") ? 20 : 0;
+    }
+
+    private int calculateNeedScore(List<CustomerActivity> activities) {
+        String text = joinActivityText(activities);
+
+        return containsAny(text,
+                "need",
+                "problem",
+                "requirement",
+                "urgent",
+                "nhu cầu",
+                "van de",
+                "vấn đề",
+                "can",
+                "cần",
+                "gap",
+                "gấp",
+                "yeu cau",
+                "yêu cầu") ? 20 : 0;
+    }
+
+    private int calculateEngagementScore(List<CustomerActivity> activities) {
+        return activities.stream()
+                .anyMatch(activity -> containsAny(
+                        safeLower(activity.getActivityType()),
+                        "call",
+                        "email",
+                        "meeting"
+                )) ? 15 : 0;
+    }
+
+    private int calculateCompanySizeScore(List<CustomerActivity> activities) {
+        String text = joinActivityText(activities);
+
+        return containsAny(text,
+                "10 employees",
+                "more than 10",
+                "over 10",
+                "10 nhân viên",
+                "tren 10",
+                "trên 10",
+                ">10",
+                ">= 10") ? 15 : 0;
+    }
+
+    private String joinActivityText(List<CustomerActivity> activities) {
+        return activities.stream()
+                .map(activity -> safeLower(activity.getActivityType()) + " " + safeLower(activity.getActivityNote()))
+                .reduce("", (current, next) -> current + " " + next);
+    }
+
+    private String safeLower(String value) {
+        return value == null ? "" : value.toLowerCase(Locale.ROOT);
+    }
+
+    private boolean containsAny(String text, String... keywords) {
+        for (String keyword : keywords) {
+            if (text.contains(keyword.toLowerCase(Locale.ROOT))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void validateAssignedSales(Opportunity opportunity, User user) {
+        if (user.getRole() == null
+                || user.getRole().getRoleCode() == null
+                || !"SALES".equalsIgnoreCase(user.getRole().getRoleCode())) {
+            throw new IllegalArgumentException("Only assigned Sales can evaluate this opportunity");
+        }
+
+        if (opportunity.getAssignedTo() == null
+                || !user.getUsername().equals(opportunity.getAssignedTo().getUsername())) {
+            throw new IllegalArgumentException("You are not assigned to this opportunity");
         }
     }
 }

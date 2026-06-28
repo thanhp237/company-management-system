@@ -38,4 +38,5 @@ public class QuotationResponse {
     private LocalDateTime createdAt;
 
     private List<QuotationDetailResponse> details;
+    private Long opportunityId;
 }

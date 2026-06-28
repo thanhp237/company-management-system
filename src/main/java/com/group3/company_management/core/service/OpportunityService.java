@@ -1,5 +1,6 @@
 package com.group3.company_management.core.service;
 
+import com.group3.company_management.core.dto.OpportunityEvaluationResult;
 import com.group3.company_management.core.entity.Opportunity;
 import org.springframework.data.domain.Page;
 
@@ -21,4 +22,7 @@ public interface OpportunityService {
     Map<Long, List<String>> getNextStagesByOpportunity(List<Opportunity> opportunities);
 
     void updateStage(Long id, String stage, String username);
+    OpportunityEvaluationResult evaluateOpportunity(Long id, String username);
+
+    void confirmEvaluation(Long id, String username);
 }

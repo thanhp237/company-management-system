@@ -28,4 +28,8 @@ public interface CustomerActivityRepository
             Pageable pageable);
 
     long countByCustomerId(Long customerId);
+    List<CustomerActivity> findByRelatedTypeIgnoreCaseAndRelatedIdOrderByCreatedAtDesc(
+            String relatedType,
+            Long relatedId
+    );
 }
