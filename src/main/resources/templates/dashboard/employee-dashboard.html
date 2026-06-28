@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +19,7 @@
     <link rel="stylesheet" th:href="@{/main.css}">
 
     <style>
-         :root {
+        :root {
             --primary-color: #22c55e;
             --primary-dark: #16a34a;
             --primary-light: #86efac;
@@ -30,15 +31,15 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        
+
         * {
             font-family: 'Roboto', sans-serif;
         }
-        
+
         body {
             background-color: var(--bg-light);
         }
-        
+
         /* Navbar Styling */
         .navbar {
             background: white;
@@ -46,13 +47,13 @@
             box-shadow: var(--shadow-sm);
             padding: 1rem 0;
         }
-        
+
         .navbar-brand {
             font-weight: 700;
             color: var(--text-dark) !important;
             font-size: 20px;
         }
-        
+
         /* Sidebar Styling */
         .sidebar {
             background: #1f2937;
@@ -64,7 +65,7 @@
             overflow-y: auto;
             z-index: 100;
         }
-        
+
         /* Main Content */
         .main-content {
             margin-left: 250px;
@@ -72,23 +73,23 @@
             padding: 30px 20px;
             min-height: calc(100vh - 56px);
         }
-        
+
         .page-header {
             margin-bottom: 30px;
         }
-        
+
         .page-header h1 {
             font-size: 32px;
             font-weight: 700;
             color: var(--text-dark);
             margin-bottom: 8px;
         }
-        
+
         .page-header p {
             color: var(--text-light);
             font-size: 14px;
         }
-        
+
         /* Dashboard Cards */
         .metric-card {
             background: white;
@@ -98,13 +99,13 @@
             transition: all 0.3s ease;
             margin-bottom: 20px;
         }
-        
+
         .metric-card:hover {
             box-shadow: var(--shadow-lg);
             border-color: var(--primary-light);
             transform: translateY(-2px);
         }
-        
+
         .metric-card-icon {
             width: 48px;
             height: 48px;
@@ -115,40 +116,40 @@
             font-size: 24px;
             margin-bottom: 16px;
         }
-        
+
         .metric-card-icon.success {
             background: rgba(34, 197, 94, 0.1);
             color: var(--primary-color);
         }
-        
+
         .metric-card-icon.info {
             background: rgba(59, 130, 246, 0.1);
             color: #3b82f6;
         }
-        
+
         .metric-card-icon.warning {
             background: rgba(245, 158, 11, 0.1);
             color: #f59e0b;
         }
-        
+
         .metric-card-icon.danger {
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
         }
-        
+
         .metric-value {
             font-size: 32px;
             font-weight: 700;
             color: var(--text-dark);
             margin-bottom: 4px;
         }
-        
+
         .metric-label {
             color: var(--text-light);
             font-size: 14px;
             font-weight: 500;
         }
-        
+
         .metric-change {
             font-size: 12px;
             margin-top: 8px;
@@ -156,17 +157,17 @@
             border-radius: 4px;
             display: inline-block;
         }
-        
+
         .metric-change.positive {
             background: rgba(34, 197, 94, 0.1);
             color: var(--primary-color);
         }
-        
+
         .metric-change.negative {
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
         }
-        
+
         /* Section Headers */
         .section-header {
             display: flex;
@@ -175,14 +176,14 @@
             margin-bottom: 20px;
             margin-top: 30px;
         }
-        
+
         .section-header h2 {
             font-size: 20px;
             font-weight: 600;
             color: var(--text-dark);
             margin: 0;
         }
-        
+
         .view-all-link {
             color: var(--primary-color);
             text-decoration: none;
@@ -190,11 +191,11 @@
             font-weight: 500;
             transition: all 0.3s ease;
         }
-        
+
         .view-all-link:hover {
             color: var(--primary-dark);
         }
-        
+
         /* Activity Section */
         .activity-item {
             display: flex;
@@ -203,11 +204,11 @@
             border-bottom: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
-        
+
         .activity-item:hover {
             background: var(--bg-light);
         }
-        
+
         .activity-icon {
             width: 40px;
             height: 40px;
@@ -218,29 +219,29 @@
             flex-shrink: 0;
             font-size: 18px;
         }
-        
+
         .activity-content {
             flex: 1;
             min-width: 0;
         }
-        
+
         .activity-title {
             font-weight: 600;
             color: var(--text-dark);
             margin-bottom: 4px;
         }
-        
+
         .activity-description {
             font-size: 13px;
             color: var(--text-light);
             margin-bottom: 4px;
         }
-        
+
         .activity-time {
             font-size: 12px;
             color: #9ca3af;
         }
-        
+
         /* Table Styling */
         .data-table {
             background: white;
@@ -248,16 +249,16 @@
             border: 1px solid var(--border-color);
             overflow: hidden;
         }
-        
+
         .data-table table {
             margin-bottom: 0;
         }
-        
+
         .data-table thead {
             background: var(--bg-light);
             border-bottom: 1px solid var(--border-color);
         }
-        
+
         .data-table th {
             font-weight: 600;
             color: var(--text-dark);
@@ -266,17 +267,17 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         .data-table td {
             padding: 16px;
             color: var(--text-dark);
             border-bottom: 1px solid var(--border-color);
         }
-        
+
         .data-table tbody tr:hover {
             background: var(--bg-light);
         }
-        
+
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -284,22 +285,22 @@
             font-size: 12px;
             font-weight: 600;
         }
-        
+
         .status-badge.active {
             background: rgba(34, 197, 94, 0.1);
             color: var(--primary-color);
         }
-        
+
         .status-badge.pending {
             background: rgba(245, 158, 11, 0.1);
             color: #f59e0b;
         }
-        
+
         .status-badge.completed {
             background: rgba(59, 130, 246, 0.1);
             color: #3b82f6;
         }
-        
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -307,16 +308,16 @@
                 width: 200px;
                 transition: all 0.3s ease;
             }
-            
+
             .sidebar.active {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 margin-left: 0;
                 padding: 20px 15px;
             }
-        } 
+        }
     </style>
 
 
@@ -332,8 +333,14 @@
     <main class="admin-workspace with-sidebar dashboard-workspace">
         <!-- Page Header -->
         <div class="page-header">
-            <h1>Welcome back, <span sec:authentication="name"></span>!</h1>
-            <p>Here's what's happening with your business today.</p>
+
+            <h1>
+                Welcome back,
+                <span sec:authentication="name"></span>
+            </h1>
+
+            <p>Employee Dashboard</p>
+
         </div>
 
         <!-- Metrics Row -->
@@ -394,6 +401,177 @@
                 </div>
             </div>
         </div>
+
+        <!-- Workplace  -->
+        <div class="row mt-4">
+
+            <div class="col-lg-12">
+
+                <div class="metric-card">
+
+                    <h3>Your Workspace</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+<!-- ========================= -->
+<!-- SALES WORKSPACE ACTIONS -->
+<!-- ========================= -->
+<div th:if="${role == 'SALES'}" class="mt-3">
+
+    <h5>Sales Tools</h5>
+
+    <ul>
+        <li><a th:href="@{/contracts/list}">Contracts List</a></li>
+
+        <li><a th:href="@{/quotation}">Quotations</a></li>
+
+        <li><a th:href="@{/quotation/create}">Create Quotation</a></li>
+
+        <li>
+            <a th:href="@{/create-from-quotation/{quotationId}(quotationId=1)}">
+                Create From Quotation
+            </a>
+        </li>
+
+        <li>
+            <a th:href="@{/{id}/submit-admin(id=1)}">
+                Submit to Admin
+            </a>
+        </li>
+
+        <li><a th:href="@{/send-customer}">Send to Customer</a></li>
+
+        <li><a th:href="@{/customer-sign}">Customer Sign</a></li>
+
+        <li>
+            <a th:href="@{/{id}/cancel(id=1)}">
+                Cancel Request
+            </a>
+        </li>
+
+    </ul>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- MARKETING WORKSPACE ACTIONS -->
+<!-- ========================= -->
+<div th:if="${role == 'MARKETING'}" class="mt-3">
+
+    <h5>Marketing Tools</h5>
+
+    <ul>
+        <li><a th:href="@{/products/list}">Product List</a></li>
+
+        <li><a th:href="@{/products/add}">Add Product</a></li>
+
+        <li><a th:href="@{/products/save}">Save Product</a></li>
+
+        <li><a th:href="@{/products/update}">Update Product</a></li>
+
+        <li><a th:href="@{/products/delete/1}">Delete Product</a></li>
+    </ul>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- ACCOUNTANT WORKSPACE ACTIONS -->
+<!-- ========================= -->
+<div th:if="${role == 'ACCOUNTANT'}" class="mt-3">
+
+    <h5>Finance Tools</h5>
+
+    <ul>
+        <li><a th:href="@{/invoice/pending}">Pending Invoice</a></li>
+
+        <li><a th:href="@{/quotation/detail}">Quotation Detail</a></li>
+    </ul>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- ADMIN OFFICER -->
+<!-- ========================= -->
+<div th:if="${role == 'ADMIN' || role == 'ADMIN_OFFICER'}" class="mt-3">
+
+    <h5>Admin Tools</h5>
+
+    <ul>
+        <li><a th:href="@{/notifications}">Notifications</a></li>
+
+        <li><a th:href="@{/api/notifications}">API Notifications</a></li>
+
+        <li><a th:href="@{/summary}">Summary</a></li>
+
+        <li>
+            <a th:href="@{/{id}/read(id=1)}">
+                Mark Notification as Read
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- SALES MANAGER -->
+<!-- ========================= -->
+<div th:if="${role == 'SALES_MANAGER'}" class="mt-3">
+
+    <h5>Sales Manager Tools</h5>
+
+    <ul>
+        <li>
+            <a th:href="@{/create-from-quotation/{quotationId}(quotationId=1)}">
+                Create From Quotation
+            </a>
+        </li>
+
+        <li>
+            <a th:href="@{/{id}/submit-admin(id=1)}">
+                Submit to Admin
+            </a>
+        </li>
+
+        <li><a th:href="@{/send-customer}">Send to Customer</a></li>
+
+        <li><a th:href="@{/customer-sign}">Customer Sign</a></li>
+
+        <li>
+            <a th:href="@{/{id}/cancel(id=1)}">
+                Cancel Request
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+
+                   <!-- Directors -->
+                <div th:if="${role == 'DIRECTOR'}">
+
+    <div class="section-header">
+
+        <h2>Executive Dashboard</h2>
+
+    </div>
+
+    <div class="metric-card">
+
+        Company Performance
+
+    </div>
+
+</div>
+
+        
 
         <!-- Recent Activities & Quick Stats -->
         <div class="row" style="margin-top: 40px;">

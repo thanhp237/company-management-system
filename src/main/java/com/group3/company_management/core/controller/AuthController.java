@@ -42,6 +42,8 @@ public class AuthController {
      * @param httpRequest HTTP request context (for IP, user-agent)
      * @return JWT tokens on success
      */
+
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
@@ -54,10 +56,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-        @GetMapping("/")
-    public String selectLoginType() {
-        return "auth/select-login";
-    }
+    
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok().body(

@@ -32,7 +32,7 @@ public class CustomerAuthController {
      * GET /customer/login
      * Display customer login page (separate from /login for employees)
      */
-    @GetMapping("/login")
+    @GetMapping("/select-login")
     public String showCustomerLoginPage(
             Model model,
             @RequestParam(required = false) String error,
@@ -57,6 +57,6 @@ public class CustomerAuthController {
             log.info("ℹ️ Customer logged out");
         }
         
-        return "customer/login";
+       return "auth/customer-login";
     }
 }
