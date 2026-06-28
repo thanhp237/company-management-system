@@ -1055,6 +1055,11 @@ a:hover {
     color: #be2f2a;
 }
 
+.management-alert.warning {
+    background: #fff8eb;
+    color: #8a5600;
+}
+
 .settings-grid {
     display: grid;
     grid-template-columns: minmax(260px, 420px);
@@ -1437,6 +1442,28 @@ a:hover {
 .detail-action-primary:hover {
     background: #eaffef;
     color: #006a35;
+}
+
+.detail-action-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 42px;
+    margin-top: 10px;
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-weight: 900;
+}
+
+.detail-action-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
 }
 
 .detail-action-note {

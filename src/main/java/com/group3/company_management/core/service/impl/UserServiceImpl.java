@@ -3,8 +3,10 @@ package com.group3.company_management.core.service.impl;
 import com.group3.company_management.core.dto.ProfileUpdateRequest;
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
+import com.group3.company_management.core.entity.Department;
 import com.group3.company_management.core.entity.Role;
 import com.group3.company_management.core.entity.User;
+import com.group3.company_management.core.repository.DepartmentRepository;
 import com.group3.company_management.core.repository.RoleRepository;
 import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.UserService;
@@ -18,8 +20,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,16 +34,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final DepartmentRepository departmentRepository;
     private final JdbcTemplate jdbcTemplate;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(UserResponse::fromEntity)
-                .toList();
+        return toResponseList(userRepository.findAll());
     }
 
     @Override
@@ -51,13 +55,13 @@ public class UserServiceImpl implements UserService {
         }else {
             users = userRepository.findAllActiveWithEmployee(pageable);
         }
-        return users.map(UserResponse::fromEntity);
+        return toResponsePage(users);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
-        return UserResponse.fromEntity(findActiveUserById(id));
+        return toResponse(findActiveUserById(id), Map.of());
     }
 
     @Override
@@ -69,6 +73,7 @@ public class UserServiceImpl implements UserService {
 
         validateUniqueUsername(username, null);
         validateUniqueEmail(email, null);
+        validateDepartment(request.getDepartmentId());
 
         User user = new User();
         user.setUsername(username);
@@ -94,6 +99,7 @@ public class UserServiceImpl implements UserService {
 
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
+        validateDepartment(request.getDepartmentId());
 
         user.setUsername(username);
         user.setEmail(email);
@@ -114,6 +120,7 @@ public class UserServiceImpl implements UserService {
 
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
+        validateDepartment(userDetails.getDepartmentId());
 
         user.setEmail(email);
         user.setUsername(username);
@@ -263,15 +270,12 @@ public class UserServiceImpl implements UserService {
 
 @Override
 @Transactional(readOnly = true)
-public List<UserResponse> getActiveUsersByRole(String roleCode) {
+    public List<UserResponse> getActiveUsersByRole(String roleCode) {
     if (roleCode == null || roleCode.trim().isEmpty()) {
         return getAllUsers();
     }
     
-    return userRepository.findActiveUsersByRoleCode(roleCode)
-            .stream()
-            .map(UserResponse::fromEntity) //  hàm có sẵn
-            .toList();
+    return toResponseList(userRepository.findActiveUsersByRoleCode(roleCode));
 }
 
 @Override
@@ -279,7 +283,7 @@ public List<UserResponse> getActiveUsersByRole(String roleCode) {
 public UserResponse getProfileByUsername(String username) {
     User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
-    return UserResponse.fromEntity(user);
+    return toResponse(user, Map.of());
 }
 
 @Override
@@ -320,22 +324,68 @@ public void updateProfile(String username, ProfileUpdateRequest request) {
                     .searchByStatus(status);
         }
 
-        return users.stream()
-                .map(UserResponse::fromEntity)
-                .toList();
+        return toResponseList(users);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> searchPage(String keyword, String status, String roleCode, int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), size, Sort.by("id").ascending());
-        return userRepository.searchUsers(keyword, status, roleCode, pageable)
-                .map(UserResponse::fromEntity);
+        return toResponsePage(userRepository.searchUsers(keyword, status, roleCode, pageable));
     }
 
     @Override
     @Transactional
     public Long countUsers (){
         return userRepository.count();
+    }
+
+    private Page<UserResponse> toResponsePage(Page<User> users) {
+        Map<Long, String> departmentNames = loadDepartmentNames(users.getContent());
+        return users.map(user -> toResponse(user, departmentNames));
+    }
+
+    private List<UserResponse> toResponseList(List<User> users) {
+        Map<Long, String> departmentNames = loadDepartmentNames(users);
+        return users.stream()
+                .map(user -> toResponse(user, departmentNames))
+                .toList();
+    }
+
+    private UserResponse toResponse(User user, Map<Long, String> departmentNames) {
+        UserResponse response = UserResponse.fromEntity(user);
+        if (response.getDepartmentId() != null) {
+            response.setDepartmentName(departmentNames.get(response.getDepartmentId()));
+        }
+        return response;
+    }
+
+    private Map<Long, String> loadDepartmentNames(Collection<User> users) {
+        List<Long> departmentIds = users.stream()
+                .map(User::getDepartmentId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (departmentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return departmentRepository.findByIdInAndIsDeletedFalse(departmentIds)
+                .stream()
+                .collect(Collectors.toMap(Department::getId, Department::getName));
+    }
+
+    private void validateDepartment(Long departmentId) {
+        if (departmentId == null) {
+            return;
+        }
+
+        Department department = departmentRepository.findByIdAndIsDeletedFalse(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+
+        if (!"ACTIVE".equalsIgnoreCase(department.getStatus())) {
+            throw new IllegalArgumentException("Department is inactive");
+        }
     }
 }

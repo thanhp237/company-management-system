@@ -24,10 +24,7 @@ public class CustomerActivityServiceImpl
             int size) {
 
         Pageable pageable =
-                PageRequest.of(
-                        page,
-                        size,
-                        Sort.by(Sort.Direction.DESC, "createdAt"));
+                activityPageable(page, size);
 
         if (activityType == null || activityType.isBlank()) {
             return repository.findAll(pageable);
@@ -39,26 +36,50 @@ public class CustomerActivityServiceImpl
     }
 
     @Override
+    public Page<CustomerActivity> getActivities(
+            Long customerId,
+            String activityType,
+            int page,
+            int size) {
+
+        Pageable pageable = activityPageable(page, size);
+
+        if (customerId == null) {
+            return getActivities(activityType, page, size);
+        }
+
+        if (activityType == null || activityType.isBlank()) {
+            return repository.findByCustomerId(customerId, pageable);
+        }
+
+        return repository.findByCustomerIdAndActivityTypeIgnoreCase(
+                customerId,
+                activityType,
+                pageable);
+    }
+
+    @Override
     public CustomerActivity getActivityById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
                                 "Activity not found."));
     }
+
     @Override
-public void updateActivityNote(Long id,
-                               String activityNote) {
+    public void updateActivityNote(Long id,
+                                   String activityNote) {
 
-    CustomerActivity activity =
-            repository.findById(id)
-                    .orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "Activity not found."));
+        CustomerActivity activity =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Activity not found."));
 
-    activity.setActivityNote(activityNote);
+        activity.setActivityNote(activityNote);
 
-    repository.save(activity);
-}
+        repository.save(activity);
+    }
 
     @Override
     public List<CustomerActivity> getActivitiesByCustomerId(
@@ -76,5 +97,12 @@ public void updateActivityNote(Long id,
     @Override
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+    private Pageable activityPageable(int page, int size) {
+        return PageRequest.of(
+                Math.max(page, 0),
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 }

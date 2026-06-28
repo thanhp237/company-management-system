@@ -1,96 +1,165 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Customer List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD khách hàng - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
 </head>
 <body>
-
-<h2>Customer Management</h2>
-
-<div>
-    <a th:href="@{/customers/add}">
-        Add New Customer
-    </a>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
 </div>
 
-<br>
+<main class="admin-workspace with-sidebar customer-workspace">
+    <div class="management-page customer-page">
+        <div class="management-taskbar customer-taskbar">
+            <div>
+                <p class="management-eyebrow">CRM / Khách hàng</p>
+                <h1>CRUD khách hàng</h1>
+                <p class="management-subtitle">Quản lý hồ sơ khách hàng đã có trong hệ thống CRM.</p>
+            </div>
+        </div>
 
-<form method="get" th:action="@{/customers}">
-    <label>Status Filter:</label>
-
-    <select name="status">
-        <option value="">All</option>
-        <option value="ACTIVE">ACTIVE</option>
-        <option value="INACTIVE">INACTIVE</option>
-    </select>
-
-    <button type="submit">
-        Search
-    </button>
-</form>
-
-<br>
-
-<table border="1">
-
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Full Name</th>
-        <th>Phone</th>
-        <th>Email</th>
-        <th>Address</th>
-        <th>Source</th>
-        <th>Assigned Sales</th>
-        <th>Status</th>
-        <th>Created At</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-
-    <tbody>
-
-    <tr th:each="customer : ${customers}">
-
-        <td th:text="${customer.id}"></td>
-
-        <td th:text="${customer.fullName}"></td>
-
-        <td th:text="${customer.phone}"></td>
-
-        <td th:text="${customer.email}"></td>
-
-        <td th:text="${customer.address}"></td>
-
-        <td th:text="${customer.customerSource}"></td>
-
-        <td th:text="${customer.assignedSalesId}"></td>
-
-        <td th:text="${customer.customerStatus}"></td>
-
-        <td th:text="${customer.createdAt}"></td>
-
-        <td>
-
-            <a th:href="@{/customers/add(id=${customer.id})}">
-                Edit
+        <div class="customer-tabs">
+            <a th:href="@{/customer}">
+                <i class="fas fa-file-import"></i>
+                <span>Import & phân bổ</span>
             </a>
-
-            |
-
-            <a th:href="@{/customers/delete/{id}(id=${customer.id})}"
-               onclick="return confirm('Delete this customer?')">
-                Delete
+            <a class="active" th:href="@{/customers}">
+                <i class="fas fa-table-list"></i>
+                <span>CRUD khách hàng</span>
             </a>
+        </div>
 
-        </td>
+        <section class="customer-stat-grid">
+            <article class="customer-stat-card success">
+                <span>Tổng khách hàng</span>
+                <strong th:text="${customers != null ? customers.size() : 0}">0</strong>
+                <small>Trong bộ lọc hiện tại</small>
+            </article>
+            <article class="customer-stat-card info">
+                <span>Đang hoạt động</span>
+                <strong th:text="${customers != null ? customers.?[customerStatus == 'ACTIVE'].size() : 0}">0</strong>
+                <small>Tài khoản/khách hàng active</small>
+            </article>
+            <article class="customer-stat-card warning">
+                <span>Chưa kích hoạt</span>
+                <strong th:text="${customers != null ? customers.?[customerStatus != 'ACTIVE'].size() : 0}">0</strong>
+                <small>Cần rà soát</small>
+            </article>
+            <article class="customer-stat-card neutral">
+                <span>CRM</span>
+                <strong>2</strong>
+                <small>CRUD và import tách riêng</small>
+            </article>
+        </section>
 
-    </tr>
+        <form class="customer-filterbar" method="get" th:action="@{/customers}">
+            <label>
+                <span>Trạng thái</span>
+                <select name="status">
+                    <option value="">Tất cả</option>
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                </select>
+            </label>
+            <button class="filter-icon-button" type="submit" title="Lọc">
+                <i class="fas fa-filter"></i>
+            </button>
+            <a class="customer-secondary-button" th:href="@{/customers}">
+                <i class="fas fa-xmark"></i>
+                <span>Xóa lọc</span>
+            </a>
+        </form>
 
-    </tbody>
+        <section class="customer-panel">
+            <div class="customer-panel-header">
+                <div>
+                    <h2>Danh sách khách hàng</h2>
+                    <p>CRUD hồ sơ khách hàng, trạng thái và thông tin liên hệ.</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="customer-table">
+                    <thead>
+                    <tr>
+                        <th>Khách hàng</th>
+                        <th>Liên hệ</th>
+                        <th>Địa chỉ</th>
+                        <th>Nguồn</th>
+                        <th>Sale ID</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="customer : ${customers}">
+                        <td>
+                            <div class="customer-identity">
+                                <span class="customer-avatar"
+                                      th:text="${#strings.substring((customer.fullName != null ? customer.fullName : 'K'), 0, 1)}">K</span>
+                                <div>
+                                    <strong th:text="${customer.fullName}">Khách hàng</strong>
+                                    <span th:text="${'ID #' + customer.id}">ID</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <strong th:text="${customer.phone != null ? customer.phone : 'N/A'}">Phone</strong>
+                            <div class="text-muted small" th:text="${customer.email != null ? customer.email : 'N/A'}">Email</div>
+                        </td>
+                        <td th:text="${customer.address != null ? customer.address : 'N/A'}">Address</td>
+                        <td th:text="${customer.customerSource != null ? customer.customerSource : 'N/A'}">Source</td>
+                        <td th:text="${customer.assignedSalesId != null ? customer.assignedSalesId : 'Chưa phân'}">Sale</td>
+                        <td>
+                            <span class="customer-pill"
+                                  th:classappend="${customer.customerStatus == 'ACTIVE'} ? ' active' : ' inactive'"
+                                  th:text="${customer.customerStatus}">ACTIVE</span>
+                        </td>
+                        <td th:text="${customer.createdAt != null ? #temporals.format(customer.createdAt, 'dd/MM/yyyy') : 'N/A'}">Date</td>
+                        <td>
+                            <div class="customer-row-actions">
+                                <a th:href="@{/customers/{id}(id=${customer.id})}" title="Chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a th:href="@{/customers/add(id=${customer.id})}" title="Sửa">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <a class="customer-danger-button"
+                                   th:href="@{/customers/delete/{id}(id=${customer.id})}"
+                                   onclick="return confirm('Xóa khách hàng này?')"
+                                   title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(customers)}">
+                        <td colspan="8">
+                            <div class="customer-empty">
+                                <i class="fas fa-user-slash"></i>
+                                <span>Không có khách hàng nào.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
 
-</table>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

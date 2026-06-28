@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,4 +40,8 @@ where d.isDeleted = false
 """)
     Page<Department> findAllNotDeleted(Pageable pageable);
     Optional<Department> findByIdAndIsDeletedFalse(Long id);
+
+    List<Department> findByIsDeletedFalseOrderByNameAsc();
+
+    List<Department> findByIdInAndIsDeletedFalse(Collection<Long> ids);
 }

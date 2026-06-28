@@ -3,6 +3,7 @@ package com.group3.company_management.core.controller;
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
 import com.group3.company_management.core.entity.User;
+import com.group3.company_management.core.service.DepartmentService;
 import com.group3.company_management.core.service.EmailService;
 import com.group3.company_management.core.service.UserService;
 
@@ -24,12 +25,14 @@ public class UserController {
 
     private final UserService userService;
     private final EmailService emailService;
+    private final DepartmentService departmentService;
 
 
     @Autowired
-    public UserController(UserService service, EmailService emailService){
+    public UserController(UserService service, EmailService emailService, DepartmentService departmentService){
         this.userService = service;
         this.emailService = emailService;
+        this.departmentService = departmentService;
     }
 
 @GetMapping
@@ -49,9 +52,7 @@ public String listUsers(
 
     @GetMapping("/add")
     public String showAddForm(@RequestParam(required = false) Long id, Model model) {
-        model.addAttribute("userForm", id == null ? new UserRequest() : toRequest(userService.getUserById(id)));
-        model.addAttribute("roles", userService.getAllRoles());
-        model.addAttribute("isEdit", id != null);
+        prepareUserFormModel(model, id == null ? new UserRequest() : toRequest(userService.getUserById(id)), id != null);
         return "users/add-form";
     }
 
@@ -96,19 +97,16 @@ public String listUsers(
         } catch (MailException exception) {
             request.setPassword(null);
             model.addAttribute("errorMessage", "Account created, but email could not be sent. Please check Gmail SMTP configuration.");
-            model.addAttribute("roles", userService.getAllRoles());
-            model.addAttribute("isEdit", false);
+            prepareUserFormModel(model, request, false);
             return "users/add-form";
         } catch (IllegalArgumentException exception) {
             model.addAttribute("errorMessage", exception.getMessage());
-            model.addAttribute("roles", userService.getAllRoles());
-            model.addAttribute("isEdit", false);
+            prepareUserFormModel(model, request, false);
             return "users/add-form";
         } catch (Exception exception) {
             request.setPassword(null);
             model.addAttribute("errorMessage", "Could not create account: " + exception.getMessage());
-            model.addAttribute("roles", userService.getAllRoles());
-            model.addAttribute("isEdit", false);
+            prepareUserFormModel(model, request, false);
             return "users/add-form";
         }
     }
@@ -120,8 +118,7 @@ public String listUsers(
             return "redirect:/users";
         } catch (IllegalArgumentException exception) {
             model.addAttribute("errorMessage", exception.getMessage());
-            model.addAttribute("roles", userService.getAllRoles());
-            model.addAttribute("isEdit", true);
+            prepareUserFormModel(model, request, true);
             return "users/add-form";
         }
     }
@@ -144,5 +141,15 @@ public String listUsers(
         request.setRoleId(response.getRoleId());
         request.setStatus(response.getStatus());
         return request;
+    }
+
+    private void prepareUserFormModel(Model model, UserRequest request, boolean isEdit) {
+        model.addAttribute("userForm", request);
+        model.addAttribute("roles", userService.getAllRoles());
+        model.addAttribute("departments", departmentService.getAllDepartments()
+                .stream()
+                .filter(department -> "ACTIVE".equalsIgnoreCase(department.getStatus()))
+                .toList());
+        model.addAttribute("isEdit", isEdit);
     }
 }

@@ -29,7 +29,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional(readOnly = true)
     public List<Department> getAllDepartments() {
-        return departmentRepository.findAll();
+        return departmentRepository.findByIsDeletedFalseOrderByNameAsc();
 
     }
     private Department findActiveDepartmentById(Long id) {

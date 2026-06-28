@@ -50,7 +50,6 @@
               th:object="${userForm}"
               method="post">
             <input type="hidden" th:field="*{id}">
-            <input type="hidden" th:field="*{departmentId}">
             <input type="hidden" th:field="*{groupId}">
             <input type="hidden" th:field="*{status}">
 
@@ -116,6 +115,16 @@
                             <option th:each="role : ${roles}"
                                     th:value="${role.id}"
                                     th:text="${role.roleName}">Administrator</option>
+                        </select>
+                    </label>
+
+                    <label class="user-field">
+                        <span>Phòng ban</span>
+                        <select th:field="*{departmentId}">
+                            <option value="">Chưa phân phòng ban</option>
+                            <option th:each="department : ${departments}"
+                                    th:value="${department.id}"
+                                    th:text="${department.name + ' (' + department.code + ')'}">Phòng Kinh doanh</option>
                         </select>
                     </label>
                 </div>

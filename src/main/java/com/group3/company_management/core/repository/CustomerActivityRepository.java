@@ -22,5 +22,10 @@ public interface CustomerActivityRepository
             Long customerId,
             Pageable pageable);
 
+    Page<CustomerActivity> findByCustomerIdAndActivityTypeIgnoreCase(
+            Long customerId,
+            String activityType,
+            Pageable pageable);
+
     long countByCustomerId(Long customerId);
 }

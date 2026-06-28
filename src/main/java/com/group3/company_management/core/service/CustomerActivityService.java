@@ -17,6 +17,12 @@ public interface CustomerActivityService {
             int page,
             int size);
 
+    Page<CustomerActivity> getActivities(
+            Long customerId,
+            String activityType,
+            int page,
+            int size);
+
     CustomerActivity getActivityById(Long id);
 
     List<CustomerActivity> getActivitiesByCustomerId(Long customerId);

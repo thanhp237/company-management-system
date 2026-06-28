@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá cơ hội - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="admin-workspace with-sidebar customer-workspace">
+    <div class="management-page customer-page">
+        <div class="management-taskbar customer-taskbar">
+            <div>
+                <p class="management-eyebrow">CRM / Đánh giá cơ hội</p>
+                <h1>Đánh giá cơ hội</h1>
+                <p class="management-subtitle">
+                    <span th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'Khách hàng'}">Lead</span>
+                    <span> • </span>
+                    <span th:text="${opportunity.opportunityCode}">OPP001</span>
+                </p>
+            </div>
+            <div class="management-actions">
+                <a class="customer-secondary-button" th:href="@{/pipeline/{id}(id=${opportunity.id})}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Pipeline</span>
+                </a>
+                <a class="customer-primary-button" th:href="@{/pipeline/{id}(id=${opportunity.id})}">
+                    <i class="fas fa-circle-check"></i>
+                    <span>Evaluate Opportunity</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="evaluation-layout">
+            <aside class="customer-panel evaluation-score-card">
+                <div class="customer-panel-header">
+                    <div>
+                        <h2>Chỉ số tiềm năng</h2>
+                        <p>Score tổng hợp từ dữ liệu pipeline.</p>
+                    </div>
+                </div>
+                <div class="customer-panel-body">
+                    <div class="score-ring" th:style="${'--score:' + score}">
+                        <strong th:text="${score}">82</strong>
+                        <span>Tốt</span>
+                    </div>
+                    <div class="evaluation-mini-grid">
+                        <div><span>Độ tin cậy</span><strong th:text="${confidence}">94%</strong></div>
+                        <div><span>Xếp hạng</span><strong th:text="${rank}">A+</strong></div>
+                    </div>
+                    <label class="rule-field mt-3">
+                        <span>Qualification Status</span>
+                        <select>
+                            <option>Qualified - Thẩm định thành công</option>
+                            <option>Needs follow-up</option>
+                            <option>Disqualified</option>
+                        </select>
+                    </label>
+                    <div class="evaluation-note">
+                        Cơ hội này đạt điều kiện tạo báo giá khi đủ thông tin khách hàng và nằm trong stage phù hợp.
+                    </div>
+                </div>
+            </aside>
+
+            <section class="customer-panel evaluation-bant-card">
+                <div class="customer-panel-header">
+                    <div>
+                        <h2>Danh sách tiêu chí đánh giá</h2>
+                        <p>BANT Framework</p>
+                    </div>
+                    <span class="customer-pill active">Hoàn thành 4/5</span>
+                </div>
+                <div class="customer-panel-body">
+                    <article class="bant-item success">
+                        <i class="fas fa-check"></i>
+                        <div>
+                            <strong>Budget (Ngân sách)</strong>
+                            <p th:text="${opportunity.expectedAmount != null ? 'Có giá trị dự kiến: ' + #numbers.formatDecimal(opportunity.expectedAmount, 0, 'COMMA', 0, 'POINT') : 'Chưa nhập giá trị dự kiến'}">Budget</p>
+                        </div>
+                        <span>Đã xác minh</span>
+                    </article>
+                    <article class="bant-item success">
+                        <i class="fas fa-check"></i>
+                        <div>
+                            <strong>Authority (Thẩm quyền)</strong>
+                            <p th:text="${opportunity.assignedTo != null ? 'Sales phụ trách: ' + opportunity.assignedTo.fullName : 'Chưa phân sales'}">Authority</p>
+                        </div>
+                        <span>Đã xác minh</span>
+                    </article>
+                    <article class="bant-item warning">
+                        <i class="far fa-square"></i>
+                        <div>
+                            <strong>Need (Nhu cầu cấp thiết)</strong>
+                            <p>Cần làm rõ thêm về mức độ ưu tiên và các dự án khác của đối thủ.</p>
+                        </div>
+                        <span>Đang bổ sung</span>
+                    </article>
+                    <article class="bant-item success">
+                        <i class="fas fa-check"></i>
+                        <div>
+                            <strong>Timeline (Tiến độ)</strong>
+                            <p th:text="${'Stage hiện tại: ' + opportunity.stage}">Timeline</p>
+                        </div>
+                        <span>Rõ ràng</span>
+                    </article>
+                    <article class="bant-item success">
+                        <i class="fas fa-check"></i>
+                        <div>
+                            <strong>Pháp lý & Hồ sơ doanh nghiệp</strong>
+                            <p th:text="${opportunity.customer != null ? 'Khách hàng đã có hồ sơ CRM.' : 'Cần bổ sung hồ sơ khách hàng.'}">Profile</p>
+                        </div>
+                        <span>Tin nhiệm cao</span>
+                    </article>
+                </div>
+            </section>
+        </div>
+
+        <section class="customer-stat-grid mt-3">
+            <article class="customer-stat-card success">
+                <span>Cơ hội cùng stage</span>
+                <strong th:text="${stageCounts.get(opportunity.stage)}">0</strong>
+                <small th:text="${opportunity.stage}">Stage</small>
+            </article>
+            <article class="customer-stat-card info">
+                <span>Khách hàng</span>
+                <strong th:text="${opportunity.customer != null ? 'OK' : 'N/A'}">OK</strong>
+                <small>Hồ sơ liên kết</small>
+            </article>
+            <article class="customer-stat-card warning">
+                <span>Báo giá</span>
+                <strong th:text="${score >= 70 ? 'Sẵn sàng' : 'Chưa đủ'}">Sẵn sàng</strong>
+                <small>Điều kiện tạo báo giá</small>
+            </article>
+            <article class="customer-stat-card neutral">
+                <span>Rank</span>
+                <strong th:text="${rank}">A+</strong>
+                <small>Ưu tiên chăm sóc</small>
+            </article>
+        </section>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

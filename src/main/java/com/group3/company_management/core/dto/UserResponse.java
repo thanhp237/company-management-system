@@ -13,6 +13,7 @@ public class UserResponse {
     private String fullName;
     private String phone;
     private Long departmentId;
+    private String departmentName;
     private Long groupId;
     private Long roleId;
     private String roleName;

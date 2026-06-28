@@ -49,6 +49,17 @@
                     <i class="fas fa-eye"></i>
                     <span>Xem báo giá</span>
                 </a>
+                <a th:if="${opportunity.customer != null and canAddActivity}"
+                   class="btn management-secondary-action"
+                   th:href="@{/customer-activities/add(customerId=${opportunity.customer.id},relatedType='OPPORTUNITY',relatedId=${opportunity.id},returnUrl=${'/pipeline/' + opportunity.id})}">
+                    <i class="fas fa-comment-medical"></i>
+                    <span>Thêm activity</span>
+                </a>
+                <a class="btn management-secondary-action"
+                   th:href="@{/pipeline/{id}/evaluation(id=${opportunity.id})}">
+                    <i class="fas fa-chart-simple"></i>
+                    <span>Đánh giá</span>
+                </a>
             </div>
         </div>
 
@@ -149,6 +160,27 @@
                        th:href="@{/quotation/detail/{id}(id=${existingQuotation.id})}">
                         <i class="fas fa-file-invoice"></i>
                         <span>Xem báo giá hiện có</span>
+                    </a>
+                    <a th:if="${opportunity.customer != null and canAddActivity}"
+                       class="detail-action-primary"
+                       th:href="@{/customer-activities/add(customerId=${opportunity.customer.id},relatedType='OPPORTUNITY',relatedId=${opportunity.id},returnUrl=${'/pipeline/' + opportunity.id})}">
+                        <i class="fas fa-comment-medical"></i>
+                        <span>Thêm activity khách hàng</span>
+                    </a>
+                    <a th:if="${opportunity.customer != null}"
+                       class="detail-action-secondary"
+                       th:href="@{/customers/{id}(id=${opportunity.customer.id})}">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        <span>Xem lịch sử khách hàng</span>
+                    </a>
+                    <div class="detail-action-note" th:if="${!canAddActivity}">
+                        <i class="fas fa-lock"></i>
+                        <span>Opportunity đã đóng, không thể thêm call/meeting/email mới.</span>
+                    </div>
+                    <a class="detail-action-secondary"
+                       th:href="@{/pipeline/{id}/evaluation(id=${opportunity.id})}">
+                        <i class="fas fa-chart-simple"></i>
+                        <span>Đánh giá cơ hội</span>
                     </a>
                     <div class="detail-action-note" th:if="${existingQuotation == null and !canCreateQuotation}">
                         <i class="fas fa-lock"></i>

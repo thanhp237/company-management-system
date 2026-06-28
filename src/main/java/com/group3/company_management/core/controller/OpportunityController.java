@@ -95,10 +95,34 @@ public class OpportunityController {
             model.addAttribute("nextStages", nextStagesByOpportunity.get(opportunity.getId()));
             model.addAttribute("existingQuotation", existingQuotation);
             model.addAttribute("canCreateQuotation", canCreateQuotation(authentication, opportunity, existingQuotation));
+            model.addAttribute("canAddActivity", !isClosedStage(opportunity.getStage()));
             return "pipeline/detail";
 
             
 
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/pipeline";
+        }
+    }
+
+    @GetMapping("/{id}/evaluation")
+    public String evaluateOpportunity(
+            @PathVariable Long id,
+            Authentication authentication,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            String username = authentication.getName();
+            Opportunity opportunity = opportunityService.getOpportunityDetail(id, username);
+            int score = calculateOpportunityScore(opportunity);
+
+            model.addAttribute("opportunity", opportunity);
+            model.addAttribute("score", score);
+            model.addAttribute("confidence", score >= 80 ? "94%" : score >= 60 ? "78%" : "52%");
+            model.addAttribute("rank", score >= 80 ? "A+" : score >= 60 ? "B" : "C");
+            model.addAttribute("stageCounts", opportunityService.getStageCounts(username));
+            return "pipeline/evaluation";
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/pipeline";
@@ -151,5 +175,33 @@ public class OpportunityController {
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(allowedRoles::contains);
+    }
+
+    private boolean isClosedStage(String stage) {
+        if (stage == null) {
+            return false;
+        }
+        String normalized = stage.trim().toUpperCase();
+        return "WON".equals(normalized) || "LOST".equals(normalized);
+    }
+
+    private int calculateOpportunityScore(Opportunity opportunity) {
+        int score = 52;
+        if (opportunity.getExpectedAmount() != null) {
+            score += 12;
+            if (opportunity.getExpectedAmount().signum() > 0) {
+                score += 8;
+            }
+        }
+        if (opportunity.getCustomer() != null) {
+            score += 10;
+        }
+        if (opportunity.getAssignedTo() != null) {
+            score += 6;
+        }
+        if (QUOTATION_STAGES.contains(opportunity.getStage().toUpperCase())) {
+            score += 8;
+        }
+        return Math.min(score, 96);
     }
 }

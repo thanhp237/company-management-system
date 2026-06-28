@@ -33,6 +33,7 @@
                         <th>Nhân viên</th>
                         <th>Mã nhân viên</th>
                         <th>Số điện thoại</th>
+                        <th>Phòng ban</th>
                         <th>Vai trò</th>
                         <th>Trạng thái</th>
                         <th class="text-end">Thao tác</th>
@@ -53,6 +54,11 @@
                             <span class="muted-code" th:text="${user.employeeCode != null ? user.employeeCode : 'N/A'}">EMP001</span>
                         </td>
                         <td th:text="${user.phone != null and !#strings.isEmpty(user.phone) ? user.phone : 'N/A'}">N/A</td>
+                        <td>
+                            <span class="department-pill"
+                                  th:classappend="${user.departmentName == null} ? ' empty'"
+                                  th:text="${user.departmentName != null ? user.departmentName : 'Chưa phân'}">Phòng Kinh doanh</span>
+                        </td>
                         <td>
                             <span class="role-pill" th:text="${user.roleName != null ? user.roleName : 'Unassigned'}">System Admin</span>
                         </td>
@@ -85,7 +91,7 @@
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(users)}">
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="empty-state">
                                 <i class="fas fa-users-slash"></i>
                                 <span>Không tìm thấy tài khoản phù hợp.</span>

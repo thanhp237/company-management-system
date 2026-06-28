@@ -15,6 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Controller
@@ -36,6 +38,7 @@ public class DepartmentController {
         model.addAttribute("departmentPage", departmentPage);
         model.addAttribute("keyword", "");
         model.addAttribute("status", "all");
+        addDepartmentSummary(model, departmentPage);
 
         return "departments/list";
     }
@@ -98,7 +101,30 @@ public class DepartmentController {
         model.addAttribute("departmentPage", listSearch);
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
+        addDepartmentSummary(model, listSearch);
 
         return "departments/list";
+    }
+
+    private void addDepartmentSummary(Model model, Page<Department> departmentPage) {
+        List<Department> departments = departmentPage.getContent();
+        long activeCount = departments.stream()
+                .filter(department -> "ACTIVE".equalsIgnoreCase(department.getStatus()))
+                .count();
+        long inactiveCount = departments.size() - activeCount;
+        Map<Long, String> managerMap = userService.getUsersByRoles(List.of("ADMIN_OFFICER", "SALES_MANAGER"))
+                .stream()
+                .collect(Collectors.toMap(
+                        user -> user.getId(),
+                        user -> user.getFullName() != null && !user.getFullName().isBlank()
+                                ? user.getFullName()
+                                : user.getUsername(),
+                        (first, second) -> first));
+
+        model.addAttribute("totalDepartments", departmentPage.getTotalElements());
+        model.addAttribute("activeDepartments", activeCount);
+        model.addAttribute("inactiveDepartments", inactiveCount);
+        model.addAttribute("totalUsers", userService.countUsers());
+        model.addAttribute("managerMap", managerMap);
     }
 }

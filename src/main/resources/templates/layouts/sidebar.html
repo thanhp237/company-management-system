@@ -21,6 +21,7 @@
                     <i class="fas fa-chevron-down sidebar-chevron"></i>
                 </button>
                 <div class="collapse sidebar-submenu" id="adminMenu">
+                    <a href="/business-rules" data-nav-match="/business-rules">Quy tắc nghiệp vụ</a>
                     <a href="/users" data-nav-match="/users">Nhân viên</a>
                     <a href="/roles" data-nav-match="/roles">Vai trò</a>
                     <a href="/departments" data-nav-match="/departments">Phòng ban</a>
@@ -39,7 +40,9 @@
                     <i class="fas fa-chevron-down sidebar-chevron"></i>
                 </button>
                 <div class="collapse sidebar-submenu" id="crmMenu">
-                    <a href="/customers" data-nav-match="/customers">Khách hàng</a>
+                    <a href="/customers" data-nav-match="/customers">Hồ sơ khách hàng</a>
+                    <a href="/customer-activities" data-nav-match="/customer-activities">Lịch sử tương tác</a>
+                    <a href="/customer" data-nav-match="/customer">Import & phân bổ</a>
                     <a href="/appointments" data-nav-match="/appointments">Lịch hẹn</a>
                     <a href="/notifications" data-nav-match="/notifications">Thông báo</a>
                 </div>
@@ -88,10 +91,12 @@
 
         links.forEach(function(link) {
             const match = link.getAttribute("data-nav-match");
+            const alt = link.getAttribute("data-nav-alt");
             const isDashboard = match === "/dashboard" && currentPath === "/dashboard";
-            const isNestedMatch = match !== "/dashboard" && currentPath.startsWith(match);
+            const isNestedMatch = match !== "/dashboard" && (currentPath === match || currentPath.startsWith(match + "/"));
+            const isAltMatch = alt && (currentPath === alt || currentPath.startsWith(alt + "/"));
 
-            if (isDashboard || isNestedMatch) {
+            if (isDashboard || isNestedMatch || isAltMatch) {
                 link.classList.add("active");
                 const submenu = link.closest(".sidebar-submenu");
 

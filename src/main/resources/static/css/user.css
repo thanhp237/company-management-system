@@ -146,6 +146,30 @@
     text-transform: none;
 }
 
+.user-table .department-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    max-width: 180px;
+    padding: 0 10px;
+    border: 1px solid #d7eadf;
+    border-radius: 999px;
+    background: #eef9f2;
+    color: #007a3d;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-table .department-pill.empty {
+    border-color: #e1e7e3;
+    background: #f6f8f7;
+    color: #6b7785;
+}
+
 .user-table .status-select {
     width: 132px;
     min-height: 28px;
