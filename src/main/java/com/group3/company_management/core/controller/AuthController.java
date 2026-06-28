@@ -31,14 +31,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthController {
-    
+
     private final AuthenticationService authenticationService;
-    
+
     /**
      * POST /api/v1/auth/login
      * User login endpoint
      * 
-     * @param request username and password
+     * @param request     username and password
      * @param httpRequest HTTP request context (for IP, user-agent)
      * @return JWT tokens on success
      */
@@ -46,30 +46,31 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest) {
-        
+
         String ipAddress = getClientIpAddress(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
-        
+
         LoginResponse response = authenticationService.login(request, ipAddress, userAgent);
         return ResponseEntity.ok(response);
     }
-    
 
+        @GetMapping("/")
+    public String selectLoginType() {
+        return "auth/select-login";
+    }
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok().body(
-            Map.of("message", "Logged out successfully")
-        );
+                Map.of("message", "Logged out successfully"));
     }
-    
 
     @GetMapping("/health")
     public ResponseEntity<?> health() {
         return ResponseEntity.ok().body(
-            Map.of("status", "Auth service is healthy")
-        );
+                Map.of("status", "Auth service is healthy"));
     }
-    
+
+
 
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
