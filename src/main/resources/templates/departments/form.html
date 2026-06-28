@@ -90,6 +90,31 @@
                                 </option>
                             </select>
                         </label>
+                        <label class="user-field">
+                            <span>Số người tối đa</span>
+                            <input type="number"
+                                   th:field="*{maxMembers}"
+                                   th:attr="min=${currentMembers > 0 ? currentMembers : 1}"
+                                   placeholder="VD: 10">
+                            <small th:if="${department.id != null}"
+                                   th:text="${'Hiện có ' + currentMembers + ' nhân viên trong phòng ban'}">
+                                Hiện có 0 nhân viên trong phòng ban
+                            </small>
+                        </label>
+                        <label class="user-field" style="grid-column: 1 / -1;"
+                               th:if="${department.id == null}">
+                            <span>Chọn nhân viên</span>
+                            <select name="userIds" multiple size="6">
+                                <option th:each="u : ${assignableUsers}"
+                                        th:value="${u.id}"
+                                        th:text="${(u.fullName != null and !#strings.isEmpty(u.fullName) ? u.fullName : u.username) + ' - ' + u.role.roleCode}">
+                                </option>
+                            </select>
+                            <small class="text-muted">Giữ Ctrl để chọn nhiều nhân viên</small>
+                        </label>
+
+
+
 
                         <label class="user-field">
                             <span>Trạng thái mặc định</span>
@@ -102,6 +127,11 @@
                                       th:field="*{description}"
                                       placeholder="Mô tả nhiệm vụ hoặc phạm vi phụ trách của phòng ban"></textarea>
                         </label>
+                        <span th:if="${department.maxMembers != null and currentMembers >= department.maxMembers}"
+                              class="badge bg-danger">
+    ĐÃ ĐẦY
+</span>
+
                     </div>
                 </section>
 
@@ -132,7 +162,38 @@
                     </section>
                 </aside>
             </div>
+
         </form>
+        <div class="user-form-shell"
+             th:if="${department.id != null}"
+             sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')">
+
+            <aside class="user-form-side">
+                <section class="user-form-side-card">
+                    <h2>Gán nhân viên vào phòng ban</h2>
+
+                    <form th:action="@{/departments/assign-user}" method="post">
+                        <label class="user-field" style="grid-column: 1 / -1;">
+                            <span>Chọn nhân viên</span>
+                            <select name="userIds" multiple size="6">
+                                <option th:each="u : ${assignableUsers}"
+                                        th:value="${u.id}"
+                                        th:text="${(u.fullName != null and !#strings.isEmpty(u.fullName) ? u.fullName : u.username) + ' - ' + u.role.roleCode}">
+                                </option>
+                            </select>
+                        </label>
+
+                        <input type="hidden" name="departmentId" th:value="${department.id}">
+
+                        <button type="submit"
+                                class="btn btn-primary"
+                                th:disabled="${department.maxMembers != null and currentMembers >= department.maxMembers}">
+                            Gán vào phòng ban
+                        </button>
+                    </form>
+                </section>
+            </aside>
+        </div>
     </div>
 </main>
 

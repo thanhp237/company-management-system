@@ -107,11 +107,20 @@
                         <strong th:text="${department.managerId != null and managerMap.get(department.managerId) != null ? managerMap.get(department.managerId) : 'Chưa phân công'}">Nguyễn Văn Minh</strong>
                     </div>
                 </div>
+                <div class="department-capacity">
+    <span>
+        <i class="fas fa-users"></i>
+        <span th:text="${memberCountMap.get(department.id) != null ? memberCountMap.get(department.id) : 0}">0</span>
+        /
+        <span th:text="${department.maxMembers != null ? department.maxMembers : '∞'}">∞</span>
+    </span>
+                </div>
                 <div class="department-card-footer">
                     <span th:classappend="${department.status == 'ACTIVE'} ? ' active' : ' inactive'"
                           class="department-status"
                           th:text="${department.status == 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động'}">Hoạt động</span>
                     <a th:href="@{/departments/edit(id=${department.id})}">Chi tiết</a>
+
                 </div>
             </article>
 

@@ -29,6 +29,7 @@ and (d.status = :filter or :filter = 'all')
             @Param("filter") String filter,
             Pageable pageable
     );
+
     boolean existsByCode(String code);
 
     boolean existsByCodeAndIdNot(String code, Long id);

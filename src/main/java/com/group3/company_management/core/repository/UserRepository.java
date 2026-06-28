@@ -1,5 +1,6 @@
 package com.group3.company_management.core.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -107,5 +108,25 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query(value = "SELECT employee_code FROM employees WHERE account_id = :accountId", nativeQuery = true)
     String findEmployeeCodeByAccountId(@Param("accountId") Long accountId);
+    int countByDepartmentIdAndIsDeletedFalse(Long departmentId);
 
+    @Query("""
+select u.departmentId, count(u)
+from User u
+where u.isDeleted = false
+and u.departmentId in :departmentIds
+group by u.departmentId
+""")
+    List<Object[]> countActiveUsersByDepartmentIds(@Param("departmentIds") Collection<Long> departmentIds);
+
+    @Query("""
+select u
+from User u
+where u.isDeleted = false
+and lower(u.status) = 'active'
+and (:departmentId is null or u.departmentId is null or u.departmentId = :departmentId)
+and u.role.roleCode <> 'ADMIN'
+order by u.fullName asc, u.username asc
+""")
+    List<User> findAssignableUsersForDepartment(@Param("departmentId") Long departmentId);
 }
