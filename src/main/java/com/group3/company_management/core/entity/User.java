@@ -55,9 +55,6 @@ public class User implements UserDetails {
     @Column(name = "department_id")
     private Long departmentId;
 
-    @Column(name = "group_id")
-    private Long groupId;
-
     @Column(name = "role_id", insertable = false, updatable = false)
     private Long roleId;
 

@@ -13,7 +13,6 @@ public class UserRequest {
     private String fullName;
     private String phone;
     private Long departmentId;
-    private Long groupId;
     private Long roleId;
     private String status;
 }

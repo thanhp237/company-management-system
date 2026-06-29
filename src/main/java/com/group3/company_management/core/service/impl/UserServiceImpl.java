@@ -82,7 +82,6 @@ public class UserServiceImpl implements UserService {
         user.setFullName(normalizeOptional(request.getFullName()));
         user.setPhone(normalizeOptional(request.getPhone()));
         user.setDepartmentId(request.getDepartmentId());
-        user.setGroupId(request.getGroupId());
         user.setRole(role);
         user.setStatus("ACTIVE");
         userRepository.saveAndFlush(user);
@@ -106,7 +105,6 @@ public class UserServiceImpl implements UserService {
         user.setFullName(normalizeOptional(request.getFullName()));
         user.setPhone(normalizeOptional(request.getPhone()));
         user.setDepartmentId(request.getDepartmentId());
-        user.setGroupId(request.getGroupId());
         user.setRole(role);
         userRepository.saveAndFlush(user);
         syncEmployeeProfile(user, role);
@@ -127,7 +125,6 @@ public class UserServiceImpl implements UserService {
         user.setFullName(normalizeOptional(userDetails.getFullName()));
         user.setPhone(normalizeOptional(userDetails.getPhone()));
         user.setDepartmentId(userDetails.getDepartmentId());
-        user.setGroupId(userDetails.getGroupId());
         user.setRole(userDetails.getRole());
         user.setStatus(normalizeOptional(userDetails.getStatus()));
         User savedUser = userRepository.saveAndFlush(user);

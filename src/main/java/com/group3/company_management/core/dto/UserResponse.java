@@ -14,7 +14,6 @@ public class UserResponse {
     private String phone;
     private Long departmentId;
     private String departmentName;
-    private Long groupId;
     private Long roleId;
     private String roleName;
     private String status;
@@ -28,7 +27,6 @@ public class UserResponse {
         response.setFullName(user.getFullName());
         response.setPhone(user.getPhone());
         response.setDepartmentId(user.getDepartmentId());
-        response.setGroupId(user.getGroupId());
         if (user.getRole() != null) {
             response.setRoleId(user.getRole().getId());
             response.setRoleName(user.getRole().getRoleName());

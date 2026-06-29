@@ -137,7 +137,6 @@ public String listUsers(
         request.setFullName(response.getFullName());
         request.setPhone(response.getPhone());
         request.setDepartmentId(response.getDepartmentId());
-        request.setGroupId(response.getGroupId());
         request.setRoleId(response.getRoleId());
         request.setStatus(response.getStatus());
         return request;
