@@ -159,8 +159,11 @@ public class SecurityConfig {
                                                 .requestMatchers("/customers", "/customers/**")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")
 
-                                                .requestMatchers("/customer", "/customer/**")
+                                                .requestMatchers(HttpMethod.POST, "/customer/check")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")
+
+                                                .requestMatchers("/customer", "/customer/import", "/customer/detail")
+                                                .hasAnyRole("MARKETING", "SALES_MANAGER", "MANAGER", "ADMIN")
 
                                                 .requestMatchers("/products", "/products/**")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")

@@ -229,7 +229,7 @@ public class DashboardController {
             );
             case "MARKETING" -> List.of(
                     group("Tiếp nhận lead", "Thu thập dữ liệu và chuyển lead cho đội sales.", List.of(
-                            action("Import & phân bổ", "/customer", "Nhập lead từ file và kiểm tra dữ liệu", "fa-file-import"),
+                            action("Import lead", "/customer", "Nhập lead từ file và kiểm tra dữ liệu", "fa-file-import"),
                             action("Notifications", "/notifications", "Theo dõi thông báo hệ thống", "fa-bell"),
                             disabledAction("Content Hub", "Soạn thảo nội dung tiếp cận đa kênh", "fa-bullhorn"),
                             disabledAction("Lead Quality Board", "Theo dõi lead trùng lặp và nguồn chiến dịch", "fa-chart-simple")

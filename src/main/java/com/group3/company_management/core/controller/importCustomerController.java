@@ -4,6 +4,7 @@ package com.group3.company_management.core.controller;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.service.CustomerImportService;
 import com.group3.company_management.core.service.CustomerService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +24,7 @@ public class importCustomerController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
     public String showImportPage(Model model) {
         List<Customer> listCustomer = customerImportService.allCustomer();
         model.addAttribute("customer", listCustomer);
@@ -31,6 +33,7 @@ public class importCustomerController {
     }
 
     @PostMapping("/import")
+    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
     public String importCustomer(
             @RequestParam("file") MultipartFile file,
             Model model,
@@ -53,6 +56,7 @@ public class importCustomerController {
         return "lead/import";
     }
     @PostMapping("/check")
+    @PreAuthorize("hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')")
     public String checkBox(@RequestParam(value = "checkbox", required = false) List<Long> id, @RequestParam("saleId") Long idSale, Model model) {
        customerImportService.assignCustomersToSale(id, idSale);
        String name = customerImportService.findUser(idSale).getUsername();
@@ -63,6 +67,7 @@ public class importCustomerController {
         return "lead/import";
     }
     @GetMapping("/detail")
+    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
     public String detailCustomer(@RequestParam Long id,Model model){
         Customer customer = customerService.findCustomerById(id);
         model.addAttribute("customer",customer);
@@ -71,6 +76,7 @@ public class importCustomerController {
     }
 
     @PostMapping("/detail")
+    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
     public String saveImformationCustomer(
             @ModelAttribute("customer") Customer customer,
             Model model) {

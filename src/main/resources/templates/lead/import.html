@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Import & phân bổ khách hàng - CompanyMS</title>
+    <title>Import lead - CompanyMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,18 +24,20 @@
     <div class="management-page customer-page">
         <div class="management-taskbar customer-taskbar">
             <div>
-                <p class="management-eyebrow">CRM / Import & phân bổ</p>
+                <p class="management-eyebrow">CRM / Lead ingestion</p>
                 <h1>Import khách hàng tiềm năng</h1>
-                <p class="management-subtitle">Nhập danh sách lead từ Excel, kiểm tra dữ liệu và phân bổ cho đội sales.</p>
+                <p class="management-subtitle" sec:authorize="hasRole('MARKETING')">Nhập danh sách lead từ Excel và kiểm tra dữ liệu trước khi chuyển cho Sales Manager phân bổ.</p>
+                <p class="management-subtitle" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Nhập danh sách lead từ Excel, kiểm tra dữ liệu và phân bổ cho đội sales.</p>
             </div>
         </div>
 
         <div class="customer-tabs">
             <a class="active" th:href="@{/customer}">
                 <i class="fas fa-file-import"></i>
-                <span>Import & phân bổ</span>
+                <span sec:authorize="hasRole('MARKETING')">Import lead</span>
+                <span sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Import & phân bổ</span>
             </a>
-            <a th:href="@{/customers}">
+            <a sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')" th:href="@{/customers}">
                 <i class="fas fa-table-list"></i>
                 <span>CRUD khách hàng</span>
             </a>
@@ -66,7 +68,7 @@
                 <strong th:text="${customer != null ? customer.?[assignedSalesId != null].size() : 0}">0</strong>
                 <small>Đã có owner sales</small>
             </article>
-            <article class="customer-stat-card neutral">
+            <article class="customer-stat-card neutral" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">
                 <span>Sales khả dụng</span>
                 <strong th:text="${sales != null ? sales.size() : 0}">0</strong>
                 <small>Có thể nhận lead</small>
@@ -103,7 +105,8 @@
                 <div class="customer-panel-header">
                     <div>
                         <h2>Danh sách lead cần xử lý</h2>
-                        <p>Chọn nhiều khách hàng rồi phân bổ cho một sales phụ trách.</p>
+                        <p sec:authorize="hasRole('MARKETING')">Marketing kiểm tra danh sách lead đã import. Phân bổ lead do Sales Manager thực hiện.</p>
+                        <p sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Chọn nhiều khách hàng rồi phân bổ cho một sales phụ trách.</p>
                     </div>
                 </div>
 
@@ -111,7 +114,7 @@
                     <table class="customer-table" th:if="${customer}">
                         <thead>
                         <tr>
-                            <th class="customer-select-cell"></th>
+                            <th class="customer-select-cell" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')"></th>
                             <th>Khách hàng</th>
                             <th>Liên hệ</th>
                             <th>Công ty</th>
@@ -123,7 +126,7 @@
                         </thead>
                         <tbody>
                         <tr th:each="lead : ${customer}">
-                            <td class="customer-select-cell">
+                            <td class="customer-select-cell" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">
                                 <input class="customer-checkbox" type="checkbox" name="checkbox" th:value="${lead.id}">
                             </td>
                             <td>
@@ -175,7 +178,7 @@
                     </table>
                 </div>
 
-                <div class="customer-assign-form">
+                <div class="customer-assign-form" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">
                     <label>
                         <span>Sales nhận lead</span>
                         <select name="saleId" required>

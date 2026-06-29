@@ -38,7 +38,7 @@
             </div>
 
             <div class="sidebar-group"
-                 sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')">
+                 sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN')">
                 <button class="sidebar-link sidebar-toggle collapsed"
                         type="button"
                         data-bs-toggle="collapse"
@@ -56,13 +56,16 @@
                     <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
                        href="/customer-activities"
                        data-nav-match="/customer-activities">Lịch sử tương tác</a>
+                    <a sec:authorize="hasRole('MARKETING')"
+                       href="/customer"
+                       data-nav-match="/customer">Import lead</a>
                     <a sec:authorize="hasAnyRole('MANAGER','SALES_MANAGER','ADMIN')"
                        href="/customer"
                        data-nav-match="/customer">Import & phân bổ</a>
                     <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
                        href="/appointments"
                        data-nav-match="/appointments">Lịch hẹn</a>
-                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
+                    <a sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN')"
                        href="/notifications"
                        data-nav-match="/notifications">Thông báo</a>
                 </div>
