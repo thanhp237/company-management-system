@@ -95,12 +95,12 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Thymeleaf Security -->
+        <!-- Thymeleaf Security 
         <dependency>
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
-
+ff-->
         <!-- Bootstrap -->
         <dependency>
             <groupId>org.webjars</groupId>
