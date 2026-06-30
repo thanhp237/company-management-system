@@ -9,6 +9,8 @@ import com.group3.company_management.core.repository.AppointmentRepository;
 import com.group3.company_management.core.repository.CustomerRepository; // Giả định bạn có repo này
 import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.AppointmentService;
+import com.group3.company_management.core.service.NotificationService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
     private CustomerRepository customerRepository; // Cần dùng để liên kết khách hàng
+
+    // THÊM DÒNG NÀY ĐỂ KẾT NỐI VỚI HỆ THỐNG THÔNG BÁO
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -59,6 +65,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setCustomer(customer);
 
         appointmentRepository.save(appointment);
+
+        // THÊM ĐOẠN NÀY: Kích hoạt chuông thông báo ngay sau khi tạo lịch thành công
+        notificationService.createNotification(
+                user.getId(), 
+                "Tạo lịch hẹn thành công", 
+                "Bạn đã lên lịch: '" + request.getTitle() + "' với KH " + customer.getFullName() + " vào lúc " + request.getAppointmentTime()
+        );
     }
 
     @Override
@@ -84,6 +97,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         for (Appointment app : upcomingAppointments) {
             app.setReminderSent(true);
             appointmentRepository.save(app);
+
+            // -------- BẠN CHÈN THÊM ĐOẠN NÀY VÀO ĐÂY --------
+            // Bắn cảnh báo lịch hẹn sắp diễn ra cho nhân viên phụ trách
+            if (notificationService != null && app.getEmployee() != null) {
+                notificationService.createNotification(
+                        app.getEmployee().getId(),
+                        "!!! Lịch hẹn sắp diễn ra",
+                        "Bạn có lịch hẹn: '" + app.getTitle() + "' với khách hàng " + app.getCustomer().getFullName() + " trong vòng chưa đầy 24h tới."
+                );
+            }
+            // ------------------------------------------------
         }
 
         return upcomingAppointments.stream()
