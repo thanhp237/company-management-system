@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.group3.company_management.core.service.NotificationService;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,6 +49,8 @@ public class OpportunityServiceImpl implements OpportunityService {
 
     private final OpportunityRepository opportunityRepository;
     private final UserRepository userRepository;
+    // 
+    private final NotificationService notificationService;
 
     @Override
     public List<String> getStages() {
@@ -133,6 +137,15 @@ public class OpportunityServiceImpl implements OpportunityService {
 
         opportunity.setStage(nextStage);
         opportunityRepository.save(opportunity);
+
+        // THAY ĐỔI TẠI ĐÂY: Truyền currentUser.getId() thay vì opportunity.getAssignedTo().getId()
+        if (currentUser != null) {
+            notificationService.createNotification(
+                    currentUser.getId(), // Bắn chuẩn xác về ID 19 của người vừa bấm nút
+                    "🔄 Cập nhật trạng thái Cơ hội",
+                    "Bạn đã chuyển trạng thái cơ hội của khách '" + opportunity.getCustomer().getFullName() + "' từ " + currentStage + " sang " + nextStage
+            );
+        }
     }
     @Override
     @Transactional(readOnly = true)
@@ -223,6 +236,14 @@ public class OpportunityServiceImpl implements OpportunityService {
                 .build();
 
         customerActivityRepository.save(audit);
+
+        if (!oldStage.equals(result.getSuggestedStage()) && opportunity.getAssignedTo() != null) {
+            notificationService.createNotification(
+                    opportunity.getAssignedTo().getId(),
+                    " Đánh giá Cơ hội tự động",
+                    "Hệ thống vừa chấm điểm cơ hội của khách '" + opportunity.getCustomer().getFullName() + "'. Trạng thái thay đổi: " + oldStage + " -> " + result.getSuggestedStage()
+            );
+        }
     }
 
     private List<String> getNextStages(String stage) {
