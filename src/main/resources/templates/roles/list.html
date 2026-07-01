@@ -26,7 +26,7 @@
             <div>
                 <p class="management-eyebrow">Quản trị / RBAC</p>
                 <h1>Quản lý vai trò</h1>
-                <p class="management-subtitle">Thiết lập role nền cho phân quyền hệ thống. Role hệ thống chỉ được vô hiệu hóa, không xóa.</p>
+                <p class="management-subtitle">Thiết lập vai trò nền cho phân quyền hệ thống. Vai trò hệ thống chỉ được vô hiệu hóa, không xóa.</p>
             </div>
             <div class="management-actions">
                 <a class="btn management-primary-action" th:href="@{/roles/edit}">
@@ -49,7 +49,7 @@
             <article class="user-stat-card success">
                 <strong th:text="${totalRoles}">0</strong>
                 <span>Tổng vai trò</span>
-                <small>RBAC role trong hệ thống</small>
+                <small>Vai trò phân quyền trong hệ thống</small>
             </article>
             <article class="user-stat-card info">
                 <strong th:text="${activeRoles}">0</strong>
@@ -82,7 +82,7 @@
                             <div class="identity-cell">
                                 <div class="avatar-circle" th:text="${#strings.substring(role.roleName, 0, 1)}">R</div>
                                 <div>
-                                    <strong th:text="${role.roleName}">Administrator</strong>
+                                    <strong th:text="${role.roleName}">Quản trị viên</strong>
                                     <span th:text="${'STT #' + role.stt}">STT</span>
                                 </div>
                             </div>
@@ -96,7 +96,7 @@
                         <td>
                             <span class="role-pill"
                                   th:classappend="${role.systemRole} ? ' system' : ' custom'"
-                                  th:text="${role.systemRole ? 'System role' : 'Custom role'}">System</span>
+                                  th:text="${role.systemRole ? 'Vai trò hệ thống' : 'Vai trò tùy chỉnh'}">Vai trò hệ thống</span>
                         </td>
                         <td>
                             <form th:action="@{/roles/{id}/status(id=${role.id})}"
@@ -128,7 +128,7 @@
                                 <button th:if="${!role.canDelete}"
                                         type="button"
                                         class="role-icon-button disabled"
-                                        title="Role hệ thống hoặc đang có tài khoản, chỉ có thể vô hiệu hóa">
+                                        title="Vai trò hệ thống hoặc đang có tài khoản, chỉ có thể vô hiệu hóa">
                                     <i class="fas fa-lock"></i>
                                 </button>
                             </div>

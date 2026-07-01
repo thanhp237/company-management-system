@@ -18,7 +18,7 @@
             <option th:each="roleItem : ${roles}"
                     th:value="${roleItem.roleCode}"
                     th:text="${roleItem.roleName}"
-                    th:selected="${role == roleItem.roleCode}">Administrator</option>
+                    th:selected="${role == roleItem.roleCode}">Quản trị viên</option>
         </select>
     </label>
 
@@ -43,25 +43,25 @@
 
 <form th:fragment="pipelineFilters" class="management-filterbar" th:action="@{/pipeline/find}" method="get">
     <label class="filter-wide">
-        <span>Lead / Customer</span>
+        <span>Cơ hội / Khách hàng</span>
         <input type="text"
                name="keyword"
                th:value="${keyword}"
-               placeholder="Search by code, customer, assigned to">
+               placeholder="Tìm theo mã, khách hàng hoặc người phụ trách">
     </label>
 
     <label>
-        <span>Stage</span>
+        <span>Giai đoạn</span>
         <select name="stage">
-            <option value="" th:selected="${selectedStage == 'ALL'}">All Stages</option>
+            <option value="" th:selected="${selectedStage == 'ALL'}">Tất cả giai đoạn</option>
             <option th:each="stage : ${stages}"
                     th:value="${stage}"
-                    th:text="${stage}"
-                    th:selected="${selectedStage == stage}">NEW</option>
+                    th:text="${stage == 'NEW' ? 'Mới' : (stage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (stage == 'PROPOSAL' ? 'Đề xuất' : (stage == 'NEGOTIATION' ? 'Đàm phán' : (stage == 'WON' ? 'Thắng' : (stage == 'LOST' ? 'Thua' : stage)))))}"
+                    th:selected="${selectedStage == stage}">Mới</option>
         </select>
     </label>
 
-    <button class="filter-icon-button" type="submit" title="Apply filters" aria-label="Apply filters">
+    <button class="filter-icon-button" type="submit" title="Áp dụng bộ lọc" aria-label="Áp dụng bộ lọc">
         <i class="fas fa-filter"></i>
     </button>
 </form>

@@ -59,14 +59,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void createProduct(ProductRequest request) {
-        String productCode = normalizeRequired(request.getProductCode(), "Product code is required")
+        String productCode = normalizeRequired(request.getProductCode(), "Vui lòng nhập mã sản phẩm")
                 .toUpperCase(Locale.ROOT);
-        String name = normalizeRequired(request.getName(), "Product name is required");
+        String name = normalizeRequired(request.getName(), "Vui lòng nhập tên sản phẩm");
         String category = normalizeCategory(request.getCategory());
         BigDecimal unitPrice = normalizePrice(request.getUnitPrice());
 
         if (productRepository.existsByProductCodeIgnoreCase(productCode)) {
-            throw new IllegalArgumentException("Product code already exists");
+            throw new IllegalArgumentException("Mã sản phẩm đã tồn tại");
         }
 
         Product product = Product.builder()
@@ -83,16 +83,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProduct(ProductRequest request) {
-        Long id = normalizeRequired(request.getId(), "Product ID is required");
+        Long id = normalizeRequired(request.getId(), "Thiếu mã sản phẩm");
         Product product = findProductById(id);
-        String productCode = normalizeRequired(request.getProductCode(), "Product code is required")
+        String productCode = normalizeRequired(request.getProductCode(), "Vui lòng nhập mã sản phẩm")
                 .toUpperCase(Locale.ROOT);
-        String name = normalizeRequired(request.getName(), "Product name is required");
+        String name = normalizeRequired(request.getName(), "Vui lòng nhập tên sản phẩm");
         String category = normalizeCategory(request.getCategory());
         BigDecimal unitPrice = normalizePrice(request.getUnitPrice());
 
         if (productRepository.existsByProductCodeIgnoreCaseAndIdNot(productCode, id)) {
-            throw new IllegalArgumentException("Product code already exists");
+            throw new IllegalArgumentException("Mã sản phẩm đã tồn tại");
         }
 
         product.setProductCode(productCode);
@@ -106,7 +106,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProductStatus(ProductRequest request) {
-        Long id = normalizeRequired(request.getId(), "Product ID is required");
+        Long id = normalizeRequired(request.getId(), "Thiếu mã sản phẩm");
         Product product = findProductById(id);
         product.setActive(request.getActive() != null && request.getActive());
         productRepository.save(product);
@@ -121,7 +121,7 @@ public class ProductServiceImpl implements ProductService {
 
     private Product findProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm có mã: " + id));
     }
 
     private Boolean parseStatus(String status) {
@@ -137,19 +137,19 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private String normalizeCategory(String category) {
-        String normalized = normalizeRequired(category, "Product category is required");
+        String normalized = normalizeRequired(category, "Vui lòng chọn danh mục sản phẩm");
         return PRODUCT_CATEGORIES.stream()
                 .filter(item -> item.equalsIgnoreCase(normalized))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid product category"));
+                .orElseThrow(() -> new IllegalArgumentException("Danh mục sản phẩm không hợp lệ"));
     }
 
     private BigDecimal normalizePrice(BigDecimal unitPrice) {
         if (unitPrice == null) {
-            throw new IllegalArgumentException("Unit price is required");
+            throw new IllegalArgumentException("Vui lòng nhập đơn giá");
         }
         if (unitPrice.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Unit price must be greater than or equal to 0");
+            throw new IllegalArgumentException("Đơn giá phải lớn hơn hoặc bằng 0");
         }
         return unitPrice;
     }

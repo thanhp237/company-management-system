@@ -63,7 +63,7 @@ public class CustomerActivityServiceImpl
         return repository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException(
-                                "Activity not found."));
+                                "Không tìm thấy tương tác."));
     }
 
     @Override
@@ -74,7 +74,7 @@ public class CustomerActivityServiceImpl
                 repository.findById(id)
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
-                                        "Activity not found."));
+                                        "Không tìm thấy tương tác."));
 
         activity.setActivityNote(activityNote);
 

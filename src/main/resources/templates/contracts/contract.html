@@ -24,7 +24,7 @@
     <div class="management-page contract-detail-page">
         <a class="contract-back-link" th:href="@{/contracts}">
             <i class="fas fa-arrow-left"></i>
-            <span>Back</span>
+            <span>Quay lại</span>
         </a>
 
         <div class="contract-detail-header">
@@ -39,7 +39,7 @@
             </div>
             <span class="contract-status detail"
                   th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
-                  th:text="${contract.status}">DRAFT</span>
+                  th:text="${contract.status == 'DRAFT' ? 'Bản nháp' : (contract.status == 'PENDING_ADMIN_OFFICER' ? 'Chờ hành chính hợp đồng' : (contract.status == 'ADMIN_REVIEWED' ? 'Đã duyệt điều khoản' : (contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status)))))}">Bản nháp</span>
         </div>
 
         <div th:if="${successMessage}" class="management-alert success">
@@ -61,12 +61,12 @@
                     <div class="contract-info-grid">
                         <div>
                             <span>Khách hàng</span>
-                            <strong th:text="${contract.customerName != null ? contract.customerName : 'N/A'}">Khách hàng</strong>
+                            <strong th:text="${contract.customerName != null ? contract.customerName : 'Chưa có'}">Khách hàng</strong>
                         </div>
                         <div>
                             <span>Mã báo giá</span>
                             <strong>
-                                <span th:text="${contract.quotationCode != null ? contract.quotationCode : 'N/A'}">QT-001</span>
+                                <span th:text="${contract.quotationCode != null ? contract.quotationCode : 'Chưa có'}">QT-001</span>
                                 <a th:if="${contract.quotationId != null}"
                                    th:href="@{/quotation/detail/{id}(id=${contract.quotationId})}">
                                     Xem
@@ -74,11 +74,11 @@
                             </strong>
                         </div>
                         <div>
-                            <span>Sale phụ trách</span>
-                            <strong th:text="${contract.saleName != null ? contract.saleName : 'N/A'}">Sale</strong>
+                            <span>Nhân viên kinh doanh phụ trách</span>
+                            <strong th:text="${contract.saleName != null ? contract.saleName : 'Chưa có'}">Nhân viên kinh doanh</strong>
                         </div>
                         <div>
-                            <span>Admin Officer</span>
+                            <span>Nhân viên hành chính hợp đồng</span>
                             <strong th:text="${contract.adminOfficerName != null ? contract.adminOfficerName : 'Chưa phân công'}">Admin</strong>
                         </div>
                         <div>
@@ -100,18 +100,106 @@
                     <div class="contract-info-grid">
                         <div>
                             <span>Email</span>
-                            <strong th:text="${contract.customerEmail != null ? contract.customerEmail : 'N/A'}">email@example.com</strong>
+                            <strong th:text="${contract.customerEmail != null ? contract.customerEmail : 'Chưa có'}">email@example.com</strong>
                         </div>
                         <div>
                             <span>Điện thoại</span>
-                            <strong th:text="${contract.customerPhone != null ? contract.customerPhone : 'N/A'}">Phone</strong>
+                            <strong th:text="${contract.customerPhone != null ? contract.customerPhone : 'Chưa có'}">Điện thoại</strong>
                         </div>
                         <div class="wide">
                             <span>Địa chỉ</span>
-                            <strong th:text="${contract.customerAddress != null ? contract.customerAddress : 'N/A'}">Address</strong>
+                            <strong th:text="${contract.customerAddress != null ? contract.customerAddress : 'Chưa có'}">Địa chỉ</strong>
                         </div>
                     </div>
                 </section>
+
+                <form class="contract-detail-card contract-rule-form"
+                      th:if="${contract.status == 'DRAFT'}"
+                      th:action="@{/contracts/{id}/draft-info(id=${contract.id})}"
+                      th:object="${contractRuleRequest}"
+                      method="post">
+                    <div class="contract-card-title">
+                        <i class="fas fa-user-pen"></i>
+                        <h2>Sale xác nhận thông tin bên mua</h2>
+                    </div>
+                    <p class="contract-form-note">
+                        Lưu thông tin khách hàng trên hợp đồng trước khi gửi cho hành chính hợp đồng nhập điều khoản.
+                        Sản phẩm và giá trị vẫn lấy từ báo giá.
+                    </p>
+
+                    <div class="contract-rule-section">
+                        <h3>Thông tin doanh nghiệp / khách hàng</h3>
+                        <div class="contract-rule-grid">
+                            <label>
+                                <span>Tên doanh nghiệp / khách hàng</span>
+                                <input type="text" th:field="*{buyerCompanyName}" placeholder="Tên công ty hoặc khách hàng">
+                            </label>
+                            <label>
+                                <span>Mã số thuế</span>
+                                <input type="text" th:field="*{buyerTaxCode}" placeholder="Mã số thuế nếu có">
+                            </label>
+                            <label class="wide">
+                                <span>Địa chỉ</span>
+                                <input type="text" th:field="*{buyerAddress}" placeholder="Địa chỉ trên hợp đồng">
+                            </label>
+                            <label>
+                                <span>Điện thoại</span>
+                                <input type="text" th:field="*{buyerPhone}" placeholder="Số điện thoại">
+                            </label>
+                            <label>
+                                <span>Fax</span>
+                                <input type="text" th:field="*{buyerFax}" placeholder="Fax nếu có">
+                            </label>
+                            <label>
+                                <span>Tài khoản ngân hàng</span>
+                                <input type="text" th:field="*{buyerBankAccount}" placeholder="Số tài khoản nếu có">
+                            </label>
+                            <label>
+                                <span>Ngân hàng</span>
+                                <input type="text" th:field="*{buyerBankName}" placeholder="Tên ngân hàng">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="contract-rule-section">
+                        <h3>Người đại diện bên mua</h3>
+                        <div class="contract-rule-grid">
+                            <label>
+                                <span>Người đại diện</span>
+                                <input type="text" th:field="*{buyerRepresentativeName}" placeholder="Họ tên người đại diện">
+                            </label>
+                            <label>
+                                <span>Chức vụ</span>
+                                <input type="text" th:field="*{buyerRepresentativeTitle}" placeholder="VD: Giám đốc">
+                            </label>
+                            <label>
+                                <span>CMND/CCCD</span>
+                                <input type="text" th:field="*{buyerIdentityNumber}">
+                            </label>
+                            <label>
+                                <span>Nơi cấp</span>
+                                <input type="text" th:field="*{buyerIdentityIssuedPlace}">
+                            </label>
+                            <label>
+                                <span>Ngày cấp</span>
+                                <input type="date" th:field="*{buyerIdentityIssuedDate}">
+                            </label>
+                            <label>
+                                <span>Nơi ký dự kiến</span>
+                                <input type="text" th:field="*{signingPlace}" placeholder="VD: TP. Hồ Chí Minh">
+                            </label>
+                            <label class="wide">
+                                <span>Giấy ủy quyền / ghi chú bên mua</span>
+                                <textarea th:field="*{buyerAuthorizationInfo}" rows="2"></textarea>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="contract-primary-button" type="submit">
+                        <i class="fas fa-floppy-disk"></i>
+                        <span>Lưu thông tin nháp</span>
+                    </button>
+                </form>
 
                 <section class="contract-detail-card">
                     <div class="contract-card-title">
@@ -132,10 +220,10 @@
                             <tbody>
                             <tr th:each="item : ${contract.items}">
                                 <td>
-                                    <strong th:text="${item.productName}">Product</strong>
+                                    <strong th:text="${item.productName}">Sản phẩm</strong>
                                     <small th:text="${item.productCode}">P001</small>
                                 </td>
-                                <td th:text="${item.description != null ? item.description : 'N/A'}">Description</td>
+                                <td th:text="${item.description != null ? item.description : 'Chưa có'}">Mô tả</td>
                                 <td th:text="${item.quantity}">1</td>
                                 <td th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT') : '0'}">0</td>
                                 <td>
@@ -158,32 +246,32 @@
                 <section class="contract-detail-card">
                     <div class="contract-card-title">
                         <i class="fas fa-scale-balanced"></i>
-                        <h2>Điều khoản Admin Officer</h2>
+                        <h2>Điều khoản hành chính hợp đồng</h2>
                     </div>
                     <div class="contract-info-grid">
                         <div>
                             <span>Ngày bắt đầu</span>
-                            <strong th:text="${contract.contractStartDate != null ? contract.contractStartDate : 'N/A'}">N/A</strong>
+                            <strong th:text="${contract.contractStartDate != null ? contract.contractStartDate : 'Chưa có'}">Chưa có</strong>
                         </div>
                         <div>
                             <span>Ngày kết thúc</span>
-                            <strong th:text="${contract.contractEndDate != null ? contract.contractEndDate : 'N/A'}">N/A</strong>
+                            <strong th:text="${contract.contractEndDate != null ? contract.contractEndDate : 'Chưa có'}">Chưa có</strong>
                         </div>
                         <div class="wide">
                             <span>Điều khoản thanh toán</span>
-                            <p th:text="${contract.paymentTerms != null ? contract.paymentTerms : 'N/A'}">N/A</p>
+                            <p th:text="${contract.paymentTerms != null ? contract.paymentTerms : 'Chưa có'}">Chưa có</p>
                         </div>
                         <div class="wide">
                             <span>Điều khoản giao hàng</span>
-                            <p th:text="${contract.deliveryTerms != null ? contract.deliveryTerms : 'N/A'}">N/A</p>
+                            <p th:text="${contract.deliveryTerms != null ? contract.deliveryTerms : 'Chưa có'}">Chưa có</p>
                         </div>
                         <div class="wide">
                             <span>Điều khoản pháp lý</span>
-                            <p th:text="${contract.legalTerms != null ? contract.legalTerms : 'N/A'}">N/A</p>
+                            <p th:text="${contract.legalTerms != null ? contract.legalTerms : 'Chưa có'}">Chưa có</p>
                         </div>
                         <div class="wide">
                             <span>Ghi chú Admin</span>
-                            <p th:text="${contract.adminNote != null ? contract.adminNote : 'N/A'}">N/A</p>
+                            <p th:text="${contract.adminNote != null ? contract.adminNote : 'Chưa có'}">Chưa có</p>
                         </div>
                     </div>
                 </section>
@@ -431,8 +519,8 @@
                     <form th:if="${contract.status == 'DRAFT'}"
                           th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}"
                           method="post"
-                          onsubmit="return confirm('Gửi hợp đồng này cho Admin Officer?');">
-                        <button type="submit"><i class="fas fa-user-shield"></i> Gửi Admin Officer</button>
+                          onsubmit="return confirm('Bạn đã lưu/xác nhận thông tin bên mua trước khi gửi hành chính hợp đồng?');">
+                        <button type="submit"><i class="fas fa-user-shield"></i> Gửi hành chính hợp đồng</button>
                     </form>
 
                     <form th:if="${contract.status == 'ADMIN_REVIEWED'}"
@@ -456,19 +544,33 @@
                         <button type="submit"><i class="fas fa-key"></i> Gửi lại account</button>
                     </form>
 
-                    <form th:if="${contract.status == 'SENT_TO_CUSTOMER'}"
-                          th:action="@{/contracts/{id}/customer-sign(id=${contract.id})}"
-                          method="post"
-                          onsubmit="return confirm('Đánh dấu khách hàng đã ký hợp đồng?');">
-                        <button type="submit"><i class="fas fa-signature"></i> Khách đã ký</button>
-                    </form>
-
                     <form th:if="${contract.status == 'DRAFT' or contract.status == 'PENDING_ADMIN_OFFICER' or contract.status == 'ADMIN_REVIEWED' or contract.status == 'SENT_TO_CUSTOMER'}"
                           th:action="@{/contracts/{id}/cancel(id=${contract.id})}"
                           method="post"
                           onsubmit="return confirm('Hủy hợp đồng này?');">
                         <button class="danger" type="submit"><i class="fas fa-ban"></i> Hủy hợp đồng</button>
                     </form>
+
+                    <div class="contract-action-note"
+                         th:if="${contract.status == 'SIGNED' or contract.status == 'CANCELLED'}">
+                        <i th:class="${contract.status == 'SIGNED' ? 'fas fa-circle-check' : 'fas fa-circle-xmark'}"></i>
+                        <span th:text="${contract.status == 'SIGNED' ? 'Hợp đồng đã hoàn tất ký, không còn thao tác gửi hoặc hủy.' : 'Hợp đồng đã hủy, không còn thao tác xử lý.'}">
+                            Hợp đồng đã hoàn tất.
+                        </span>
+                    </div>
+
+                    <a class="contract-action-link"
+                       th:if="${contract.quotationId != null}"
+                       th:href="@{/quotation/detail/{id}(id=${contract.quotationId})}">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        Xem báo giá
+                    </a>
+
+                    <a class="contract-action-link"
+                       th:href="@{/contracts}">
+                        <i class="fas fa-list"></i>
+                        Quay lại danh sách
+                    </a>
                 </section>
 
                 <section class="contract-summary-card">

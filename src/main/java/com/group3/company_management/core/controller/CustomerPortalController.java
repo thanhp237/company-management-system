@@ -44,7 +44,7 @@ public class CustomerPortalController {
         // Get portal info with metrics
         CustomerPortalResponse portalInfo = customerService.getCustomerPortalInfo(customer.getId());
         
-        model.addAttribute("title", "My Account");
+        model.addAttribute("title", "Tài khoản của tôi");
         model.addAttribute("customer", customer);
         model.addAttribute("portalInfo", portalInfo);
         model.addAttribute("contracts", contractService.getCustomerContracts(customer.getId()));
@@ -61,7 +61,7 @@ public class CustomerPortalController {
     public String showCustomerProfile(Model model, Authentication authentication) {
         Customer customer = getAuthenticatedCustomer(authentication);
         
-        model.addAttribute("title", "My Profile");
+        model.addAttribute("title", "Hồ sơ của tôi");
         model.addAttribute("customer", customer);
         
         log.info("✅ Customer profile page accessed: {}", customer.getEmail());
@@ -84,7 +84,7 @@ public class CustomerPortalController {
         try {
             request.setId(customer.getId());
             customerService.updateCustomerProfile(customer.getId(), request);
-            model.addAttribute("successMessage", "Profile updated successfully");
+            model.addAttribute("successMessage", "Cập nhật hồ sơ thành công.");
             return "redirect:/customer/portal/profile?success=true";
         } catch (Exception e) {
             log.error("Error updating customer profile: {}", e.getMessage());
@@ -101,7 +101,7 @@ public class CustomerPortalController {
     public String showCustomerContracts(Model model, Authentication authentication) {
         Customer customer = getAuthenticatedCustomer(authentication);
         
-        model.addAttribute("title", "My Contracts");
+        model.addAttribute("title", "Hợp đồng của tôi");
         model.addAttribute("customer", customer);
         model.addAttribute("contracts", contractService.getCustomerContracts(customer.getId()));
         
@@ -122,7 +122,7 @@ public class CustomerPortalController {
         Customer customer = getAuthenticatedCustomer(authentication);
         ContractResponse contract = contractService.getCustomerContractDetail(contractId, customer.getId());
         
-        model.addAttribute("title", "Contract Details");
+        model.addAttribute("title", "Chi tiết hợp đồng");
         model.addAttribute("customer", customer);
         model.addAttribute("contract", contract);
         
@@ -144,7 +144,7 @@ public class CustomerPortalController {
             return "redirect:/customer/portal/contracts/" + contractId + "?signed=true";
         } catch (RuntimeException exception) {
             ContractResponse contract = contractService.getCustomerContractDetail(contractId, customer.getId());
-            model.addAttribute("title", "Contract Details");
+            model.addAttribute("title", "Chi tiết hợp đồng");
             model.addAttribute("customer", customer);
             model.addAttribute("contract", contract);
             model.addAttribute("errorMessage", exception.getMessage());
@@ -152,84 +152,9 @@ public class CustomerPortalController {
         }
     }
     
-    /**
-     * GET /customer/portal/quotes
-     * View customer's quotes
-     */
-    @GetMapping("/quotes")
-    public String showCustomerQuotes(Model model, Authentication authentication) {
-        Customer customer = getAuthenticatedCustomer(authentication);
-        
-        model.addAttribute("title", "My Quotes");
-        model.addAttribute("customer", customer);
-        // TODO: Fetch quotes from QuoteService
-        
-        log.info("✅ Customer quotes page accessed: {}", customer.getEmail());
-        return "customer/quotes";
-    }
-    
-    /**
-     * GET /customer/portal/quotes/{quoteId}
-     * View specific quote
-     */
-    @GetMapping("/quotes/{quoteId}")
-    public String showQuoteDetail(
-            @PathVariable Long quoteId,
-            Model model,
-            Authentication authentication) {
-        
-        Customer customer = getAuthenticatedCustomer(authentication);
-        
-        model.addAttribute("title", "Quote Details");
-        model.addAttribute("customer", customer);
-        model.addAttribute("quoteId", quoteId);
-        // TODO: Fetch quote from QuoteService
-        
-        log.info("✅ Customer quote detail accessed: {} - Quote ID: {}", customer.getEmail(), quoteId);
-        return "customer/quote-detail";
-    }
-    
-    /**
-     * POST /customer/portal/quotes/{quoteId}/accept
-     * Accept a quote
-     */
-    @PostMapping("/quotes/{quoteId}/accept")
-    public String acceptQuote(
-            @PathVariable Long quoteId,
-            Authentication authentication) {
-        
-        Customer customer = getAuthenticatedCustomer(authentication);
-        log.info("Customer accepting quote - Customer: {}, Quote ID: {}", customer.getEmail(), quoteId);
-        
-        try {
-            // TODO: Call QuoteService.acceptQuote()
-            return "redirect:/customer/portal/quotes/" + quoteId + "?accepted=true";
-        } catch (Exception e) {
-            log.error("Error accepting quote: {}", e.getMessage());
-            return "redirect:/customer/portal/quotes/" + quoteId + "?error=true";
-        }
-    }
-    
-    /**
-     * POST /customer/portal/quotes/{quoteId}/reject
-     * Reject a quote
-     */
-    @PostMapping("/quotes/{quoteId}/reject")
-    public String rejectQuote(
-            @PathVariable Long quoteId,
-            @RequestParam(required = false) String reason,
-            Authentication authentication) {
-        
-        Customer customer = getAuthenticatedCustomer(authentication);
-        log.info("Customer rejecting quote - Customer: {}, Quote ID: {}", customer.getEmail(), quoteId);
-        
-        try {
-            // TODO: Call QuoteService.rejectQuote()
-            return "redirect:/customer/portal/quotes?rejected=true";
-        } catch (Exception e) {
-            log.error("Error rejecting quote: {}", e.getMessage());
-            return "redirect:/customer/portal/quotes/" + quoteId + "?error=true";
-        }
+    @RequestMapping("/quotes/**")
+    public String redirectLegacyQuotePages() {
+        return "redirect:/customer/portal/contracts";
     }
     
     /**
@@ -240,7 +165,7 @@ public class CustomerPortalController {
     public String showCustomerPayments(Model model, Authentication authentication) {
         Customer customer = getAuthenticatedCustomer(authentication);
         
-        model.addAttribute("title", "Payment History");
+        model.addAttribute("title", "Lịch sử thanh toán");
         model.addAttribute("customer", customer);
         // TODO: Fetch payments from PaymentService
         
@@ -263,6 +188,6 @@ public class CustomerPortalController {
         }
         
         log.error("❌ Unauthenticated or invalid customer session");
-        throw new RuntimeException("Customer not authenticated");
+        throw new RuntimeException("Khách hàng chưa đăng nhập.");
     }
 }

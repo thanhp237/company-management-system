@@ -53,28 +53,28 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public Long createFromQuotation(Long quotationId, String username) {
         Quotation quotation = quotationRepository.findById(quotationId)
-                .orElseThrow(() -> new RuntimeException("Quotation not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá."));
 
         if (quotation.getStatus() == null
                 || !CONTRACT_READY_QUOTATION_STATUSES.contains(quotation.getStatus().trim().toUpperCase())) {
-            throw new RuntimeException("Only approved or accepted quotation can create contract");
+            throw new RuntimeException("Chỉ báo giá đã duyệt hoặc đã chấp nhận mới có thể tạo hợp đồng.");
         }
         if (quotation.getOpportunityId() == null) {
-            throw new RuntimeException("Quotation must belong to an opportunity before creating contract");
+            throw new RuntimeException("Báo giá phải thuộc một cơ hội trước khi tạo hợp đồng.");
         }
         Opportunity opportunity = opportunityRepository.findById(quotation.getOpportunityId())
-                .orElseThrow(() -> new RuntimeException("Opportunity not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cơ hội."));
         if (opportunity.getStage() == null || !"WON".equalsIgnoreCase(opportunity.getStage())) {
-            throw new RuntimeException("Only WON opportunity can create contract");
+            throw new RuntimeException("Chỉ cơ hội đã thắng mới có thể tạo hợp đồng.");
         }
 
         contractRepository.findByQuotationId(quotationId)
                 .ifPresent(existingContract -> {
-                    throw new RuntimeException("Contract already exists for this quotation");
+                    throw new RuntimeException("Báo giá này đã có hợp đồng.");
                 });
 
         Employee sale = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Sale employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên kinh doanh."));
 
         Contract contract = new Contract();
         contract.setQuotation(quotation);
@@ -86,6 +86,7 @@ public class ContractServiceImpl implements ContractService {
         contract.setFinalAmount(defaultMoney(quotation.getFinalAmount()));
         contract.setSale(sale);
         contract.setAssignedEmployee(sale);
+        fillBuyerDefaults(contract, quotation.getCustomer());
 
         Contract savedContract = contractRepository.save(contract);
 
@@ -96,7 +97,7 @@ public class ContractServiceImpl implements ContractService {
     @Transactional(readOnly = true)
     public ContractResponse getContractDetail(Long contractId) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
 
         return mapToResponse(contract);
     }
@@ -105,7 +106,7 @@ public class ContractServiceImpl implements ContractService {
     @Transactional(readOnly = true)
     public List<ContractResponse> getMyContracts(String username) {
         Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên."));
 
         List<Contract> contracts = canReviewContract(employee)
                 ? contractRepository.findByAdminOfficerId(employee.getId())
@@ -130,7 +131,7 @@ public class ContractServiceImpl implements ContractService {
     @Transactional(readOnly = true)
     public List<ContractResponse> getCustomerContracts(Long customerId) {
         if (customerId == null) {
-            throw new RuntimeException("Customer is required");
+            throw new RuntimeException("Thiếu thông tin khách hàng.");
         }
 
         return contractRepository.findByCustomerIdOrderByCreatedAtDesc(customerId)
@@ -150,14 +151,14 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public void submitToAdmin(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
         Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên."));
 
         validateSalesStepAccess(contract, employee);
 
         if (contract.getStatus() != Contract.ContractStatus.DRAFT) {
-            throw new RuntimeException("Only draft contract can be submitted to admin officer");
+            throw new RuntimeException("Chỉ hợp đồng nháp mới có thể gửi cho hành chính hợp đồng.");
         }
 
         contract.setStatus(Contract.ContractStatus.PENDING_ADMIN_OFFICER);
@@ -166,19 +167,51 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
+    public void updateDraftContractInfo(Long contractId, ContractRuleRequest request, String username) {
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
+        Employee employee = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên kinh doanh."));
+
+        validateSalesStepAccess(contract, employee);
+
+        if (contract.getStatus() != Contract.ContractStatus.DRAFT) {
+            throw new RuntimeException("Chỉ hợp đồng nháp mới được sale chỉnh sửa trước khi gửi hành chính hợp đồng.");
+        }
+
+        contract.setBuyerCompanyName(normalize(request.getBuyerCompanyName()));
+        contract.setBuyerTaxCode(normalize(request.getBuyerTaxCode()));
+        contract.setBuyerAddress(normalize(request.getBuyerAddress()));
+        contract.setBuyerPhone(normalize(request.getBuyerPhone()));
+        contract.setBuyerFax(normalize(request.getBuyerFax()));
+        contract.setBuyerBankAccount(normalize(request.getBuyerBankAccount()));
+        contract.setBuyerBankName(normalize(request.getBuyerBankName()));
+        contract.setBuyerRepresentativeName(normalize(request.getBuyerRepresentativeName()));
+        contract.setBuyerRepresentativeTitle(normalize(request.getBuyerRepresentativeTitle()));
+        contract.setBuyerIdentityNumber(normalize(request.getBuyerIdentityNumber()));
+        contract.setBuyerIdentityIssuedPlace(normalize(request.getBuyerIdentityIssuedPlace()));
+        contract.setBuyerIdentityIssuedDate(request.getBuyerIdentityIssuedDate());
+        contract.setBuyerAuthorizationInfo(normalize(request.getBuyerAuthorizationInfo()));
+        contract.setSigningPlace(normalize(request.getSigningPlace()));
+
+        contractRepository.save(contract);
+    }
+
+    @Override
+    @Transactional
     public void updateContractRules(Long contractId, ContractRuleRequest request, String adminUsername) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
 
         if (contract.getStatus() != Contract.ContractStatus.PENDING_ADMIN_OFFICER) {
-            throw new RuntimeException("Only contract pending admin officer can update contract rules");
+            throw new RuntimeException("Chỉ hợp đồng đang chờ hành chính hợp đồng mới được cập nhật điều khoản.");
         }
 
         Employee adminOfficer = employeeRepository.findByUser_Username(adminUsername)
-                .orElseThrow(() -> new RuntimeException("Admin officer employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên hành chính hợp đồng."));
 
         if (!canReviewContract(adminOfficer)) {
-            throw new RuntimeException("Only admin officer can update contract rules");
+            throw new RuntimeException("Chỉ hành chính hợp đồng mới được cập nhật điều khoản hợp đồng.");
         }
 
         contract.setAdminOfficer(adminOfficer);
@@ -240,21 +273,21 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public void sendToCustomer(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
 
         if (contract.getStatus() != Contract.ContractStatus.ADMIN_REVIEWED) {
-            throw new RuntimeException("Only admin reviewed contract can be sent to customer");
+            throw new RuntimeException("Chỉ hợp đồng đã duyệt điều khoản mới có thể gửi cho khách hàng.");
         }
 
         Employee sale = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Sale employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên kinh doanh."));
 
         if (!canViewAllContracts(sale) && (contract.getSale() == null || !contract.getSale().getId().equals(sale.getId()))) {
-            throw new RuntimeException("Only owner sale can send contract to customer");
+            throw new RuntimeException("Chỉ nhân viên kinh doanh phụ trách mới được gửi hợp đồng cho khách hàng.");
         }
 
         if (!hasContractRules(contract)) {
-            throw new RuntimeException("Please complete contract rules before sending to customer");
+            throw new RuntimeException("Vui lòng nhập đầy đủ điều khoản trước khi gửi hợp đồng cho khách hàng.");
         }
 
         contract.setAssignedEmployee(sale);
@@ -264,30 +297,11 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     @Transactional
-    public void customerSignContract(Long contractId, String username) {
-        Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
-        Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-        validateSalesStepAccess(contract, employee);
-
-        if (contract.getStatus() != Contract.ContractStatus.SENT_TO_CUSTOMER) {
-            throw new RuntimeException("Only contract sent to customer can be signed");
-        }
-
-        contract.setStatus(Contract.ContractStatus.SIGNED);
-        contract.setSignedAt(LocalDateTime.now());
-        contractRepository.save(contract);
-    }
-
-    @Override
-    @Transactional
     public void customerSignContractByCustomer(Long contractId, Long customerId) {
         Contract contract = getCustomerOwnedContract(contractId, customerId);
 
         if (contract.getStatus() != Contract.ContractStatus.SENT_TO_CUSTOMER) {
-            throw new RuntimeException("Only contract sent to customer can be signed");
+            throw new RuntimeException("Chỉ hợp đồng đã gửi cho khách hàng mới có thể ký.");
         }
 
         contract.setStatus(Contract.ContractStatus.SIGNED);
@@ -299,14 +313,14 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public void cancelContract(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
         Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên."));
 
         validateSalesStepAccess(contract, employee);
 
         if (contract.getStatus() == Contract.ContractStatus.SIGNED) {
-            throw new RuntimeException("Signed contract cannot be cancelled");
+            throw new RuntimeException("Hợp đồng đã ký không thể hủy.");
         }
 
         contract.setStatus(Contract.ContractStatus.CANCELLED);
@@ -324,7 +338,7 @@ public class ContractServiceImpl implements ContractService {
             String sortDir
     ) {
         Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên."));
 
         Sort sort = "asc".equalsIgnoreCase(sortDir)
                 ? Sort.by(sortBy).ascending()
@@ -370,7 +384,7 @@ public class ContractServiceImpl implements ContractService {
     @Transactional(readOnly = true)
     public ContractStatisticsResponse getContractStatistics(String username) {
         Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
 
         Long employeeId = employee.getId();
 
@@ -414,14 +428,14 @@ public class ContractServiceImpl implements ContractService {
     @Transactional
     public void deleteContract(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
         Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên."));
 
         validateSalesStepAccess(contract, employee);
 
         if (contract.getStatus() == Contract.ContractStatus.SIGNED) {
-            throw new RuntimeException("Signed contract cannot be deleted");
+            throw new RuntimeException("Hợp đồng đã ký không thể hủy.");
         }
 
         contract.setStatus(Contract.ContractStatus.CANCELLED);
@@ -522,14 +536,14 @@ public class ContractServiceImpl implements ContractService {
 
     private Contract getCustomerOwnedContract(Long contractId, Long customerId) {
         if (customerId == null) {
-            throw new RuntimeException("Customer is required");
+            throw new RuntimeException("Thiếu thông tin khách hàng.");
         }
 
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
 
         if (contract.getCustomer() == null || !customerId.equals(contract.getCustomer().getId())) {
-            throw new RuntimeException("You are not allowed to access this contract");
+            throw new RuntimeException("Bạn không có quyền truy cập hợp đồng này.");
         }
 
         return contract;
@@ -595,6 +609,37 @@ public class ContractServiceImpl implements ContractService {
         return value != null && !value.isBlank();
     }
 
+    private String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private void fillBuyerDefaults(Contract contract, Customer customer) {
+        if (customer == null) {
+            return;
+        }
+        contract.setBuyerCompanyName(firstText(customer.getCompanyName(), customer.getName(), customer.getFullName()));
+        contract.setBuyerTaxCode(customer.getTaxCode());
+        contract.setBuyerAddress(customer.getAddress());
+        contract.setBuyerPhone(customer.getPhone());
+        contract.setBuyerRepresentativeName(customer.getFullName());
+    }
+
+    private String firstText(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (hasText(value)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
     private boolean canReviewContract(Employee employee) {
         if (employee == null || employee.getEmployeeType() == null) {
             return false;
@@ -615,7 +660,7 @@ public class ContractServiceImpl implements ContractService {
             return;
         }
         if (contract.getSale() == null || employee == null || !employee.getId().equals(contract.getSale().getId())) {
-            throw new RuntimeException("You are not allowed to update this contract");
+            throw new RuntimeException("Bạn không có quyền cập nhật hợp đồng này");
         }
     }
 

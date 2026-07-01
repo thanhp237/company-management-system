@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Departments - Company Management System</title>
+    <title>Phòng ban - Company Management System</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -76,13 +76,13 @@
                 <i class="fas fa-user-clock"></i>
                 <span>Đang hoạt động</span>
                 <strong th:text="${activeDepartments}">8</strong>
-                <small>Active</small>
+                <small>Hoạt động</small>
             </article>
             <article class="department-stat-card danger">
                 <i class="fas fa-star"></i>
                 <span>Cần rà soát</span>
                 <strong th:text="${inactiveDepartments}">0</strong>
-                <small>Inactive</small>
+                <small>Ngừng hoạt động</small>
             </article>
         </section>
 
@@ -96,7 +96,7 @@
                         </a>
                     </div>
                 </div>
-                <h2 th:text="${department.name}">Sales & Growth</h2>
+                <h2 th:text="${department.name}">Kinh doanh & tăng trưởng</h2>
                 <p th:text="${department.description != null and !#strings.isEmpty(department.description) ? department.description : 'Chưa có mô tả phòng ban.'}">
                     Phòng ban phụ trách vận hành.
                 </p>

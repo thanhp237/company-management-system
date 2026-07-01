@@ -90,7 +90,7 @@ public class ContractController {
             RedirectAttributes redirectAttributes) {
         try {
             Long contractId = contractService.createFromQuotation(quotationId, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Contract created from quotation successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Tạo hợp đồng từ báo giá thành công.");
             return "redirect:/contracts/" + contractId;
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
@@ -106,7 +106,24 @@ public class ContractController {
             RedirectAttributes redirectAttributes) {
         try {
             contractService.submitToAdmin(id, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Contract submitted to admin officer.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã gửi hợp đồng cho hành chính hợp đồng.");
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+
+        return "redirect:/contracts/" + id;
+    }
+
+    @PostMapping("/{id}/draft-info")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
+    public String updateDraftInfo(
+            @PathVariable Long id,
+            @ModelAttribute("contractRuleRequest") ContractRuleRequest request,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+        try {
+            contractService.updateDraftContractInfo(id, request, authentication.getName());
+            redirectAttributes.addFlashAttribute("successMessage", "Đã lưu thông tin nháp của hợp đồng.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
@@ -123,7 +140,7 @@ public class ContractController {
             RedirectAttributes redirectAttributes) {
         try {
             contractService.updateContractRules(id, request, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Contract rules saved successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã lưu điều khoản hợp đồng.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
@@ -139,23 +156,7 @@ public class ContractController {
             RedirectAttributes redirectAttributes) {
         try {
             contractService.sendToCustomer(id, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Contract sent to customer.");
-        } catch (RuntimeException exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
-        }
-
-        return "redirect:/contracts/" + id;
-    }
-
-    @PostMapping("/{id}/customer-sign")
-    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
-    public String customerSignContract(
-            @PathVariable Long id,
-            Authentication authentication,
-            RedirectAttributes redirectAttributes) {
-        try {
-            contractService.customerSignContract(id, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Contract signed by customer.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã gửi hợp đồng cho khách hàng.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
@@ -170,7 +171,7 @@ public class ContractController {
             RedirectAttributes redirectAttributes) {
         try {
             CustomerAccountResult result = customerAccountService.createFromContract(id);
-            addCustomerAccountMessage(redirectAttributes, result, "Customer account created.");
+            addCustomerAccountMessage(redirectAttributes, result, "Đã cấp account khách hàng.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
@@ -185,7 +186,7 @@ public class ContractController {
             RedirectAttributes redirectAttributes) {
         try {
             CustomerAccountResult result = customerAccountService.resendAccountEmail(id);
-            addCustomerAccountMessage(redirectAttributes, result, "Customer account password reset.");
+            addCustomerAccountMessage(redirectAttributes, result, "Đã tạo lại mật khẩu account khách hàng.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
@@ -201,7 +202,7 @@ public class ContractController {
             RedirectAttributes redirectAttributes) {
         try {
             contractService.cancelContract(id, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Contract cancelled successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy hợp đồng.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
@@ -217,7 +218,7 @@ public class ContractController {
     ) {
         try {
             contractService.deleteContract(id, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Contract deleted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã hủy hợp đồng.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
@@ -307,13 +308,13 @@ public class ContractController {
         if (result.isEmailSent()) {
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    prefix + " Login info sent to " + result.getUsername() + ".");
+                    prefix + " Thông tin đăng nhập đã gửi đến " + result.getUsername() + ".");
             return;
         }
 
         redirectAttributes.addFlashAttribute(
                 "successMessage",
-                prefix + " Email could not be sent. Temporary login: "
+                prefix + " Không gửi được email. Thông tin đăng nhập tạm thời: "
                         + result.getUsername() + " / " + result.getRawPassword());
     }
 }

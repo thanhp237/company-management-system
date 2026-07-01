@@ -89,7 +89,7 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Transactional(readOnly = true)
     public Opportunity getOpportunityDetail(Long id, String username) {
         Opportunity opportunity = opportunityRepository.findDetailById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Opportunity not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy cơ hội bán hàng"));
         validateAccess(opportunity, findCurrentUser(username));
         return opportunity;
     }
@@ -120,7 +120,7 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Override
     public void updateStage(Long id, String stage, String username) {
         Opportunity opportunity = opportunityRepository.findDetailById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Opportunity not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy cơ hội bán hàng"));
         User currentUser = findCurrentUser(username);
         validateAccess(opportunity, currentUser);
 
@@ -132,7 +132,7 @@ public class OpportunityServiceImpl implements OpportunityService {
         }
 
         if (!getNextStages(currentStage).contains(nextStage)) {
-            throw new IllegalArgumentException("Invalid stage transition: " + currentStage + " -> " + nextStage);
+            throw new IllegalArgumentException("Không thể chuyển giai đoạn từ " + currentStage + " sang " + nextStage);
         }
 
         opportunity.setStage(nextStage);
@@ -143,7 +143,7 @@ public class OpportunityServiceImpl implements OpportunityService {
             notificationService.createNotification(
                     currentUser.getId(), // Bắn chuẩn xác về ID 19 của người vừa bấm nút
                     "🔄 Cập nhật trạng thái Cơ hội",
-                    "Bạn đã chuyển trạng thái cơ hội của khách '" + opportunity.getCustomer().getFullName() + "' từ " + currentStage + " sang " + nextStage
+                        "Bạn đã chuyển trạng thái cơ hội của khách '" + opportunity.getCustomer().getFullName() + "' từ " + displayStage(currentStage) + " sang " + displayStage(nextStage)
             );
         }
     }
@@ -200,11 +200,11 @@ public class OpportunityServiceImpl implements OpportunityService {
                 .classification(classification)
                 .suggestedStage(suggestedStage)
                 .reasons(List.of(
-                        "Budget: " + budgetScore + "/30",
-                        "Decision Maker: " + decisionMakerScore + "/20",
-                        "Need: " + needScore + "/20",
-                        "Engagement: " + engagementScore + "/15",
-                        "Company Size: " + companySizeScore + "/15"
+                        "Ngân sách: " + budgetScore + "/30",
+                        "Người quyết định: " + decisionMakerScore + "/20",
+                        "Nhu cầu: " + needScore + "/20",
+                        "Mức độ tương tác: " + engagementScore + "/15",
+                        "Quy mô công ty: " + companySizeScore + "/15"
                 ))
                 .build();
     }
@@ -213,7 +213,7 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Transactional
     public void confirmEvaluation(Long id, String username) {
         Opportunity opportunity = opportunityRepository.findDetailById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Opportunity not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy cơ hội bán hàng"));
 
         User currentUser = findCurrentUser(username);
         validateAssignedSales(opportunity, currentUser);
@@ -227,9 +227,9 @@ public class OpportunityServiceImpl implements OpportunityService {
         CustomerActivity audit = CustomerActivity.builder()
                 .customerId(opportunity.getCustomer().getId())
                 .activityType("NOTE")
-                .activityNote("Evaluation Result: score " + result.getTotalScore()
-                        + "/100, classification " + result.getClassification()
-                        + ". Stage: " + oldStage + " -> " + result.getSuggestedStage())
+                .activityNote("Kết quả đánh giá: điểm " + result.getTotalScore()
+                        + "/100, phân loại " + displayClassification(result.getClassification())
+                        + ". Giai đoạn: " + displayStage(oldStage) + " -> " + displayStage(result.getSuggestedStage()))
                 .relatedType("OPPORTUNITY")
                 .relatedId(opportunity.getId())
                 .employeeId(currentUser.getId())
@@ -241,7 +241,7 @@ public class OpportunityServiceImpl implements OpportunityService {
             notificationService.createNotification(
                     opportunity.getAssignedTo().getId(),
                     " Đánh giá Cơ hội tự động",
-                    "Hệ thống vừa chấm điểm cơ hội của khách '" + opportunity.getCustomer().getFullName() + "'. Trạng thái thay đổi: " + oldStage + " -> " + result.getSuggestedStage()
+                    "Hệ thống vừa chấm điểm cơ hội của khách '" + opportunity.getCustomer().getFullName() + "'. Giai đoạn thay đổi: " + displayStage(oldStage) + " -> " + displayStage(result.getSuggestedStage())
             );
         }
     }
@@ -261,12 +261,12 @@ public class OpportunityServiceImpl implements OpportunityService {
 
     private String normalizeRequiredStage(String stage) {
         if (stage == null || stage.isBlank()) {
-            throw new IllegalArgumentException("Stage is required");
+            throw new IllegalArgumentException("Vui lòng chọn giai đoạn");
         }
 
         String normalized = stage.trim().toUpperCase(Locale.ROOT);
         if (!STAGES.contains(normalized) && !"ALL".equals(normalized)) {
-            throw new IllegalArgumentException("Unsupported stage: " + stage);
+            throw new IllegalArgumentException("Giai đoạn không hợp lệ: " + stage);
         }
         return normalized;
     }
@@ -280,10 +280,10 @@ public class OpportunityServiceImpl implements OpportunityService {
 
     private User findCurrentUser(String username) {
         if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("Current user is required");
+            throw new IllegalArgumentException("Vui lòng đăng nhập để tiếp tục");
         }
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Current user not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản đang đăng nhập"));
     }
 
     private boolean canViewAll(User user) {
@@ -300,7 +300,7 @@ public class OpportunityServiceImpl implements OpportunityService {
         }
         if (opportunity.getAssignedTo() == null ||
                 !user.getUsername().equals(opportunity.getAssignedTo().getUsername())) {
-            throw new IllegalArgumentException("You are not allowed to access this opportunity");
+            throw new IllegalArgumentException("Bạn không có quyền truy cập cơ hội này");
         }
     }
     private int calculateBudgetScore(Opportunity opportunity) {
@@ -395,16 +395,43 @@ public class OpportunityServiceImpl implements OpportunityService {
         return false;
     }
 
+    private String displayStage(String stage) {
+        if (stage == null) {
+            return "chưa xác định";
+        }
+        return switch (stage.trim().toUpperCase(Locale.ROOT)) {
+            case "NEW" -> "Mới";
+            case "QUALIFIED" -> "Đã đủ điều kiện";
+            case "PROPOSAL" -> "Đề xuất";
+            case "NEGOTIATION" -> "Đàm phán";
+            case "WON" -> "Thắng";
+            case "LOST" -> "Thua";
+            default -> stage;
+        };
+    }
+
+    private String displayClassification(String classification) {
+        if (classification == null) {
+            return "chưa xác định";
+        }
+        return switch (classification.trim().toUpperCase(Locale.ROOT)) {
+            case "QUALIFIED" -> "đủ điều kiện";
+            case "NEED_NURTURE" -> "cần chăm sóc thêm";
+            case "DISQUALIFIED" -> "không đủ điều kiện";
+            default -> classification;
+        };
+    }
+
     private void validateAssignedSales(Opportunity opportunity, User user) {
         if (user.getRole() == null
                 || user.getRole().getRoleCode() == null
                 || !"SALES".equalsIgnoreCase(user.getRole().getRoleCode())) {
-            throw new IllegalArgumentException("Only assigned Sales can evaluate this opportunity");
+            throw new IllegalArgumentException("Chỉ nhân viên kinh doanh được phân công mới có thể đánh giá cơ hội này");
         }
 
         if (opportunity.getAssignedTo() == null
                 || !user.getUsername().equals(opportunity.getAssignedTo().getUsername())) {
-            throw new IllegalArgumentException("You are not assigned to this opportunity");
+            throw new IllegalArgumentException("Bạn chưa được phân công cho cơ hội này");
         }
     }
 }

@@ -37,7 +37,7 @@ public class QuotationController {
                              Model model) {
 
         Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
 
         QuotationRequest quotationRequest = new QuotationRequest();
         quotationRequest.setCustomerId(customerId);
@@ -65,7 +65,7 @@ public class QuotationController {
         model.addAttribute("salesPerson",
                 authentication != null ? authentication.getName() : "");
 
-        model.addAttribute("status", "Draft");
+        model.addAttribute("status", "Bản nháp");
 
         return "quotation/create";
     }
@@ -99,7 +99,7 @@ public class QuotationController {
                                   RedirectAttributes redirectAttributes) {
         try {
             quotationService.acceptQuotation(id, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Quotation accepted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã duyệt báo giá thành công.");
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }

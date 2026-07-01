@@ -16,9 +16,9 @@ public class Department {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotBlank(message = "Code id required")
+    @NotBlank(message = "Vui lòng nhập mã phòng ban")
     private String code;
-    @NotBlank(message = "Code id required")
+    @NotBlank(message = "Vui lòng nhập tên phòng ban")
     private String name;
     private Boolean isDeleted = false;
     private String description;

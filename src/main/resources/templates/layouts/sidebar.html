@@ -58,10 +58,10 @@
                        data-nav-match="/customer-activities">Lịch sử tương tác</a>
                     <a sec:authorize="hasRole('MARKETING')"
                        href="/customer"
-                       data-nav-match="/customer">Import lead</a>
+                       data-nav-match="/customer">Nhập khách hàng tiềm năng</a>
                     <a sec:authorize="hasAnyRole('MANAGER','SALES_MANAGER','ADMIN')"
                        href="/customer"
-                       data-nav-match="/customer">Import & phân bổ</a>
+                       data-nav-match="/customer">Nhập dữ liệu & phân bổ</a>
                     <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
                        href="/appointments"
                        data-nav-match="/appointments">Lịch hẹn</a>
@@ -86,7 +86,7 @@
                 <div class="collapse sidebar-submenu" id="salesMenu">
                     <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
                        href="/pipeline"
-                       data-nav-match="/pipeline">Pipeline</a>
+                       data-nav-match="/pipeline">Quy trình bán hàng</a>
                     <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER')"
                        href="/contracts"
                        data-nav-match="/contracts">Hợp đồng</a>

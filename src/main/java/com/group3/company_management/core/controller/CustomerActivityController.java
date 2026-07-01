@@ -194,8 +194,23 @@ public class CustomerActivityController {
 
         String stage = opportunity.getStage().trim().toUpperCase();
         if (CLOSED_STAGES.contains(stage)) {
-            throw new IllegalArgumentException("Opportunity đã " + stage + ", không thể thêm " + activity.getActivityType() + " cho deal đã đóng.");
+            throw new IllegalArgumentException("Cơ hội đã ở giai đoạn " + displayStage(stage) + ", không thể thêm tương tác cho thương vụ đã đóng.");
         }
+    }
+
+    private String displayStage(String stage) {
+        if (stage == null) {
+            return "chưa xác định";
+        }
+        return switch (stage.trim().toUpperCase()) {
+            case "NEW" -> "Mới";
+            case "QUALIFIED" -> "Đã đủ điều kiện";
+            case "PROPOSAL" -> "Đề xuất";
+            case "NEGOTIATION" -> "Đàm phán";
+            case "WON" -> "Thắng";
+            case "LOST" -> "Thua";
+            default -> stage;
+        };
     }
 
     private Opportunity resolveRelatedOpportunity(CustomerActivity activity) {

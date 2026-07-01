@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Activity - CompanyMS</title>
+    <title>Lịch sử tương tác khách hàng - CompanyMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,8 +24,8 @@
     <div class="management-page customer-page">
         <div class="management-taskbar customer-taskbar">
             <div>
-                <p class="management-eyebrow">CRM / Activity</p>
-                <h1 th:text="${customer != null ? 'Activity của ' + customer.fullName : 'Customer Activity'}">Customer Activity</h1>
+                <p class="management-eyebrow">CRM / Tương tác</p>
+                <h1 th:text="${customer != null ? 'Tương tác của ' + customer.fullName : 'Lịch sử tương tác khách hàng'}">Lịch sử tương tác khách hàng</h1>
                 <p class="management-subtitle">Theo dõi lịch sử tương tác khách hàng trong CRM.</p>
             </div>
             <div class="management-actions">
@@ -39,7 +39,7 @@
                    th:if="${customerId != null}"
                    th:href="@{/customer-activities/add(customerId=${customerId},returnUrl=${'/customer-activities?customerId=' + customerId})}">
                     <i class="fas fa-plus"></i>
-                    <span>Thêm activity</span>
+                    <span>Thêm tương tác</span>
                 </a>
             </div>
         </div>
@@ -47,13 +47,13 @@
         <form class="customer-filterbar" method="get" th:action="@{/customer-activities}">
             <input type="hidden" name="customerId" th:if="${customerId != null}" th:value="${customerId}">
             <label>
-                <span>Loại activity</span>
+                <span>Loại tương tác</span>
                 <select name="type">
                     <option value="">Tất cả</option>
-                    <option value="CALL" th:selected="${selectedType == 'CALL'}">CALL</option>
-                    <option value="MEETING" th:selected="${selectedType == 'MEETING'}">MEETING</option>
-                    <option value="EMAIL" th:selected="${selectedType == 'EMAIL'}">EMAIL</option>
-                    <option value="NOTE" th:selected="${selectedType == 'NOTE'}">NOTE</option>
+                    <option value="CALL" th:selected="${selectedType == 'CALL'}">Gọi điện</option>
+                    <option value="MEETING" th:selected="${selectedType == 'MEETING'}">Cuộc họp</option>
+                    <option value="EMAIL" th:selected="${selectedType == 'EMAIL'}">Email</option>
+                    <option value="NOTE" th:selected="${selectedType == 'NOTE'}">Ghi chú</option>
                 </select>
             </label>
             <button class="filter-icon-button" type="submit" title="Lọc">
@@ -69,8 +69,8 @@
         <section class="customer-panel">
             <div class="customer-panel-header">
                 <div>
-                    <h2>Danh sách activity</h2>
-                    <p th:text="${activityPage != null ? 'Tổng ' + activityPage.totalElements + ' activity' : 'Lịch sử tương tác'}">Tổng activity</p>
+                    <h2>Danh sách tương tác</h2>
+                    <p th:text="${activityPage != null ? 'Tổng ' + activityPage.totalElements + ' tương tác' : 'Lịch sử tương tác'}">Tổng tương tác</p>
                 </div>
             </div>
             <div class="table-responsive">
@@ -88,14 +88,15 @@
                     <tbody>
                     <tr th:each="activity : ${activities}">
                         <td>
-                            <span class="customer-pill active" th:text="${activity.activityType}">CALL</span>
+                            <span class="customer-pill active"
+                                  th:text="${activity.activityType == 'CALL' ? 'Gọi điện' : (activity.activityType == 'MEETING' ? 'Cuộc họp' : (activity.activityType == 'EMAIL' ? 'Email' : 'Ghi chú'))}">Gọi điện</span>
                         </td>
                         <td>
-                            <strong th:text="${activity.activityNote != null ? activity.activityNote : 'Không có ghi chú'}">Note</strong>
+                            <strong th:text="${activity.activityNote != null ? activity.activityNote : 'Không có ghi chú'}">Ghi chú</strong>
                         </td>
-                        <td th:text="${activity.relatedType != null ? activity.relatedType + ' #' + activity.relatedId : 'N/A'}">N/A</td>
-                        <td th:text="${activity.employeeId != null ? activity.employeeId : 'N/A'}">N/A</td>
-                        <td th:text="${activity.createdAt != null ? #temporals.format(activity.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">Date</td>
+                        <td th:text="${activity.relatedType != null ? activity.relatedType + ' #' + activity.relatedId : 'Chưa có'}">Chưa có</td>
+                        <td th:text="${activity.employeeId != null ? activity.employeeId : 'Chưa có'}">Chưa có</td>
+                        <td th:text="${activity.createdAt != null ? #temporals.format(activity.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có'}">Ngày tạo</td>
                         <td>
                             <div class="customer-row-actions">
                                 <a th:href="@{/customer-activities/{id}(id=${activity.id})}" title="Chi tiết">
@@ -108,7 +109,7 @@
                         <td colspan="6">
                             <div class="customer-empty">
                                 <i class="fas fa-comments"></i>
-                                <span>Chưa có activity nào.</span>
+                                <span>Chưa có tương tác nào.</span>
                             </div>
                         </td>
                     </tr>
@@ -117,7 +118,7 @@
             </div>
 
             <div class="management-pagination" th:if="${activityPage != null and activityPage.totalPages > 0}">
-                <span th:text="${'Đang hiển thị ' + #lists.size(activities) + ' / ' + activityPage.totalElements + ' activity'}">Đang hiển thị activity</span>
+                <span th:text="${'Đang hiển thị ' + #lists.size(activities) + ' / ' + activityPage.totalElements + ' tương tác'}">Đang hiển thị tương tác</span>
                 <div class="pagination-buttons">
                     <a th:if="${activityPage.hasPrevious()}"
                        th:href="@{/customer-activities(page=${activityPage.number - 1}, type=${selectedType}, customerId=${customerId})}">

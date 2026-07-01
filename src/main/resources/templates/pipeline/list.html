@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lead Pipeline - Company Management System</title>
+    <title>Quy trình cơ hội bán hàng - Company Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,20 +25,20 @@
 
         <div th:if="${successMessage}" class="management-alert success">
             <i class="fas fa-check-circle"></i>
-            <span th:text="${successMessage}">Pipeline updated.</span>
+            <span th:text="${successMessage}">Đã cập nhật quy trình bán hàng.</span>
         </div>
         <div th:if="${errorMessage}" class="management-alert danger">
             <i class="fas fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}">Pipeline error.</span>
+            <span th:text="${errorMessage}">Có lỗi trong quy trình bán hàng.</span>
         </div>
 
         <th:block th:replace="~{fragments/management-filters :: pipelineFilters}"></th:block>
 
-        <section class="pipeline-stage-strip" aria-label="Stage summary">
+        <section class="pipeline-stage-strip" aria-label="Tổng hợp giai đoạn">
             <a th:each="stage : ${stages}"
                th:href="@{/pipeline/find(stage=${stage})}"
                th:classappend="${selectedStage == stage} ? 'active'">
-                <span th:text="${stage}">NEW</span>
+                <span th:text="${stage == 'NEW' ? 'Mới' : (stage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (stage == 'PROPOSAL' ? 'Đề xuất' : (stage == 'NEGOTIATION' ? 'Đàm phán' : (stage == 'WON' ? 'Thắng' : (stage == 'LOST' ? 'Thua' : stage)))))}">Mới</span>
                 <strong th:text="${stageCounts.get(stage)}">0</strong>
             </a>
         </section>
@@ -48,12 +48,12 @@
                 <table class="management-table">
                     <thead>
                     <tr>
-                        <th>Opportunity</th>
-                        <th>Customer</th>
-                        <th>Assigned To</th>
-                        <th>Stage</th>
-                        <th>Expected Amount</th>
-                        <th class="text-end">Action</th>
+                        <th>Cơ hội</th>
+                        <th>Khách hàng</th>
+                        <th>Người phụ trách</th>
+                        <th>Giai đoạn</th>
+                        <th>Giá trị dự kiến</th>
+                        <th class="text-end">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -65,23 +65,23 @@
                                 </div>
                                 <div>
                                     <strong th:text="${opportunity.opportunityCode}">OPP001</strong>
-                                    <span th:text="${opportunity.updatedAt != null ? #temporals.format(opportunity.updatedAt, 'dd MMM yyyy') : 'No update date'}">Updated</span>
+                                    <span th:text="${opportunity.updatedAt != null ? #temporals.format(opportunity.updatedAt, 'dd/MM/yyyy') : 'Chưa có ngày cập nhật'}">Cập nhật</span>
                                 </div>
                             </div>
                         </td>
-                        <td th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'N/A'}">Customer</td>
-                        <td th:text="${opportunity.assignedTo != null ? opportunity.assignedTo.fullName : 'N/A'}">Sales</td>
+                        <td th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'Chưa có'}">Khách hàng</td>
+                        <td th:text="${opportunity.assignedTo != null ? opportunity.assignedTo.fullName : 'Chưa có'}">Nhân viên kinh doanh</td>
                         <td>
                             <span class="stage-pill"
                                   th:classappend="${#strings.toLowerCase(opportunity.stage)}"
-                                  th:text="${opportunity.stage}">NEW</span>
+                                  th:text="${opportunity.stage == 'NEW' ? 'Mới' : (opportunity.stage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (opportunity.stage == 'PROPOSAL' ? 'Đề xuất' : (opportunity.stage == 'NEGOTIATION' ? 'Đàm phán' : (opportunity.stage == 'WON' ? 'Thắng' : (opportunity.stage == 'LOST' ? 'Thua' : opportunity.stage)))))}">Mới</span>
                         </td>
                         <td>
                             <strong th:text="${opportunity.expectedAmount != null ? #numbers.formatDecimal(opportunity.expectedAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</strong>
                         </td>
                         <td>
                             <div class="row-actions">
-                                <a th:href="@{/pipeline/{id}(id=${opportunity.id})}" title="View detail" aria-label="View detail">
+                                <a th:href="@{/pipeline/{id}(id=${opportunity.id})}" title="Xem chi tiết" aria-label="Xem chi tiết">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </div>
@@ -91,7 +91,7 @@
                         <td colspan="6">
                             <div class="empty-state">
                                 <i class="fas fa-magnifying-glass-chart"></i>
-                                <span>No opportunities found.</span>
+                                <span>Không tìm thấy cơ hội nào.</span>
                             </div>
                         </td>
                     </tr>
@@ -100,7 +100,7 @@
             </div>
 
             <div class="management-pagination" th:if="${opportunityPage != null and opportunityPage.totalPages > 0}">
-                <span th:text="${'Showing ' + #lists.size(opportunities) + ' of ' + opportunityPage.totalElements + ' opportunities'}">Showing opportunities</span>
+                <span th:text="${'Đang hiển thị ' + #lists.size(opportunities) + ' / ' + opportunityPage.totalElements + ' cơ hội'}">Đang hiển thị cơ hội</span>
                 <div class="pagination-buttons">
                     <a th:if="${!opportunityPage.hasPrevious()}" class="disabled" href="#">
                         <i class="fas fa-chevron-left"></i>

@@ -39,11 +39,11 @@
         <div class="customer-tabs">
             <a th:href="@{/customer}">
                 <i class="fas fa-file-import"></i>
-                <span>Import & phân bổ</span>
+                <span>Nhập dữ liệu & phân bổ</span>
             </a>
             <a class="active" th:href="@{/customers}">
                 <i class="fas fa-table-list"></i>
-                <span>CRUD khách hàng</span>
+                <span>Quản lý khách hàng</span>
             </a>
         </div>
 
@@ -56,7 +56,7 @@
             <div class="customer-form-header">
                 <div>
                     <h2 th:text="${isEdit} ? 'Thông tin khách hàng' : 'Tạo hồ sơ khách hàng'">Thông tin khách hàng</h2>
-                    <p>CRUD thủ công dùng cho khách hàng đã xác minh hoặc cần cập nhật nhanh.</p>
+                    <p>Quản lý thủ công dùng cho khách hàng đã xác minh hoặc cần cập nhật nhanh.</p>
                 </div>
             </div>
 
@@ -81,14 +81,14 @@
                         <input type="text" th:field="*{customerSource}">
                     </label>
                     <label>
-                        <span>Assigned Sales ID</span>
+                        <span>Mã nhân viên kinh doanh phụ trách</span>
                         <input type="number" th:field="*{assignedSalesId}">
                     </label>
                     <label th:if="${isEdit}">
                         <span>Trạng thái</span>
                         <select th:field="*{customerStatus}">
-                            <option value="ACTIVE">ACTIVE</option>
-                            <option value="INACTIVE">INACTIVE</option>
+                            <option value="ACTIVE">Hoạt động</option>
+                            <option value="INACTIVE">Ngừng hoạt động</option>
                         </select>
                     </label>
                     <label class="wide">

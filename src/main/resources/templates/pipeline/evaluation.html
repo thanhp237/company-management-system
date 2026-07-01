@@ -27,7 +27,7 @@
                 <p class="management-eyebrow">CRM / Đánh giá cơ hội</p>
                 <h1>Đánh giá cơ hội</h1>
                 <p class="management-subtitle">
-                    <span th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'Khách hàng'}">Lead</span>
+                    <span th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'Khách hàng'}">Khách hàng</span>
                     <span> • </span>
                     <span th:text="${opportunity.opportunityCode}">OPP001</span>
                 </p>
@@ -35,12 +35,12 @@
             <div class="management-actions">
                 <a class="customer-secondary-button" th:href="@{/pipeline/{id}(id=${opportunity.id})}">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Pipeline</span>
+                    <span>Quy trình bán hàng</span>
                 </a>
                 <form th:action="@{/pipeline/{id}/evaluation(id=${opportunity.id})}" method="post">
                     <button type="submit" class="customer-primary-button">
                         <i class="fas fa-circle-check"></i>
-                        <span>Evaluate Opportunity</span>
+                        <span>Đánh giá cơ hội</span>
                     </button>
                 </form>
             </div>
@@ -51,7 +51,7 @@
                 <div class="customer-panel-header">
                     <div>
                         <h2>Chỉ số tiềm năng</h2>
-                        <p>Score tổng hợp từ dữ liệu pipeline.</p>
+                        <p>Điểm tổng hợp từ dữ liệu quy trình bán hàng.</p>
                     </div>
                 </div>
                 <div class="customer-panel-body">
@@ -64,15 +64,15 @@
                         <div><span>Xếp hạng</span><strong th:text="${rank}">A+</strong></div>
                     </div>
                     <label class="rule-field mt-3">
-                        <span>Qualification Status</span>
+                        <span>Trạng thái thẩm định</span>
                         <select>
-                            <option>Qualified - Thẩm định thành công</option>
-                            <option>Needs follow-up</option>
-                            <option>Disqualified</option>
+                            <option>Đủ điều kiện - thẩm định thành công</option>
+                            <option>Cần chăm sóc tiếp</option>
+                            <option>Không đủ điều kiện</option>
                         </select>
                     </label>
                     <div class="evaluation-note">
-                        Cơ hội này đạt điều kiện tạo báo giá khi đủ thông tin khách hàng và nằm trong stage phù hợp.
+                        Cơ hội này đạt điều kiện tạo báo giá khi đủ thông tin khách hàng và nằm trong giai đoạn phù hợp.
                     </div>
                 </div>
             </aside>
@@ -81,7 +81,7 @@
                 <div class="customer-panel-header">
                     <div>
                         <h2>Danh sách tiêu chí đánh giá</h2>
-                        <p>BANT Framework</p>
+                        <p>Khung đánh giá BANT</p>
                     </div>
                     <span class="customer-pill active">Hoàn thành 4/5</span>
                 </div>
@@ -90,8 +90,8 @@
                              th:classappend="${evaluation.budgetScore > 0} ? ' success' : ' warning'">
                         <i class="fas" th:classappend="${evaluation.budgetScore > 0} ? ' fa-check' : ' fa-clock'"></i>
                         <div>
-                            <strong th:text="${'Budget (Ngân sách) - ' + evaluation.budgetScore + '/30'}">Budget</strong>
-                            <p th:text="${opportunity.expectedAmount != null ? 'Giá trị dự kiến: ' + #numbers.formatDecimal(opportunity.expectedAmount, 0, 'COMMA', 0, 'POINT') : 'Chưa nhập giá trị dự kiến'}">Budget</p>
+                            <strong th:text="${'Ngân sách - ' + evaluation.budgetScore + '/30'}">Ngân sách</strong>
+                            <p th:text="${opportunity.expectedAmount != null ? 'Giá trị dự kiến: ' + #numbers.formatDecimal(opportunity.expectedAmount, 0, 'COMMA', 0, 'POINT') : 'Chưa nhập giá trị dự kiến'}">Ngân sách</p>
                         </div>
                         <span th:text="${evaluation.budgetScore > 0 ? 'Đạt' : 'Chưa đạt'}">Đạt</span>
                     </article>
@@ -100,8 +100,8 @@
                              th:classappend="${evaluation.decisionMakerScore > 0} ? ' success' : ' warning'">
                         <i class="fas" th:classappend="${evaluation.decisionMakerScore > 0} ? ' fa-check' : ' fa-clock'"></i>
                         <div>
-                            <strong th:text="${'Decision Maker (Thẩm quyền) - ' + evaluation.decisionMakerScore + '/20'}">Decision Maker</strong>
-                            <p>Kiểm tra CEO / Director / Manager trong activity note.</p>
+                            <strong th:text="${'Thẩm quyền quyết định - ' + evaluation.decisionMakerScore + '/20'}">Thẩm quyền quyết định</strong>
+                            <p>Kiểm tra Giám đốc điều hành / Giám đốc / Quản lý trong ghi chú tương tác.</p>
                         </div>
                         <span th:text="${evaluation.decisionMakerScore > 0 ? 'Đã xác minh' : 'Chưa rõ'}">Chưa rõ</span>
                     </article>
@@ -110,8 +110,8 @@
                              th:classappend="${evaluation.needScore > 0} ? ' success' : ' warning'">
                         <i class="fas" th:classappend="${evaluation.needScore > 0} ? ' fa-check' : ' fa-clock'"></i>
                         <div>
-                            <strong th:text="${'Need (Nhu cầu) - ' + evaluation.needScore + '/20'}">Need</strong>
-                            <p>Kiểm tra need / problem / requirement / urgent / nhu cầu / cần / gấp.</p>
+                            <strong th:text="${'Nhu cầu - ' + evaluation.needScore + '/20'}">Nhu cầu</strong>
+                            <p>Kiểm tra nhu cầu, vấn đề, yêu cầu hoặc mức độ gấp trong ghi chú.</p>
                         </div>
                         <span th:text="${evaluation.needScore > 0 ? 'Có nhu cầu' : 'Đang bổ sung'}">Đang bổ sung</span>
                     </article>
@@ -120,8 +120,8 @@
                              th:classappend="${evaluation.engagementScore > 0} ? ' success' : ' warning'">
                         <i class="fas" th:classappend="${evaluation.engagementScore > 0} ? ' fa-check' : ' fa-clock'"></i>
                         <div>
-                            <strong th:text="${'Engagement (Tương tác) - ' + evaluation.engagementScore + '/15'}">Engagement</strong>
-                            <p>Kiểm tra activity loại Call / Email / Meeting.</p>
+                            <strong th:text="${'Tương tác - ' + evaluation.engagementScore + '/15'}">Tương tác</strong>
+                            <p>Kiểm tra các tương tác gọi điện, email hoặc cuộc họp.</p>
                         </div>
                         <span th:text="${evaluation.engagementScore > 0 ? 'Có tương tác' : 'Chưa có tương tác'}">Có tương tác</span>
                     </article>
@@ -130,8 +130,8 @@
                              th:classappend="${evaluation.companySizeScore > 0} ? ' success' : ' warning'">
                         <i class="fas" th:classappend="${evaluation.companySizeScore > 0} ? ' fa-check' : ' fa-building'"></i>
                         <div>
-                            <strong th:text="${'Company Size (Quy mô công ty) - ' + evaluation.companySizeScore + '/15'}">Company Size</strong>
-                            <p>Kiểm tra activity note có trên 10 nhân viên / more than 10 employees.</p>
+                            <strong th:text="${'Quy mô công ty - ' + evaluation.companySizeScore + '/15'}">Quy mô công ty</strong>
+                            <p>Kiểm tra ghi chú tương tác có thông tin trên 10 nhân viên.</p>
                         </div>
                         <span th:text="${evaluation.companySizeScore > 0 ? 'Đạt' : 'Chưa rõ'}">Chưa rõ</span>
                     </article>
@@ -141,13 +141,13 @@
 
         <section class="customer-stat-grid mt-3">
             <article class="customer-stat-card success">
-                <span>Cơ hội cùng stage</span>
+                <span>Cơ hội cùng giai đoạn</span>
                 <strong th:text="${stageCounts.get(opportunity.stage)}">0</strong>
-                <small th:text="${opportunity.stage}">Stage</small>
+                <small th:text="${opportunity.stage == 'NEW' ? 'Mới' : (opportunity.stage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (opportunity.stage == 'PROPOSAL' ? 'Đề xuất' : (opportunity.stage == 'NEGOTIATION' ? 'Đàm phán' : (opportunity.stage == 'WON' ? 'Thắng' : (opportunity.stage == 'LOST' ? 'Thua' : opportunity.stage)))))}">Giai đoạn</small>
             </article>
             <article class="customer-stat-card info">
                 <span>Khách hàng</span>
-                <strong th:text="${opportunity.customer != null ? 'OK' : 'N/A'}">OK</strong>
+                <strong th:text="${opportunity.customer != null ? 'Đã có' : 'Chưa có'}">Đã có</strong>
                 <small>Hồ sơ liên kết</small>
             </article>
             <article class="customer-stat-card warning">
@@ -156,13 +156,13 @@
                 <small>Điều kiện tạo báo giá</small>
             </article>
             <article class="customer-stat-card neutral">
-                <span>Rank</span>
+                <span>Xếp hạng</span>
                 <strong th:text="${rank}">A+</strong>
                 <small>Ưu tiên chăm sóc</small>
             </article>
         </section>
     </div>
-</main>Ec
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

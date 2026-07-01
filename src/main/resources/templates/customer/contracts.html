@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cổng khách hàng - CompanyMS</title>
+    <title>Hợp đồng của tôi - CompanyMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/main.css}">
     <style>
-        .customer-portal {
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .customer-contracts {
             min-height: calc(100vh - 72px);
             padding: 28px;
             background: #f5f8fb;
@@ -27,9 +32,6 @@
         }
 
         .customer-header {
-            display: flex;
-            justify-content: space-between;
-            gap: 18px;
             padding: 22px;
             margin-bottom: 18px;
         }
@@ -44,35 +46,6 @@
         .customer-header p {
             margin: 8px 0 0;
             color: #657386;
-        }
-
-        .customer-actions {
-            display: flex;
-            gap: 10px;
-            align-items: flex-start;
-        }
-
-        .customer-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            min-height: 38px;
-            padding: 0 14px;
-            border-radius: 8px;
-            background: #007a3d;
-            color: #fff;
-            font-size: 13px;
-            font-weight: 900;
-            text-decoration: none;
-        }
-
-        .customer-button.secondary {
-            background: #e8f3ff;
-            color: #1c69b3;
-        }
-
-        .customer-table-wrap {
-            overflow: hidden;
         }
 
         .customer-table {
@@ -93,56 +66,61 @@
             border-top: 1px solid #edf1ee;
             vertical-align: middle;
         }
+
+        .customer-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 38px;
+            padding: 0 14px;
+            border-radius: 8px;
+            background: #e8f3ff;
+            color: #1c69b3;
+            font-size: 13px;
+            font-weight: 900;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-<th:block th:insert="~{layouts/navbar}"></th:block>
+<th:block th:insert="~{layouts/customer-sidebar :: customerLayout}"></th:block>
 
-<main class="customer-portal">
+<main class="customer-contracts customer-app-content">
     <div class="customer-shell">
         <section class="customer-panel customer-header">
-            <div>
-                <p class="management-eyebrow">Cổng khách hàng</p>
-                <h1 th:text="${customer.fullName != null ? customer.fullName : customer.email}">Khách hàng</h1>
-                <p>Theo dõi hợp đồng đã gửi và ký hợp đồng trực tuyến.</p>
-            </div>
-            <div class="customer-actions">
-                <a class="customer-button secondary" th:href="@{/dashboard/customer}">
-                    <i class="fas fa-chart-line"></i>
-                    Tổng quan
-                </a>
-                <a class="customer-button" th:href="@{/customer/logout}">
-                    <i class="fas fa-right-from-bracket"></i>
-                    Đăng xuất
-                </a>
-            </div>
+            <p class="management-eyebrow">Cổng khách hàng</p>
+            <h1>Hợp đồng của tôi</h1>
+            <p th:text="${customer.email}">customer@example.com</p>
         </section>
 
-        <section class="customer-panel customer-table-wrap">
+        <section class="customer-panel">
             <table class="customer-table">
                 <thead>
                 <tr>
                     <th>Mã hợp đồng</th>
+                    <th>Báo giá</th>
                     <th>Trạng thái</th>
-                    <th>Giá trị</th>
-                    <th>Ngày tạo</th>
+                    <th>Tổng giá trị</th>
+                    <th>Ngày ký</th>
                     <th></th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="contract : ${contracts}">
                     <td><strong th:text="${contract.contractCode}">CT-001</strong></td>
-                    <td th:text="${contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'SIGNED' ? 'Đã ký' : contract.status)}">Đã gửi khách hàng</td>
+                    <td th:text="${contract.quotationCode != null ? contract.quotationCode : 'Chưa có'}">QT-001</td>
+                    <td th:text="${contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status))}">Đã gửi khách hàng</td>
                     <td th:text="${contract.finalAmount != null ? #numbers.formatDecimal(contract.finalAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</td>
-                    <td th:text="${contract.createdAt != null ? #temporals.format(contract.createdAt, 'dd/MM/yyyy') : 'Chưa có'}">Chưa có</td>
+                    <td th:text="${contract.signedAt != null ? #temporals.format(contract.signedAt, 'dd/MM/yyyy HH:mm') : 'Chưa ký'}">Chưa ký</td>
                     <td>
-                        <a class="customer-button secondary" th:href="@{/customer/portal/contracts/{id}(id=${contract.id})}">
+                        <a class="customer-button" th:href="@{/customer/portal/contracts/{id}(id=${contract.id})}">
+                            <i class="fas fa-eye"></i>
                             Xem
                         </a>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(contracts)}">
-                    <td colspan="5" class="text-center text-muted py-4">Chưa có hợp đồng nào.</td>
+                    <td colspan="6" class="text-center text-muted py-4">Chưa có hợp đồng nào.</td>
                 </tr>
                 </tbody>
             </table>

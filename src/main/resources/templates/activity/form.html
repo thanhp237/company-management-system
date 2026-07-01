@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm Customer Activity - CompanyMS</title>
+    <title>Thêm tương tác khách hàng - CompanyMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,11 +24,11 @@
     <div class="management-page customer-page">
         <div class="management-taskbar customer-taskbar">
             <div>
-                <p class="management-eyebrow">CRM / Customer Activity</p>
-                <h1>Thêm activity</h1>
+                <p class="management-eyebrow">CRM / Tương tác khách hàng</p>
+                <h1>Thêm tương tác</h1>
                 <p class="management-subtitle">
                     <span th:text="${customer != null ? customer.fullName : 'Khách hàng'}">Khách hàng</span>
-                    <span> • Ghi nhận call, meeting, email hoặc note</span>
+                    <span> • Ghi nhận cuộc gọi, cuộc họp, email hoặc ghi chú</span>
                 </p>
             </div>
             <div class="management-actions">
@@ -41,13 +41,13 @@
 
         <div th:if="${errorMessage}" class="management-alert danger">
             <i class="fas fa-circle-exclamation"></i>
-            <span th:text="${errorMessage}">Không thể lưu activity.</span>
+            <span th:text="${errorMessage}">Không thể lưu tương tác.</span>
         </div>
 
         <section class="customer-form-shell">
             <div class="customer-form-header">
                 <div>
-                    <h2>Thông tin activity</h2>
+                    <h2>Thông tin tương tác</h2>
                     <p>Nội dung này sẽ được lưu vào lịch sử tương tác của khách hàng.</p>
                 </div>
             </div>
@@ -62,13 +62,13 @@
 
                 <div class="customer-form-grid">
                     <label>
-                        <span>Loại activity <strong>*</strong></span>
+                        <span>Loại tương tác <strong>*</strong></span>
                         <select th:field="*{activityType}" required>
-                            <option value="">Chọn loại activity</option>
-                            <option value="CALL">CALL</option>
-                            <option value="MEETING">MEETING</option>
-                            <option value="EMAIL">EMAIL</option>
-                            <option value="NOTE">NOTE</option>
+                            <option value="">Chọn loại tương tác</option>
+                            <option value="CALL">Gọi điện</option>
+                            <option value="MEETING">Cuộc họp</option>
+                            <option value="EMAIL">Email</option>
+                            <option value="NOTE">Ghi chú</option>
                         </select>
                     </label>
 
@@ -95,7 +95,7 @@
                     </a>
                     <button class="customer-primary-button" type="submit">
                         <i class="fas fa-check"></i>
-                        <span>Lưu activity</span>
+                        <span>Lưu tương tác</span>
                     </button>
                 </div>
             </form>

@@ -38,7 +38,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getAppointmentsByEmployee(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
         
         return appointmentRepository.findByEmployeeIdOrderByAppointmentTimeAsc(user.getId())
                 .stream()
@@ -50,10 +50,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     public void createAppointment(AppointmentRequest request, String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
 
         Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
 
         Appointment appointment = new Appointment();
         appointment.setTitle(request.getTitle());
@@ -78,7 +78,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Transactional
     public void updateStatus(Long id, String status) {
         Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn"));
         
         appointment.setStatus(status);
         appointmentRepository.save(appointment);

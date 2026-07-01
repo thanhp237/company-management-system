@@ -30,7 +30,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         String username = authentication.getName();
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
 
         // FIRST LOGIN CHECK (giữ nguyên logic cũ)
         if (Boolean.TRUE.equals(user.getFirstLogin())) {

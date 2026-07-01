@@ -24,11 +24,11 @@ public interface ContractService {
 
     void submitToAdmin(Long contractId, String username);
 
+    void updateDraftContractInfo(Long contractId, ContractRuleRequest request, String username);
+
     void updateContractRules(Long contractId, ContractRuleRequest request, String adminUsername);
 
     void sendToCustomer(Long contractId, String username);
-
-    void customerSignContract(Long contractId, String username);
 
     void customerSignContractByCustomer(Long contractId, Long customerId);
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Dashboard - CompanyMS</title>
+    <title>Bảng điều khiển khách hàng - CompanyMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -218,19 +218,19 @@
     </style>
 </head>
 <body>
-<th:block th:insert="~{layouts/navbar}"></th:block>
+<th:block th:insert="~{layouts/customer-sidebar :: customerLayout}"></th:block>
 
-<main class="customer-dashboard-shell">
+<main class="customer-dashboard-shell customer-app-content">
     <div class="customer-dashboard">
         <section class="customer-hero">
             <div>
-                <p class="management-eyebrow">Customer Portal</p>
-                <h1>Customer Dashboard</h1>
+                <p class="management-eyebrow">Cổng khách hàng</p>
+                <h1>Bảng điều khiển khách hàng</h1>
                 <p>Xin chào <strong sec:authentication="name">customer</strong>, đây là khu vực theo dõi báo giá, hợp đồng và thanh toán của bạn.</p>
             </div>
             <span class="customer-chip">
                 <i class="fas fa-user"></i>
-                Customer
+                Khách hàng
             </span>
         </section>
 
@@ -238,16 +238,16 @@
             <article class="customer-card" th:each="card : ${kpiCards}">
                 <i class="fas" th:classappend="${card.icon}"></i>
                 <strong th:text="${card.value}">0</strong>
-                <span th:text="${card.label}">Metric</span>
-                <small th:text="${card.caption}">Caption</small>
+                <span th:text="${card.label}">Chỉ số</span>
+                <small th:text="${card.caption}">Ghi chú</small>
             </article>
         </section>
 
         <div class="customer-work-grid">
             <section class="customer-action-panel" th:each="group : ${actionGroups}">
                 <div class="customer-panel-header">
-                    <h2 th:text="${group.title}">Workspace</h2>
-                    <p th:text="${group.description}">Description</p>
+                    <h2 th:text="${group.title}">Khu vực làm việc</h2>
+                    <p th:text="${group.description}">Mô tả</p>
                 </div>
                 <div class="customer-actions">
                     <a class="customer-action"
@@ -255,8 +255,8 @@
                        th:href="${action.href}">
                         <i class="fas" th:classappend="${action.icon}"></i>
                         <span>
-                            <strong th:text="${action.label}">Action</strong>
-                            <small th:text="${action.description}">Description</small>
+                            <strong th:text="${action.label}">Thao tác</strong>
+                            <small th:text="${action.description}">Mô tả</small>
                         </span>
                     </a>
                 </div>
@@ -265,12 +265,12 @@
             <aside class="customer-insight-panel">
                 <div class="customer-panel-header">
                     <h2>Phạm vi truy cập</h2>
-                    <p>Customer chỉ nhìn thấy dữ liệu portal của chính mình.</p>
+                    <p>Khách hàng chỉ nhìn thấy dữ liệu cổng thông tin của chính mình.</p>
                 </div>
                 <div class="customer-insights">
                     <div class="customer-insight" th:each="item : ${insightItems}">
-                        <strong th:text="${item.title}">Insight</strong>
-                        <span th:text="${item.description}">Description</span>
+                        <strong th:text="${item.title}">Gợi ý</strong>
+                        <span th:text="${item.description}">Mô tả</span>
                     </div>
                 </div>
             </aside>
@@ -278,6 +278,5 @@
     </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

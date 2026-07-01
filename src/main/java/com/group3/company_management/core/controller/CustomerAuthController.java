@@ -57,19 +57,20 @@ public class CustomerAuthController {
             return "redirect:/customer/portal";
         }
         
-        model.addAttribute("title", "Customer Login");
+        model.addAttribute("title", "Đăng nhập khách hàng");
+        model.addAttribute("loginMode", "customer");
         
         if (error != null) {
-            model.addAttribute("error", "Invalid email or password");
+            model.addAttribute("customerError", "Email hoặc mật khẩu không đúng.");
             log.warn("⚠️ Customer login failed - invalid credentials");
         }
         
         if (logout != null) {
-            model.addAttribute("logout", "You have been logged out successfully");
+            model.addAttribute("customerLogout", "Bạn đã đăng xuất thành công.");
             log.info("ℹ️ Customer logged out");
         }
         
-       return "auth/customer-login";
+       return "auth/login";
     }
 
     @PostMapping("/login")
@@ -79,19 +80,19 @@ public class CustomerAuthController {
             Model model) {
         try {
             Customer customer = customerRepository.findByEmailAndNotDeleted(request.getEmail())
-                    .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                    .orElseThrow(() -> new RuntimeException("Email hoặc mật khẩu không đúng."));
 
             if (!customer.isEnabled()) {
-                throw new RuntimeException("Customer account is inactive");
+                throw new RuntimeException("Tài khoản khách hàng chưa được kích hoạt.");
             }
 
             if (!customer.isAccountNonLocked()) {
-                throw new RuntimeException("Customer account is locked");
+                throw new RuntimeException("Tài khoản khách hàng đang bị khóa.");
             }
 
             if (customer.getPasswordHash() == null
                     || !passwordEncoder.matches(request.getPassword(), customer.getPasswordHash())) {
-                throw new RuntimeException("Invalid email or password");
+                throw new RuntimeException("Email hoặc mật khẩu không đúng.");
             }
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -108,10 +109,11 @@ public class CustomerAuthController {
             log.info("✅ Customer logged in: {}", customer.getEmail());
             return "redirect:/dashboard/customer";
         } catch (RuntimeException exception) {
-            model.addAttribute("title", "Customer Login");
-            model.addAttribute("error", exception.getMessage());
+            model.addAttribute("title", "Đăng nhập khách hàng");
+            model.addAttribute("loginMode", "customer");
+            model.addAttribute("customerError", exception.getMessage());
             log.warn("⚠️ Customer login failed: {}", exception.getMessage());
-            return "auth/customer-login";
+            return "auth/login";
         }
     }
 

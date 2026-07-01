@@ -165,7 +165,7 @@ public class OpportunityController {
         }
         try {
             opportunityService.confirmEvaluation(id, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Opportunity evaluated successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã đánh giá cơ hội thành công.");
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
@@ -196,7 +196,7 @@ public class OpportunityController {
         }
         try {
             opportunityService.updateStage(id, stage, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Pipeline stage updated successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật giai đoạn bán hàng thành công.");
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }

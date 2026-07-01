@@ -60,12 +60,12 @@ public class CustomerImportServiceImpl implements CustomerImportService {
                     !"Customer Type".equalsIgnoreCase(getCellValue(header.getCell(8)))) {
 
                 throw new RuntimeException(
-                        "Invalid Excel template. Please download and use the provided template."
+                        "File Excel không đúng mẫu. Vui lòng tải và dùng đúng file mẫu."
                 );
             }
 
             User creator = userRepository.findByUsername(name)
-                    .orElseThrow(() -> new RuntimeException("Current user not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản đang đăng nhập"));
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
 
@@ -121,7 +121,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("Import failed: " + e.getMessage());
+            throw new RuntimeException("Nhập dữ liệu thất bại: " + e.getMessage());
         }
     }
     @Override
@@ -141,12 +141,12 @@ public class CustomerImportServiceImpl implements CustomerImportService {
     @Override
     public Customer findCustomerById(Long id) {
         return leadRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
     }
     @Override
     public User findUser(Long id){
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
     }
 
     @Override
@@ -157,7 +157,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
         }
 
         User sale = userRepository.findById(saleId)
-                .orElseThrow(() -> new RuntimeException("Sale not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên kinh doanh"));
 
         for (Long customerId : customerIds) {
             Customer customer = findCustomerById(customerId);
@@ -184,7 +184,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
     private void validateExcelFile(MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
-            throw new RuntimeException("File is empty!");
+            throw new RuntimeException("File đang trống!");
         }
 
         String fileName = file.getOriginalFilename();
@@ -194,7 +194,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
                         && !fileName.endsWith(".xls"))) {
 
             throw new RuntimeException(
-                    "Only Excel files (.xlsx, .xls) are allowed!"
+                    "Chỉ cho phép file Excel (.xlsx, .xls)!"
             );
         }
     }

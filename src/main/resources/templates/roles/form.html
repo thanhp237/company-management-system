@@ -26,7 +26,7 @@
             <div>
                 <p class="management-eyebrow">Quản trị / RBAC</p>
                 <h1 th:text="${isEdit} ? 'Cập nhật vai trò' : 'Thêm vai trò'">Thêm vai trò</h1>
-                <p class="management-subtitle">Role code là khóa phân quyền dùng trong Spring Security, cần đặt ngắn gọn và ổn định.</p>
+                <p class="management-subtitle">Mã quyền là khóa phân quyền dùng trong Spring Security, cần đặt ngắn gọn và ổn định.</p>
             </div>
             <div class="management-actions">
                 <a class="btn btn-outline-secondary management-secondary-action" th:href="@{/roles}">
@@ -54,7 +54,7 @@
                     </span>
                     <div>
                         <h2>Thông tin vai trò</h2>
-                        <p>Role inactive sẽ không cấp quyền và không xuất hiện trong danh sách gán cho nhân viên.</p>
+                        <p>Vai trò vô hiệu hóa sẽ không cấp quyền và không xuất hiện trong danh sách gán cho nhân viên.</p>
                     </div>
                 </div>
 
@@ -76,7 +76,7 @@
                         <span>Tên vai trò <strong>*</strong></span>
                         <input type="text"
                                th:field="*{roleName}"
-                               placeholder="VD: Sales Support"
+                               placeholder="VD: Hỗ trợ kinh doanh"
                                required>
                     </label>
 
@@ -94,11 +94,11 @@
                 <div class="user-form-side-card">
                     <span class="user-form-status" th:classappend="${isEdit} ? ' edit' : ' create'">
                         <i th:class="${isEdit} ? 'fas fa-pen' : 'fas fa-plus'"></i>
-                        <span th:text="${isEdit} ? 'Chế độ chỉnh sửa' : 'Tạo role mới'">Tạo role mới</span>
+                        <span th:text="${isEdit} ? 'Chế độ chỉnh sửa' : 'Tạo vai trò mới'">Tạo vai trò mới</span>
                     </span>
-                    <h2>RBAC base</h2>
-                    <p th:if="${isSystemRole}">Đây là role hệ thống. Không thể đổi mã quyền hoặc xóa, chỉ nên vô hiệu hóa khi thật sự cần.</p>
-                    <p th:if="${!isSystemRole}">Role custom có thể xóa khi chưa được gán cho tài khoản nào.</p>
+                    <h2>Nền tảng phân quyền</h2>
+                    <p th:if="${isSystemRole}">Đây là vai trò hệ thống. Không thể đổi mã quyền hoặc xóa, chỉ nên vô hiệu hóa khi thật sự cần.</p>
+                    <p th:if="${!isSystemRole}">Vai trò tùy chỉnh có thể xóa khi chưa được gán cho tài khoản nào.</p>
 
                     <div class="user-form-actions">
                         <button class="btn btn-primary user-submit-primary" type="submit">

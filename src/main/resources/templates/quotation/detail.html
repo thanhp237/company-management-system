@@ -39,14 +39,14 @@
            th:if="${backPipelineId != null}"
            th:href="@{/pipeline/{id}(id=${backPipelineId})}">
             <i class="fas fa-arrow-left"></i>
-            <span>Pipeline</span>
+            <span>Quy trình bán hàng</span>
         </a>
 
         <a class="contract-back-link"
            th:if="${backPipelineId == null}"
            th:href="@{/pipeline}">
             <i class="fas fa-arrow-left"></i>
-            <span>Pipeline</span>
+            <span>Quy trình bán hàng</span>
         </a>
 
         <div class="contract-detail-header">
@@ -65,8 +65,8 @@
             </div>
 
             <span class="contract-status detail"
-                  th:text="${quotation.status != null ? quotation.status : 'DRAFT'}">
-                DRAFT
+                  th:text="${quotation.status == 'DRAFT' ? 'Bản nháp' : (quotation.status == 'ACCEPTED' ? 'Đã chấp nhận' : (quotation.status == 'APPROVED' ? 'Đã duyệt' : (quotation.status == 'REJECTED' ? 'Đã từ chối' : (quotation.status != null ? quotation.status : 'Bản nháp'))))}">
+                Bản nháp
             </span>
         </div>
 
@@ -92,22 +92,22 @@
                     <div class="contract-info-grid">
                         <div>
                             <span>Mã báo giá</span>
-                            <strong th:text="${quotation.quotationCode != null ? quotation.quotationCode : 'N/A'}">
+                            <strong th:text="${quotation.quotationCode != null ? quotation.quotationCode : 'Chưa có'}">
                                 QT-001
                             </strong>
                         </div>
 
                         <div>
                             <span>Trạng thái</span>
-                            <strong th:text="${quotation.status != null ? quotation.status : 'N/A'}">
-                                DRAFT
+                            <strong th:text="${quotation.status == 'DRAFT' ? 'Bản nháp' : (quotation.status == 'ACCEPTED' ? 'Đã chấp nhận' : (quotation.status == 'APPROVED' ? 'Đã duyệt' : (quotation.status == 'REJECTED' ? 'Đã từ chối' : (quotation.status != null ? quotation.status : 'Chưa có'))))}">
+                                Bản nháp
                             </strong>
                         </div>
 
                         <div>
                             <span>Ngày tạo</span>
-                            <strong th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
-                                N/A
+                            <strong th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có'}">
+                                Chưa có
                             </strong>
                         </div>
 
@@ -116,9 +116,9 @@
                             <strong>
                                 <a th:if="${backPipelineId != null}"
                                    th:href="@{/pipeline/{id}(id=${backPipelineId})}">
-                                    Xem Pipeline
+                                    Xem quy trình bán hàng
                                 </a>
-                                <span th:if="${backPipelineId == null}">N/A</span>
+                                <span th:if="${backPipelineId == null}">Chưa có</span>
                             </strong>
                         </div>
                     </div>
@@ -133,29 +133,29 @@
                     <div class="contract-info-grid">
                         <div>
                             <span>Khách hàng</span>
-                            <strong th:text="${quotation.customerName != null ? quotation.customerName : 'N/A'}">
+                            <strong th:text="${quotation.customerName != null ? quotation.customerName : 'Chưa có'}">
                                 Khách hàng
                             </strong>
                         </div>
 
                         <div>
                             <span>Điện thoại</span>
-                            <strong th:text="${quotation.customerPhone != null ? quotation.customerPhone : 'N/A'}">
-                                Phone
+                            <strong th:text="${quotation.customerPhone != null ? quotation.customerPhone : 'Chưa có'}">
+                                Điện thoại
                             </strong>
                         </div>
 
                         <div>
                             <span>Email</span>
-                            <strong th:text="${quotation.customerEmail != null ? quotation.customerEmail : 'N/A'}">
+                            <strong th:text="${quotation.customerEmail != null ? quotation.customerEmail : 'Chưa có'}">
                                 Email
                             </strong>
                         </div>
 
                         <div class="wide">
                             <span>Địa chỉ</span>
-                            <strong th:text="${quotation.customerAddress != null ? quotation.customerAddress : 'N/A'}">
-                                Address
+                            <strong th:text="${quotation.customerAddress != null ? quotation.customerAddress : 'Chưa có'}">
+                                Địa chỉ
                             </strong>
                         </div>
                     </div>
@@ -182,16 +182,16 @@
                             <tbody>
                             <tr th:each="item : ${quotation.details}">
                                 <td>
-                                    <strong th:text="${item.productName != null ? item.productName : 'N/A'}">
-                                        Product
+                                    <strong th:text="${item.productName != null ? item.productName : 'Chưa có'}">
+                                        Sản phẩm
                                     </strong>
-                                    <small th:text="${item.productCode != null ? item.productCode : 'N/A'}">
+                                    <small th:text="${item.productCode != null ? item.productCode : 'Chưa có'}">
                                         P001
                                     </small>
                                 </td>
 
-                                <td th:text="${item.description != null ? item.description : 'N/A'}">
-                                    Description
+                                <td th:text="${item.description != null ? item.description : 'Chưa có'}">
+                                    Mô tả
                                 </td>
 
                                 <td th:text="${item.quantity != null ? item.quantity : 0}">
@@ -245,22 +245,22 @@
                     <form th:if="${quotation.status != null and #strings.toUpperCase(quotation.status) == 'DRAFT'}"
                           th:action="@{/quotation/{id}/accept(id=${quotation.id})}"
                           method="post"
-                          onsubmit="return confirm('Chuyển báo giá này sang ACCEPTED?');">
+                          onsubmit="return confirm('Chuyển báo giá này sang trạng thái đã chấp nhận?');">
                         <button type="submit">
                             <i class="fas fa-check"></i>
-                            Chuyển ACCEPTED
+                            Chuyển đã chấp nhận
                         </button>
                     </form>
 
                     <a th:href="@{/quotation/export-pdf/{id}(id=${quotation.id})}">
                         <i class="fas fa-file-pdf"></i>
-                        Export PDF
+                        Xuất PDF
                     </a>
 
                     <a th:if="${backPipelineId != null}"
                        th:href="@{/pipeline/{id}(id=${backPipelineId})}">
                         <i class="fas fa-arrow-left"></i>
-                        Về Pipeline
+                        Về quy trình bán hàng
                     </a>
                 </section>
 

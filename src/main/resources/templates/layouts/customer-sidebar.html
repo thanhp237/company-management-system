@@ -1,0 +1,125 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="customerLayout">
+    <aside class="customer-sidebar">
+        <a class="customer-sidebar-brand" th:href="@{/dashboard/customer}">
+            <span class="customer-sidebar-brand-icon">
+                <i class="fas fa-building"></i>
+            </span>
+            <span>
+                <strong>CompanyMS</strong>
+                <small>Cổng khách hàng</small>
+            </span>
+        </a>
+
+        <nav class="customer-sidebar-nav" aria-label="Điều hướng khách hàng">
+            <a th:href="@{/dashboard/customer}" data-customer-nav="/dashboard/customer">
+                <i class="fas fa-chart-line"></i>
+                <span>Tổng quan</span>
+            </a>
+            <a th:href="@{/customer/portal}" data-customer-nav="/customer/portal">
+                <i class="fas fa-house"></i>
+                <span>Trang chính</span>
+            </a>
+            <a th:href="@{/customer/portal/contracts}" data-customer-nav="/customer/portal/contracts">
+                <i class="fas fa-file-contract"></i>
+                <span>Hợp đồng</span>
+            </a>
+            <a th:href="@{/customer/portal/payments}" data-customer-nav="/customer/portal/payments">
+                <i class="fas fa-credit-card"></i>
+                <span>Thanh toán</span>
+            </a>
+            <a th:href="@{/customer/portal/profile}" data-customer-nav="/customer/portal/profile">
+                <i class="fas fa-user-gear"></i>
+                <span>Hồ sơ</span>
+            </a>
+        </nav>
+    </aside>
+
+    <header class="customer-topbar">
+        <button class="customer-mobile-toggle" type="button" aria-label="Mở menu khách hàng">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div>
+            <strong>Cổng khách hàng</strong>
+            <span>Theo dõi báo giá, hợp đồng và thanh toán</span>
+        </div>
+        <div class="customer-account">
+            <button class="customer-account-toggle" type="button" aria-expanded="false" aria-controls="customerAccountMenu">
+                <span class="customer-account-avatar">
+                    <i class="fas fa-user"></i>
+                </span>
+                <span class="customer-account-name" th:text="${customer != null ? (customer.fullName != null ? customer.fullName : customer.email) : 'Khách hàng'}">Khách hàng</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="customer-account-menu" id="customerAccountMenu" hidden>
+                <div class="customer-account-menu-head">
+                    <strong th:text="${customer != null ? (customer.fullName != null ? customer.fullName : 'Khách hàng') : 'Khách hàng'}">Khách hàng</strong>
+                    <span th:text="${customer != null ? customer.email : 'customer@example.com'}">customer@example.com</span>
+                </div>
+                <a th:href="@{/customer/portal/profile}">
+                    <i class="fas fa-user"></i>
+                    Hồ sơ khách hàng
+                </a>
+                <a th:href="@{/customer/portal/contracts}">
+                    <i class="fas fa-file-contract"></i>
+                    Hợp đồng của tôi
+                </a>
+                <a class="danger" th:href="@{/customer/logout}">
+                    <i class="fas fa-right-from-bracket"></i>
+                    Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="customer-sidebar-backdrop"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const path = window.location.pathname;
+            const navItems = document.querySelectorAll('[data-customer-nav]');
+            navItems.forEach(function (item) {
+                const target = item.getAttribute('data-customer-nav');
+                const active = target === '/customer/portal'
+                    ? path === target
+                    : path === target || path.startsWith(target + '/');
+                item.classList.toggle('active', active);
+            });
+
+            const account = document.querySelector('.customer-account');
+            const toggle = document.querySelector('.customer-account-toggle');
+            const menu = document.querySelector('.customer-account-menu');
+            if (account && toggle && menu) {
+                toggle.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    const willOpen = menu.hidden;
+                    menu.hidden = !willOpen;
+                    toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                    account.classList.toggle('open', willOpen);
+                });
+                document.addEventListener('click', function (event) {
+                    if (!account.contains(event.target)) {
+                        menu.hidden = true;
+                        toggle.setAttribute('aria-expanded', 'false');
+                        account.classList.remove('open');
+                    }
+                });
+            }
+
+            const mobileToggle = document.querySelector('.customer-mobile-toggle');
+            const sidebar = document.querySelector('.customer-sidebar');
+            const backdrop = document.querySelector('.customer-sidebar-backdrop');
+            function closeSidebar() {
+                document.body.classList.remove('customer-sidebar-open');
+            }
+            if (mobileToggle && sidebar && backdrop) {
+                mobileToggle.addEventListener('click', function () {
+                    document.body.classList.toggle('customer-sidebar-open');
+                });
+                backdrop.addEventListener('click', closeSidebar);
+                navItems.forEach(function (item) {
+                    item.addEventListener('click', closeSidebar);
+                });
+            }
+        });
+    </script>
+</th:block>

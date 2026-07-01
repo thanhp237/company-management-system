@@ -58,20 +58,20 @@ public class AuthenticationService {
         try {
             // Step 1: Find user
             User user = userRepository.findByUsernameAndNotDeleted(request.getUsername())
-                    .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+                    .orElseThrow(() -> new BadCredentialsException("Tên đăng nhập hoặc mật khẩu không đúng"));
             
             // Step 2: Check if account is locked
             if (!user.isAccountNonLocked()) {
                 log.warn("⛔ Login attempt on LOCKED account: {} from IP: {}", 
                     user.getUsername(), ipAddress);
-                throw new BadCredentialsException("Account is locked. Please contact administrator.");
+                throw new BadCredentialsException("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
             }
             
             // Step 3: Check if account is active
             if (!user.isEnabled()) {
                 log.warn("⛔ Login attempt on INACTIVE account: {} from IP: {}", 
                     user.getUsername(), ipAddress);
-                throw new BadCredentialsException("Account is inactive.");
+                throw new BadCredentialsException("Tài khoản đang ngừng hoạt động.");
             }
             
             // Step 4: Authenticate password
@@ -85,7 +85,7 @@ public class AuthenticationService {
             } catch (AuthenticationException ex) {
                 // Password is wrong - handle failed login
                 handleFailedLogin(user, ipAddress, userAgent);
-                throw new BadCredentialsException("Invalid credentials");
+                throw new BadCredentialsException("Tên đăng nhập hoặc mật khẩu không đúng");
             }
             
             // Step 5: Authentication successful - reset failed attempts
@@ -166,7 +166,7 @@ public class AuthenticationService {
     public void logout(String username, String ipAddress, String userAgent) {
         // Tìm user xem có tồn tại không
         User user = userRepository.findByUsernameAndNotDeleted(username)
-                .orElseThrow(() -> new BadCredentialsException("User not found"));
+                .orElseThrow(() -> new BadCredentialsException("Không tìm thấy tài khoản"));
 
         // Lưu log ghi nhận user đã đăng xuất thành công
         loginAttemptRepository.save(LoginAttempt.builder()
