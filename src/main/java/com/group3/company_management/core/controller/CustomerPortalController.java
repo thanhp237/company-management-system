@@ -5,9 +5,10 @@ package com.group3.company_management.core.controller;
 
 
 import com.group3.company_management.customer.dto.CustomerPortalResponse;
+import com.group3.company_management.core.dto.ContractResponse;
 import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.entity.Customer;
-import com.group3.company_management.core.service.impl.CustomerServiceImpl;
+import com.group3.company_management.core.service.ContractService;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerPortalController {
     
     private final CustomerService customerService;
+    private final ContractService contractService;
     
     /**
      * GET /customer/portal
@@ -45,6 +47,7 @@ public class CustomerPortalController {
         model.addAttribute("title", "My Account");
         model.addAttribute("customer", customer);
         model.addAttribute("portalInfo", portalInfo);
+        model.addAttribute("contracts", contractService.getCustomerContracts(customer.getId()));
         
         log.info("✅ Customer portal accessed: {}", customer.getEmail());
         return "customer/portal";
@@ -100,7 +103,7 @@ public class CustomerPortalController {
         
         model.addAttribute("title", "My Contracts");
         model.addAttribute("customer", customer);
-        // TODO: Fetch contracts from ContractService
+        model.addAttribute("contracts", contractService.getCustomerContracts(customer.getId()));
         
         log.info("✅ Customer contracts page accessed: {}", customer.getEmail());
         return "customer/contracts";
@@ -117,14 +120,36 @@ public class CustomerPortalController {
             Authentication authentication) {
         
         Customer customer = getAuthenticatedCustomer(authentication);
+        ContractResponse contract = contractService.getCustomerContractDetail(contractId, customer.getId());
         
         model.addAttribute("title", "Contract Details");
         model.addAttribute("customer", customer);
-        model.addAttribute("contractId", contractId);
-        // TODO: Fetch contract from ContractService
+        model.addAttribute("contract", contract);
         
         log.info("✅ Customer contract detail accessed: {} - Contract ID: {}", customer.getEmail(), contractId);
         return "customer/contract-detail";
+    }
+
+    @PostMapping("/contracts/{contractId}/sign")
+    public String signContract(
+            @PathVariable Long contractId,
+            Authentication authentication,
+            Model model) {
+
+        Customer customer = getAuthenticatedCustomer(authentication);
+        log.info("Customer signing contract - Customer: {}, Contract ID: {}", customer.getEmail(), contractId);
+
+        try {
+            contractService.customerSignContractByCustomer(contractId, customer.getId());
+            return "redirect:/customer/portal/contracts/" + contractId + "?signed=true";
+        } catch (RuntimeException exception) {
+            ContractResponse contract = contractService.getCustomerContractDetail(contractId, customer.getId());
+            model.addAttribute("title", "Contract Details");
+            model.addAttribute("customer", customer);
+            model.addAttribute("contract", contract);
+            model.addAttribute("errorMessage", exception.getMessage());
+            return "customer/contract-detail";
+        }
     }
     
     /**

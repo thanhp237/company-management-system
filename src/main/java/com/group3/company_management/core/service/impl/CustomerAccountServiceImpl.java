@@ -32,7 +32,7 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
     @Override
     @Transactional
     public CustomerAccountResult createFromContract(Long contractId) {
-        Contract contract = getSignedContract(contractId);
+        Contract contract = getContractReadyForCustomerAccount(contractId);
         Customer customer = getContractCustomer(contract);
 
         if (hasCustomerAccount(customer)) {
@@ -49,7 +49,7 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
     @Override
     @Transactional
     public CustomerAccountResult resendAccountEmail(Long contractId) {
-        Contract contract = getSignedContract(contractId);
+        Contract contract = getContractReadyForCustomerAccount(contractId);
         Customer customer = getContractCustomer(contract);
 
         if (!hasCustomerAccount(customer)) {
@@ -66,12 +66,13 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
         return new CustomerAccountResult(emailSent, customer.getEmail(), rawPassword);
     }
 
-    private Contract getSignedContract(Long contractId) {
+    private Contract getContractReadyForCustomerAccount(Long contractId) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
-        if (contract.getStatus() != Contract.ContractStatus.SIGNED) {
-            throw new RuntimeException("Contract must be signed before creating customer account");
+        if (contract.getStatus() != Contract.ContractStatus.SENT_TO_CUSTOMER
+                && contract.getStatus() != Contract.ContractStatus.SIGNED) {
+            throw new RuntimeException("Contract must be sent to customer before creating customer account");
         }
 
         return contract;
@@ -118,5 +119,8 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
             password.append(PASSWORD_CHARS.charAt(index));
         }
         return password.toString();
+
+
+        
     }
 }
