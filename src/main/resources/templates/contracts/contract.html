@@ -442,6 +442,20 @@
                         <button type="submit"><i class="fas fa-paper-plane"></i> Gửi khách hàng</button>
                     </form>
 
+                    <form th:if="${contract.status == 'SENT_TO_CUSTOMER' and !contract.customerAccountCreated}"
+                          th:action="@{/contracts/{id}/customer-account(id=${contract.id})}"
+                          method="post"
+                          onsubmit="return confirm('Cấp account portal cho khách hàng này?');">
+                        <button type="submit"><i class="fas fa-user-plus"></i> Cấp account khách hàng</button>
+                    </form>
+
+                    <form th:if="${contract.status == 'SENT_TO_CUSTOMER' and contract.customerAccountCreated}"
+                          th:action="@{/contracts/{id}/customer-account/resend(id=${contract.id})}"
+                          method="post"
+                          onsubmit="return confirm('Tạo mật khẩu mới và gửi lại account cho khách hàng?');">
+                        <button type="submit"><i class="fas fa-key"></i> Gửi lại account</button>
+                    </form>
+
                     <form th:if="${contract.status == 'SENT_TO_CUSTOMER'}"
                           th:action="@{/contracts/{id}/customer-sign(id=${contract.id})}"
                           method="post"

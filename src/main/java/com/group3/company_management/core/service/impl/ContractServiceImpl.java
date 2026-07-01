@@ -127,6 +127,26 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ContractResponse> getCustomerContracts(Long customerId) {
+        if (customerId == null) {
+            throw new RuntimeException("Customer is required");
+        }
+
+        return contractRepository.findByCustomerIdOrderByCreatedAtDesc(customerId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ContractResponse getCustomerContractDetail(Long contractId, Long customerId) {
+        Contract contract = getCustomerOwnedContract(contractId, customerId);
+        return mapToResponse(contract);
+    }
+
+    @Override
     @Transactional
     public void submitToAdmin(Long contractId, String username) {
         Contract contract = contractRepository.findById(contractId)
@@ -251,6 +271,20 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         validateSalesStepAccess(contract, employee);
+
+        if (contract.getStatus() != Contract.ContractStatus.SENT_TO_CUSTOMER) {
+            throw new RuntimeException("Only contract sent to customer can be signed");
+        }
+
+        contract.setStatus(Contract.ContractStatus.SIGNED);
+        contract.setSignedAt(LocalDateTime.now());
+        contractRepository.save(contract);
+    }
+
+    @Override
+    @Transactional
+    public void customerSignContractByCustomer(Long contractId, Long customerId) {
+        Contract contract = getCustomerOwnedContract(contractId, customerId);
 
         if (contract.getStatus() != Contract.ContractStatus.SENT_TO_CUSTOMER) {
             throw new RuntimeException("Only contract sent to customer can be signed");
@@ -484,6 +518,21 @@ public class ContractServiceImpl implements ContractService {
         }
 
         return response;
+    }
+
+    private Contract getCustomerOwnedContract(Long contractId, Long customerId) {
+        if (customerId == null) {
+            throw new RuntimeException("Customer is required");
+        }
+
+        Contract contract = contractRepository.findById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        if (contract.getCustomer() == null || !customerId.equals(contract.getCustomer().getId())) {
+            throw new RuntimeException("You are not allowed to access this contract");
+        }
+
+        return contract;
     }
 
     private List<ContractItemResponse> mapContractItems(List<QuotationDetail> quotationDetails) {
