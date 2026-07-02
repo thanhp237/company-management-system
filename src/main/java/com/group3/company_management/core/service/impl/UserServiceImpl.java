@@ -161,6 +161,8 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public List<User> getUsersByRoles(List<String> roles) {
+        List<User> user =userRepository.findUsersByRoleNames(roles);
+
         return userRepository.findUsersByRoleNames(roles);
     }
     private User findActiveUserById(Long id) {

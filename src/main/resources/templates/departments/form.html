@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
@@ -11,12 +11,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/main.css}">
     <link rel="stylesheet" th:href="@{/css/user.css}">
     <link rel="stylesheet" th:href="@{/css/department.css}">
 </head>
+
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>
 
@@ -29,171 +30,147 @@
 
         <div class="management-taskbar user-taskbar">
             <div>
-                <div class="management-eyebrow">QUẢN TRỊ PHÒNG BAN</div>
-                <h1 th:text="${department.id == null ? 'Thêm phòng ban' : 'Cập nhật phòng ban'}">
+                <p class="management-eyebrow"
+                   th:text="${department.id == null ? 'TẠO PHÒNG BAN MỚI' : 'CẬP NHẬT PHÒNG BAN'}">
+                    TẠO PHÒNG BAN MỚI
+                </p>
+
+                <h1 th:text="${department.id == null ? 'Thêm phòng ban' : 'Chỉnh sửa phòng ban'}">
                     Thêm phòng ban
                 </h1>
+
                 <p class="management-subtitle">
-                    Quản lý mã phòng ban, tên phòng ban và người phụ trách.
+                    Thiết lập thông tin phòng ban, người quản lý, số lượng thành viên và trạng thái hoạt động.
                 </p>
             </div>
-        </div>
 
-        <div class="alert alert-danger user-form-alert"
-             th:if="${err}"
-             th:text="${err}">
-        </div>
-
-        <form th:action="@{/departments/save}"
-              th:object="${department}"
-              method="post"
-              sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')">
-
-            <div class="user-form-shell">
-                <section class="user-form-card department-form-card">
-                    <div class="user-form-card-header">
-                        <div class="user-form-card-icon">
-                            <i class="fa-solid fa-building"></i>
-                        </div>
-                        <div>
-                            <h2>Thông tin phòng ban</h2>
-                            <p>Nhập thông tin cơ bản và người phụ trách phòng ban.</p>
-                        </div>
-                    </div>
-
-                    <input type="hidden" th:field="*{id}">
-
-                    <div class="user-form-grid">
-                        <label class="user-field">
-                            <span>Mã phòng ban <strong>*</strong></span>
-                            <input type="text"
-                                   th:field="*{code}"
-                                   placeholder="VD: SALES"
-                                   required>
-                        </label>
-
-                        <label class="user-field">
-                            <span>Tên phòng ban <strong>*</strong></span>
-                            <input type="text"
-                                   th:field="*{name}"
-                                   placeholder="VD: Sales Department"
-                                   required>
-                        </label>
-
-                        <label class="user-field">
-                            <span>Người quản lý</span>
-                            <select th:field="*{managerId}">
-                                <option value="">-- Chọn quản lý --</option>
-                                <option th:each="manager : ${managers}"
-                                        th:value="${manager.id}"
-                                        th:text="${manager.fullName + ' - ' + manager.role.roleCode}">
-                                </option>
-                            </select>
-                        </label>
-                        <label class="user-field">
-                            <span>Số người tối đa</span>
-                            <input type="number"
-                                   th:field="*{maxMembers}"
-                                   th:attr="min=${currentMembers > 0 ? currentMembers : 1}"
-                                   placeholder="VD: 10">
-                            <small th:if="${department.id != null}"
-                                   th:text="${'Hiện có ' + currentMembers + ' nhân viên trong phòng ban'}">
-                                Hiện có 0 nhân viên trong phòng ban
-                            </small>
-                        </label>
-                        <label class="user-field" style="grid-column: 1 / -1;"
-                               th:if="${department.id == null}">
-                            <span>Chọn nhân viên</span>
-                            <select name="userIds" multiple size="6">
-                                <option th:each="u : ${assignableUsers}"
-                                        th:value="${u.id}"
-                                        th:text="${(u.fullName != null and !#strings.isEmpty(u.fullName) ? u.fullName : u.username) + ' - ' + u.role.roleCode}">
-                                </option>
-                            </select>
-                            <small class="text-muted">Giữ Ctrl để chọn nhiều nhân viên</small>
-                        </label>
-
-
-
-
-                        <label class="user-field">
-                            <span>Trạng thái mặc định</span>
-                            <input type="text" value="Hoạt động" disabled>
-                        </label>
-
-                        <label class="user-field" style="grid-column: 1 / -1;">
-                            <span>Mô tả</span>
-                            <textarea class="department-form-textarea"
-                                      th:field="*{description}"
-                                      placeholder="Mô tả nhiệm vụ hoặc phạm vi phụ trách của phòng ban"></textarea>
-                        </label>
-                        <span th:if="${department.maxMembers != null and currentMembers >= department.maxMembers}"
-                              class="badge bg-danger">
-    ĐÃ ĐẦY
-</span>
-
-                    </div>
-                </section>
-
-                <aside class="user-form-side">
-                    <section class="user-form-side-card">
-                        <div class="user-form-status"
-                             th:classappend="${department.id == null ? ' create' : ' edit'}">
-                            <i class="fa-solid"
-                               th:classappend="${department.id == null ? ' fa-plus' : ' fa-pen'}"></i>
-                            <span th:text="${department.id == null ? 'Tạo mới' : 'Cập nhật'}">
-                                Tạo mới
-                            </span>
-                        </div>
-
-                        <h2>Thao tác</h2>
-                        <p>Phòng ban mới sẽ tự động ở trạng thái hoạt động.</p>
-
-                        <div class="user-form-actions">
-                            <button type="submit" class="btn btn-success user-submit-primary">
-                                <i class="fa-solid fa-floppy-disk"></i>
-                                Lưu phòng ban
-                            </button>
-
-                            <a class="btn user-submit-secondary" th:href="@{/departments}">
-                                Quay lại
-                            </a>
-                        </div>
-                    </section>
-                </aside>
+            <div class="management-actions">
+                <a class="btn btn-outline-secondary management-secondary-action" th:href="@{/departments}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Quay lại</span>
+                </a>
             </div>
+        </div>
 
-        </form>
-        <div class="user-form-shell"
-             th:if="${department.id != null}"
-             sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')">
+        <form class="user-form-shell"
+              th:action="@{/departments/save}"
+              th:object="${department}"
+              method="post">
+
+            <input type="hidden" th:field="*{id}" th:if="${department.id != null}">
+
+            <section class="user-form-card">
+                <div class="user-form-card-header">
+                    <span class="user-form-card-icon">
+                        <i class="fas fa-building"></i>
+                    </span>
+
+                    <div>
+                        <h2>Thông tin phòng ban</h2>
+                        <p>Nhập đầy đủ thông tin để quản lý phòng ban trong hệ thống CRM.</p>
+                    </div>
+                </div>
+
+                <div class="user-form-grid">
+                    <label class="user-field">
+                        <span>Mã phòng ban <strong>*</strong></span>
+                        <input type="text"
+                               th:field="*{code}"
+                               placeholder="VD: HR001"
+                               required>
+                    </label>
+
+                    <label class="user-field">
+                        <span>Tên phòng ban <strong>*</strong></span>
+                        <input type="text"
+                               th:field="*{name}"
+                               placeholder="VD: Phòng nhân sự"
+                               required>
+                    </label>
+
+                    <label class="user-field">
+                        <span>Quản lý phòng ban</span>
+                        <select th:field="*{managerId}">
+                            <option value="" th:if="${department.id == null}">
+                                -- Chọn quản lý --
+                            </option>
+
+                            <option th:each="user : ${listManager}"
+                                    th:value="${user.id}"
+                                    th:text="${user.fullName + ' - ' + user.role.roleName}">
+                                Nguyễn Văn A - Manager
+                            </option>
+                        </select>
+                    </label>
+
+                    <label class="user-field">
+                        <span>Số lượng tối đa</span>
+                        <input type="number"
+                               min="1"
+                               th:field="*{maxMembers}"
+                               placeholder="VD: 20">
+                    </label>
+
+                    <label class="user-field">
+                        <span>Trạng thái</span>
+                        <select th:field="*{status}">
+                            <option value="ACTIVE">Hoạt động</option>
+                            <option value="INACTIVE">Tạm khóa</option>
+                        </select>
+                    </label>
+
+                    <label class="user-field">
+                        <span>Nhân viên phòng ban</span>
+                        <select multiple size="6" th:field="*{employees}">
+                            <option th:each="user : ${listEmployee}"
+                                    th:value="${user.id}"
+                                    th:text="${user.fullName + ' - ' + user.role.roleName}">
+                                Trần Văn B - Employee
+                            </option>
+                        </select>
+                    </label>
+
+                    <label class="user-field" style="grid-column: 1 / -1;">
+                        <span>Mô tả</span>
+                        <textarea class="department-form-textarea"
+                                  th:field="*{description}"
+                                  placeholder="Mô tả ngắn về chức năng của phòng ban"></textarea>
+                    </label>
+                </div>
+            </section>
 
             <aside class="user-form-side">
-                <section class="user-form-side-card">
-                    <h2>Gán nhân viên vào phòng ban</h2>
+                <div class="user-form-side-card">
+                    <span class="user-form-status"
+                          th:classappend="${department.id == null ? ' create' : ' edit'}">
+                        <i th:class="${department.id == null ? 'fas fa-plus' : 'fas fa-pen'}"></i>
+                        <span th:text="${department.id == null ? 'Tạo mới phòng ban' : 'Chế độ chỉnh sửa'}">
+                            Tạo mới phòng ban
+                        </span>
+                    </span>
 
-                    <form th:action="@{/departments/assign-user}" method="post">
-                        <label class="user-field" style="grid-column: 1 / -1;">
-                            <span>Chọn nhân viên</span>
-                            <select name="userIds" multiple size="6">
-                                <option th:each="u : ${assignableUsers}"
-                                        th:value="${u.id}"
-                                        th:text="${(u.fullName != null and !#strings.isEmpty(u.fullName) ? u.fullName : u.username) + ' - ' + u.role.roleCode}">
-                                </option>
-                            </select>
-                        </label>
+                    <h2 th:text="${department.id == null ? 'Hoàn tất tạo phòng ban' : 'Lưu thay đổi phòng ban'}">
+                        Hoàn tất tạo phòng ban
+                    </h2>
 
-                        <input type="hidden" name="departmentId" th:value="${department.id}">
+                    <p>
+                        Kiểm tra mã phòng ban, người quản lý và số lượng thành viên trước khi lưu.
+                    </p>
 
-                        <button type="submit"
-                                class="btn btn-primary"
-                                th:disabled="${department.maxMembers != null and currentMembers >= department.maxMembers}">
-                            Gán vào phòng ban
+                    <div class="user-form-actions">
+                        <button class="btn btn-primary user-submit-primary" type="submit">
+                            <i class="fas fa-floppy-disk"></i>
+                            <span>Lưu thay đổi</span>
                         </button>
-                    </form>
-                </section>
+
+                        <a class="btn btn-outline-secondary user-submit-secondary" th:href="@{/departments}">
+                            <i class="fas fa-xmark"></i>
+                            <span>Hủy</span>
+                        </a>
+                    </div>
+                </div>
             </aside>
-        </div>
+        </form>
     </div>
 </main>
 

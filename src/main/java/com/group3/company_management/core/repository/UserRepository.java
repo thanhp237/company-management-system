@@ -110,23 +110,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
     String findEmployeeCodeByAccountId(@Param("accountId") Long accountId);
     int countByDepartmentIdAndIsDeletedFalse(Long departmentId);
 
-    @Query("""
-select u.departmentId, count(u)
-from User u
-where u.isDeleted = false
-and u.departmentId in :departmentIds
-group by u.departmentId
-""")
-    List<Object[]> countActiveUsersByDepartmentIds(@Param("departmentIds") Collection<Long> departmentIds);
 
-    @Query("""
-select u
-from User u
-where u.isDeleted = false
-and lower(u.status) = 'active'
-and (:departmentId is null or u.departmentId is null or u.departmentId = :departmentId)
-and u.role.roleCode <> 'ADMIN'
-order by u.fullName asc, u.username asc
-""")
-    List<User> findAssignableUsersForDepartment(@Param("departmentId") Long departmentId);
+
+
+    List<User> findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(Long departmentId);
+    Optional<User> findCustomerById(Long id);
+    @Query("select u.fullName from User u where u.id=:id")
+    String getNameUserById(@Param("id") Long id);
+
+
+
 }
