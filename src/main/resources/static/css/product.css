@@ -193,19 +193,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 auto;
     width: 32px;
     height: 32px;
     border-radius: 8px;
     background: #eef2ef;
     color: #536271;
-}
-
-.product-thumb-image {
-    display: block;
-    object-fit: cover;
-    border: 1px solid #dfe7e2;
-    background: #fff;
 }
 
 .product-description {
@@ -454,7 +446,6 @@
 
 .product-form-grid input[type="text"],
 .product-form-grid input[type="number"],
-.product-form-grid input[type="file"],
 .product-form-grid select,
 .product-form-grid textarea {
     width: 100%;
@@ -469,15 +460,8 @@
 
 .product-form-grid input[type="text"],
 .product-form-grid input[type="number"],
-.product-form-grid input[type="file"],
 .product-form-grid select {
     min-height: 42px;
-}
-
-.product-field-hint {
-    color: #657386;
-    font-size: 12px;
-    font-weight: 700;
 }
 
 .product-form-grid input:focus,

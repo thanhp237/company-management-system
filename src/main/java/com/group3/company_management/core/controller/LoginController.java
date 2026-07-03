@@ -21,8 +21,10 @@ public class LoginController {
                                 @RequestParam(required = false) String error,
                                 @RequestParam(required = false) String logout,
                                 @RequestParam(required = false) String locked,
-                                @RequestParam(required = false) String inactive) {
-        model.addAttribute("title", "Login");
+                                @RequestParam(required = false) String inactive,
+                                @RequestParam(required = false) String mode) {
+        model.addAttribute("title", "Đăng nhập");
+        model.addAttribute("loginMode", "customer".equalsIgnoreCase(mode) ? "customer" : "employee");
         
         if (error != null) {
             model.addAttribute("error", true);
@@ -37,7 +39,7 @@ public class LoginController {
             model.addAttribute("inactive", true);
         }
         
-        return "auth/login";
+        return "auth/login"; // customuserdetailsservice will get the username and password from the form and authenticate before redirecting to LoginController
     }
     
     /**
@@ -59,7 +61,7 @@ public class LoginController {
      */
     @GetMapping("/forgot-password")
     public String showForgotPasswordPage(Model model) {
-        model.addAttribute("title", "Forgot Password");
+        model.addAttribute("title", "Quên mật khẩu");
         return "auth/forgot-password";
     }
 }

@@ -1,49 +1,154 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Roles List</title>
-    <link rel="stylesheet" th:href="@{/css/main.css}">
-    <style>
-        .container { width: 85%; margin: 30px auto; font-family: Arial, sans-serif; }
-        .table-roles { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .table-roles th, .table-roles td { border: 1px solid #e0e0e0; padding: 12px 15px; text-align: center; }
-        .table-roles th { background-color: #f8f9fa; color: #333; font-weight: 600; }
-        .table-roles tr:hover { background-color: #f1f3f5; }
-        .btn-detail { background-color: #4dabf7; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 14px; transition: background 0.2s; }
-        .btn-detail:hover { background-color: #339af0; }
-        .title { color: #212529; margin-bottom: 5px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý vai trò - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
 </head>
 <body>
-
-<div class="container">
-    <h2 class="title">Roles List</h2>
-    <p style="color: #6c757d; margin-bottom: 20px;">Quản lý và thống kê số lượng tài khoản theo từng quyền hạn hệ thống.</p>
-
-    <table class="table-roles">
-        <thead>
-            <tr>
-                <th style="width: 8%;">STT</th>
-                <th style="width: 25%;">Role Code</th>
-                <th style="width: 35%;">Role Name</th>
-                <th style="width: 17%;">Total Accounts</th>
-                <th style="width: 15%;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="role : ${roles}">
-                <td th:text="${role.stt}">1</td>
-                <td th:text="${role.roleCode}">ADMIN</td>
-                <td th:text="${role.roleName}">Administrator</td>
-                <td th:text="${role.totalCount}">0</td>
-                <td>
-                    <a th:href="@{/users(role=${role.roleCode})}" class="btn-detail">Detail</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
 </div>
 
+<main class="admin-workspace with-sidebar user-workspace">
+    <div class="management-page user-management-page">
+        <div class="management-taskbar user-taskbar">
+            <div>
+                <p class="management-eyebrow">Quản trị / RBAC</p>
+                <h1>Quản lý vai trò</h1>
+                <p class="management-subtitle">Thiết lập vai trò nền cho phân quyền hệ thống. Vai trò hệ thống chỉ được vô hiệu hóa, không xóa.</p>
+            </div>
+            <div class="management-actions">
+                <a class="btn management-primary-action" th:href="@{/roles/edit}">
+                    <i class="fas fa-plus"></i>
+                    <span>Thêm vai trò</span>
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="management-alert success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${successMessage}">Thành công.</span>
+        </div>
+        <div th:if="${errorMessage}" class="management-alert danger">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+
+        <section class="user-stat-grid role-stat-grid">
+            <article class="user-stat-card success">
+                <strong th:text="${totalRoles}">0</strong>
+                <span>Tổng vai trò</span>
+                <small>Vai trò phân quyền trong hệ thống</small>
+            </article>
+            <article class="user-stat-card info">
+                <strong th:text="${activeRoles}">0</strong>
+                <span>Đang hoạt động</span>
+                <small>Có thể gán cho nhân viên</small>
+            </article>
+            <article class="user-stat-card danger">
+                <strong th:text="${inactiveRoles}">0</strong>
+                <span>Vô hiệu hóa</span>
+                <small>Không cấp quyền truy cập</small>
+            </article>
+        </section>
+
+        <section class="management-table-shell user-table-shell role-table-shell">
+            <div class="table-responsive">
+                <table class="management-table user-table role-table">
+                    <thead>
+                    <tr>
+                        <th>Vai trò</th>
+                        <th>Mã quyền</th>
+                        <th>Tài khoản</th>
+                        <th>Loại</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="role : ${roles}">
+                        <td>
+                            <div class="identity-cell">
+                                <div class="avatar-circle" th:text="${#strings.substring(role.roleName, 0, 1)}">R</div>
+                                <div>
+                                    <strong th:text="${role.roleName}">Quản trị viên</strong>
+                                    <span th:text="${'STT #' + role.stt}">STT</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="muted-code" th:text="${role.roleCode}">ADMIN</span></td>
+                        <td>
+                            <a class="role-count-link"
+                               th:href="@{/users(role=${role.roleCode})}"
+                               th:text="${role.totalCount + ' tài khoản'}">0 tài khoản</a>
+                        </td>
+                        <td>
+                            <span class="role-pill"
+                                  th:classappend="${role.systemRole} ? ' system' : ' custom'"
+                                  th:text="${role.systemRole ? 'Vai trò hệ thống' : 'Vai trò tùy chỉnh'}">Vai trò hệ thống</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/roles/{id}/status(id=${role.id})}"
+                                  method="post"
+                                  class="status-form">
+                                <select name="status"
+                                        class="status-select"
+                                        th:classappend="${role.status == 'ACTIVE'} ? ' active' : ' inactive'"
+                                        th:attr="data-current=${role.status}"
+                                        onchange="if (confirm('Cập nhật trạng thái vai trò này?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
+                                    <option value="ACTIVE" th:selected="${role.status == 'ACTIVE'}">Hoạt động</option>
+                                    <option value="INACTIVE" th:selected="${role.status == 'INACTIVE'}">Vô hiệu hóa</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a th:href="@{/roles/edit(id=${role.id})}" title="Sửa vai trò">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <form th:if="${role.canDelete}"
+                                      th:action="@{/roles/{id}/delete(id=${role.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('Xóa vai trò này?');">
+                                    <button type="submit" class="role-icon-button danger" title="Xóa vai trò">
+                                        <i class="fas fa-trash-can"></i>
+                                    </button>
+                                </form>
+                                <button th:if="${!role.canDelete}"
+                                        type="button"
+                                        class="role-icon-button disabled"
+                                        title="Vai trò hệ thống hoặc đang có tài khoản, chỉ có thể vô hiệu hóa">
+                                    <i class="fas fa-lock"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(roles)}">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fas fa-user-shield"></i>
+                                <span>Chưa có vai trò nào.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

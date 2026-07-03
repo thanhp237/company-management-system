@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết cơ hội - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+</head>
+<body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="admin-workspace with-sidebar">
+    <div class="management-page pipeline-detail-page">
+        <a class="detail-back-link" th:href="@{/pipeline}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quy trình bán hàng</span>
+        </a>
+
+        <div class="management-taskbar pipeline-detail-taskbar">
+            <div>
+                <p class="management-eyebrow">Bán hàng / Cơ hội</p>
+                <h1 th:text="${opportunity.opportunityCode}">OPP001</h1>
+                <p class="management-subtitle">
+                    <span th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'Khách hàng chưa xác định'}">Khách hàng</span>
+                    <span> • </span>
+                    <span th:text="${opportunity.updatedAt != null ? 'Cập nhật ' + #temporals.format(opportunity.updatedAt, 'dd/MM/yyyy HH:mm') : 'Chưa có ngày cập nhật'}">Cập nhật</span>
+                </p>
+            </div>
+            <div class="management-actions">
+                <a th:if="${canCreateQuotation}"
+                   class="btn management-primary-action"
+                   th:href="@{/quotation/create/{customerId}(customerId=${opportunity.customer.id}, opportunityId=${opportunity.id})}">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Tạo báo giá</span>
+                </a>
+                <a th:if="${existingQuotation != null}"
+                   class="btn management-primary-action"
+                   th:href="@{/quotation/detail/{id}(id=${existingQuotation.id})}">
+                    <i class="fas fa-eye"></i>
+                    <span>Xem báo giá</span>
+                </a>
+                <form th:if="${canCreateContract}"
+                      th:action="@{/contracts/create-from-quotation/{quotationId}(quotationId=${existingQuotation.id})}"
+                      method="post"
+                      class="m-0">
+                    <button type="submit" class="btn management-primary-action">
+                        <i class="fas fa-file-signature"></i>
+                        <span>Tạo hợp đồng</span>
+                    </button>
+                </form>
+                <a th:if="${existingContract != null}"
+                   class="btn management-primary-action"
+                   th:href="@{/contracts/{id}(id=${existingContract.id})}">
+                    <i class="fas fa-file-contract"></i>
+                    <span>Xem hợp đồng</span>
+                </a>
+                <a th:if="${opportunity.customer != null and canAddActivity}"
+                   class="btn management-secondary-action"
+                   th:href="@{/customer-activities/add(customerId=${opportunity.customer.id},relatedType='OPPORTUNITY',relatedId=${opportunity.id},returnUrl=${'/pipeline/' + opportunity.id})}">
+                    <i class="fas fa-comment-medical"></i>
+                    <span>Thêm tương tác</span>
+                </a>
+                <a class="btn management-secondary-action"
+                   th:href="@{/pipeline/{id}/evaluation(id=${opportunity.id})}">
+                    <i class="fas fa-chart-simple"></i>
+                    <span>Đánh giá</span>
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="management-alert success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${successMessage}">Cập nhật thành công.</span>
+        </div>
+        <div th:if="${errorMessage}" class="management-alert danger">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+
+        <section class="pipeline-stage-strip" aria-label="Tổng hợp giai đoạn">
+            <a th:each="stage : ${stages}"
+               th:href="@{/pipeline/find(stage=${stage})}"
+               th:classappend="${opportunity.stage == stage} ? 'active'">
+                <span th:text="${stage == 'NEW' ? 'Mới' : (stage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (stage == 'PROPOSAL' ? 'Đề xuất' : (stage == 'NEGOTIATION' ? 'Đàm phán' : (stage == 'WON' ? 'Thắng' : (stage == 'LOST' ? 'Thua' : stage)))))}">Mới</span>
+                <strong th:text="${stageCounts.get(stage)}">0</strong>
+            </a>
+        </section>
+
+        <div class="pipeline-detail-layout">
+            <div class="pipeline-detail-main">
+                <section class="detail-card">
+                    <div class="detail-card-title">
+                        <i class="fas fa-chart-line"></i>
+                        <h2>Thông tin cơ hội</h2>
+                    </div>
+                    <div class="detail-info-grid">
+                        <div>
+                            <span>Mã cơ hội</span>
+                            <strong th:text="${opportunity.opportunityCode}">OPP001</strong>
+                        </div>
+                        <div>
+                            <span>Giai đoạn</span>
+                            <strong>
+                                <span class="stage-pill"
+                                      th:classappend="${#strings.toLowerCase(opportunity.stage)}"
+                                      th:text="${opportunity.stage == 'NEW' ? 'Mới' : (opportunity.stage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (opportunity.stage == 'PROPOSAL' ? 'Đề xuất' : (opportunity.stage == 'NEGOTIATION' ? 'Đàm phán' : (opportunity.stage == 'WON' ? 'Thắng' : (opportunity.stage == 'LOST' ? 'Thua' : opportunity.stage)))))}">Mới</span>
+                            </strong>
+                        </div>
+                        <div>
+                            <span>Giá trị dự kiến</span>
+                            <strong th:text="${opportunity.expectedAmount != null ? #numbers.formatDecimal(opportunity.expectedAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</strong>
+                        </div>
+                        <div>
+                            <span>Nhân viên kinh doanh phụ trách</span>
+                            <strong th:text="${opportunity.assignedTo != null ? opportunity.assignedTo.fullName : 'Chưa có'}">Nhân viên kinh doanh</strong>
+                        </div>
+                        <div>
+                            <span>Ngày tạo</span>
+                            <strong th:text="${opportunity.createdAt != null ? #temporals.format(opportunity.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có'}">Chưa có</strong>
+                        </div>
+                        <div>
+                            <span>Báo giá</span>
+                            <strong>
+                                <a th:if="${existingQuotation != null}"
+                                   th:href="@{/quotation/detail/{id}(id=${existingQuotation.id})}"
+                                   th:text="${existingQuotation.quotationCode}">QT001</a>
+                                <span th:if="${existingQuotation == null}">Chưa có</span>
+                            </strong>
+                        </div>
+                        <div>
+                            <span>Hợp đồng</span>
+                            <strong>
+                                <a th:if="${existingContract != null}"
+                                   th:href="@{/contracts/{id}(id=${existingContract.id})}"
+                                   th:text="${existingContract.contractCode}">CT001</a>
+                                <span th:if="${existingContract == null}">Chưa tạo</span>
+                            </strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="detail-card">
+                    <div class="detail-card-title">
+                        <i class="fas fa-building-user"></i>
+                        <h2>Thông tin khách hàng</h2>
+                    </div>
+                    <div class="detail-info-grid">
+                        <div>
+                            <span>Khách hàng</span>
+                            <strong th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'Chưa có'}">Khách hàng</strong>
+                        </div>
+                        <div>
+                            <span>Email</span>
+                            <strong th:text="${opportunity.customer != null and opportunity.customer.email != null ? opportunity.customer.email : 'Chưa có'}">Email</strong>
+                        </div>
+                        <div>
+                            <span>Điện thoại</span>
+                            <strong th:text="${opportunity.customer != null and opportunity.customer.phone != null ? opportunity.customer.phone : 'Chưa có'}">Điện thoại</strong>
+                        </div>
+                        <div class="wide">
+                            <span>Địa chỉ</span>
+                            <strong th:text="${opportunity.customer != null and opportunity.customer.address != null ? opportunity.customer.address : 'Chưa có'}">Địa chỉ</strong>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="pipeline-detail-side">
+                <section class="detail-action-card">
+                    <h2>Thao tác nhanh</h2>
+                    <div class="detail-linked-card" th:if="${existingQuotation != null}">
+                        <span>Cơ hội này đã tạo báo giá</span>
+                        <a th:href="@{/quotation/detail/{id}(id=${existingQuotation.id})}">
+                            <strong th:text="${existingQuotation.quotationCode}">QT001</strong>
+                            <small th:text="${existingQuotation.status == 'DRAFT' ? 'Bản nháp' : (existingQuotation.status == 'ACCEPTED' ? 'Đã chấp nhận' : (existingQuotation.status == 'APPROVED' ? 'Đã duyệt' : (existingQuotation.status == 'REJECTED' ? 'Đã từ chối' : existingQuotation.status)))}">Bản nháp</small>
+                        </a>
+                    </div>
+                    <a th:if="${canCreateQuotation}"
+                       class="detail-action-primary"
+                       th:href="@{/quotation/create/{customerId}(customerId=${opportunity.customer.id}, opportunityId=${opportunity.id})}">
+                        <i class="fas fa-file-circle-plus"></i>
+                        <span>Tạo báo giá</span>
+                    </a>
+                    <form th:if="${canCreateContract}"
+                          th:action="@{/contracts/create-from-quotation/{quotationId}(quotationId=${existingQuotation.id})}"
+                          method="post"
+                          class="detail-action-form">
+                        <button type="submit" class="detail-action-primary">
+                            <i class="fas fa-file-signature"></i>
+                            <span>Tạo hợp đồng</span>
+                        </button>
+                    </form>
+                    <a th:if="${existingContract != null}"
+                       class="detail-action-primary"
+                       th:href="@{/contracts/{id}(id=${existingContract.id})}">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Xem hợp đồng</span>
+                    </a>
+                    <div class="detail-action-note"
+                         th:if="${existingQuotation != null and existingContract == null and !canCreateContract}">
+                        <i class="fas fa-circle-info"></i>
+                        <span th:if="${opportunity.stage != 'WON'}">Chỉ tạo hợp đồng khi cơ hội ở giai đoạn Thắng.</span>
+                        <span th:if="${opportunity.stage == 'WON' and !quotationReadyForContract}">Báo giá cần trạng thái Đã duyệt hoặc Đã chấp nhận để tạo hợp đồng.</span>
+                    </div>
+                    <a th:if="${opportunity.customer != null and canAddActivity}"
+                       class="detail-action-primary"
+                       th:href="@{/customer-activities/add(customerId=${opportunity.customer.id},relatedType='OPPORTUNITY',relatedId=${opportunity.id},returnUrl=${'/pipeline/' + opportunity.id})}">
+                        <i class="fas fa-comment-medical"></i>
+                        <span>Thêm tương tác</span>
+                    </a>
+                    <a th:if="${opportunity.customer != null}"
+                       class="detail-action-secondary"
+                       th:href="@{/customers/{id}(id=${opportunity.customer.id})}">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        <span>Lịch sử khách hàng</span>
+                    </a>
+                    <div class="detail-action-note" th:if="${!canAddActivity}">
+                        <i class="fas fa-lock"></i>
+                        <span>Cơ hội đã đóng, không thể thêm cuộc gọi/cuộc họp/email mới.</span>
+                    </div>
+                    <a class="detail-action-secondary"
+                       th:href="@{/pipeline/{id}/evaluation(id=${opportunity.id})}">
+                        <i class="fas fa-chart-simple"></i>
+                        <span>Đánh giá</span>
+                    </a>
+                    <div class="detail-action-note" th:if="${existingQuotation == null and !canCreateQuotation}">
+                        <i class="fas fa-lock"></i>
+                        <span>Chỉ tạo báo giá khi giai đoạn là Đã đủ điều kiện, Đề xuất hoặc Đàm phán và tài khoản có quyền kinh doanh/quản lý/quản trị.</span>
+                    </div>
+                </section>
+
+                <section class="detail-card">
+                    <div class="detail-card-title">
+                        <i class="fas fa-arrows-turn-to-dots"></i>
+                        <h2>Chuyển giai đoạn</h2>
+                    </div>
+                    <form th:if="${!#lists.isEmpty(nextStages)}"
+                          class="pipeline-stage-form"
+                          th:action="@{/pipeline/{id}/stage(id=${opportunity.id})}"
+                          method="post"
+                          onsubmit="return confirm('Lưu thay đổi giai đoạn này?');">
+                        <label>
+                            <span>Giai đoạn tiếp theo</span>
+                            <select name="stage" required>
+                                <option th:each="nextStage : ${nextStages}"
+                                        th:value="${nextStage}"
+                                        th:text="${nextStage == 'NEW' ? 'Mới' : (nextStage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (nextStage == 'PROPOSAL' ? 'Đề xuất' : (nextStage == 'NEGOTIATION' ? 'Đàm phán' : (nextStage == 'WON' ? 'Thắng' : (nextStage == 'LOST' ? 'Thua' : nextStage)))))}">Đã đủ điều kiện</option>
+                            </select>
+                        </label>
+                        <button type="submit">
+                            <i class="fas fa-check"></i>
+                            <span>Lưu giai đoạn</span>
+                        </button>
+                    </form>
+                    <div class="empty-state compact" th:if="${#lists.isEmpty(nextStages)}">
+                        <i class="fas fa-circle-check"></i>
+                        <span>Cơ hội đã đóng, không còn giai đoạn tiếp theo.</span>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết lead - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="admin-workspace with-sidebar customer-workspace">
+    <div class="management-page customer-page">
+        <div class="management-taskbar customer-taskbar">
+            <div>
+                <p class="management-eyebrow">CRM / Chi tiết khách hàng tiềm năng</p>
+                <h1 th:text="${customer.fullName != null ? customer.fullName : customer.name}">Khách hàng</h1>
+                <p class="management-subtitle">Cập nhật thông tin lead trước khi chuyển sang báo giá hoặc chăm sóc tiếp.</p>
+            </div>
+            <div class="management-actions">
+                <a class="btn management-secondary-action" th:href="@{/customer}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Nhập dữ liệu & phân bổ</span>
+                </a>
+                <a class="btn management-primary-action" th:href="@{/quotation/create/{id}(id=${customer.id})}">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Tạo báo giá</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="customer-tabs">
+            <a th:href="@{/customer}">
+                <i class="fas fa-file-import"></i>
+                <span>Nhập dữ liệu & phân bổ</span>
+            </a>
+            <a th:href="@{/customers}">
+                <i class="fas fa-table-list"></i>
+                <span>Quản lý khách hàng</span>
+            </a>
+        </div>
+
+        <section class="customer-form-shell">
+            <div class="customer-form-header">
+                <div>
+                    <h2>Thông tin khách hàng tiềm năng</h2>
+                    <p>Các trường này được dùng cho quy trình bán hàng, báo giá và hợp đồng về sau.</p>
+                </div>
+            </div>
+
+            <form class="customer-form" th:action="@{/customer/detail}" th:object="${customer}" method="post">
+                <input type="hidden" th:field="*{id}">
+
+                <div class="customer-form-grid">
+                    <label>
+                        <span>Tên khách hàng</span>
+                        <input type="text" th:field="*{name}" required>
+                    </label>
+                    <label>
+                        <span>Email</span>
+                        <input type="email" th:field="*{email}">
+                    </label>
+                    <label>
+                        <span>Số điện thoại</span>
+                        <input type="text" th:field="*{phone}">
+                    </label>
+                    <label>
+                        <span>Giới tính</span>
+                        <select th:field="*{gender}">
+                            <option value="">Chọn giới tính</option>
+                            <option value="MALE">Nam</option>
+                            <option value="FEMALE">Nữ</option>
+                            <option value="OTHER">Khác</option>
+                        </select>
+                    </label>
+                    <label class="wide">
+                        <span>Địa chỉ</span>
+                        <textarea th:field="*{address}" rows="3"></textarea>
+                    </label>
+                    <label>
+                        <span>Nguồn khách hàng</span>
+                        <input type="text" th:field="*{customerSource}">
+                    </label>
+                    <label>
+                        <span>Trạng thái</span>
+                        <select th:field="*{customerStatus}">
+                            <option value="NEW">Mới</option>
+                            <option value="CONTACTED">Đã liên hệ</option>
+                            <option value="FOLLOW_UP">Cần chăm sóc tiếp</option>
+                            <option value="OPPORTUNITY">Đã thành cơ hội</option>
+                            <option value="ACTIVE">Hoạt động</option>
+                            <option value="INACTIVE">Ngừng hoạt động</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Mức cơ hội</span>
+                        <select th:field="*{opportunityLevel}">
+                            <option value="COLD">Lạnh</option>
+                            <option value="WARM">Ấm</option>
+                            <option value="HOT">Nóng</option>
+                            <option value="FAIL">Không phù hợp</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="customer-form-actions">
+                    <a class="customer-secondary-button" th:href="@{/customer}">
+                        <i class="fas fa-xmark"></i>
+                        <span>Hủy</span>
+                    </a>
+                    <button class="customer-primary-button" type="submit">
+                        <i class="fas fa-floppy-disk"></i>
+                        <span>Lưu thông tin</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

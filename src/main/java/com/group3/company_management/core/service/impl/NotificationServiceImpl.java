@@ -2,11 +2,13 @@ package com.group3.company_management.core.service.impl;
 
 import com.group3.company_management.core.entity.Notification;
 import com.group3.company_management.core.repository.NotificationRepository;
+import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate; // Dùng tạm để lấy nhanh account_id từ username đăng nhập
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.group3.company_management.core.entity.User; // <-- ĐẢM BẢO CÓ DÒNG NÀY
 
 import java.util.List;
 
@@ -17,16 +19,13 @@ public class NotificationServiceImpl implements NotificationService {
     private NotificationRepository notificationRepository;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private UserRepository userRepository;
 
-    // Helper method để tìm nhanh ID tài khoản từ username Spring Security đang đăng nhập
+   // Sửa lại hàm helper để tìm chuẩn xác theo thực thể User đang đăng nhập
     private Long getAccountIdByUsername(String username) {
-        String sql = "SELECT id FROM system_accounts WHERE username = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, Long.class, username);
-        } catch (Exception e) {
-            return null;
-        }
+        return userRepository.findByUsername(username)
+                .map(User::getId)
+                .orElse(null);
     }
 
     @Override

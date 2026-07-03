@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<form th:fragment="userFilters" class="management-filterbar user-filterbar" th:action="@{/users/find}" method="get">
+    <label>
+        <span>Tìm kiếm</span>
+        <input type="text"
+               name="keyword"
+               th:value="${keyword}"
+               placeholder="Tên, email hoặc mã nhân viên...">
+    </label>
+
+    <label>
+        <span>Vai trò</span>
+        <select name="role">
+            <option value="">Tất cả vai trò</option>
+            <option th:each="roleItem : ${roles}"
+                    th:value="${roleItem.roleCode}"
+                    th:text="${roleItem.roleName}"
+                    th:selected="${role == roleItem.roleCode}">Quản trị viên</option>
+        </select>
+    </label>
+
+    <label>
+        <span>Trạng thái</span>
+        <select name="status">
+            <option value="">Tất cả trạng thái</option>
+            <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Đang hoạt động</option>
+            <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Tạm khóa</option>
+        </select>
+    </label>
+
+    <button class="filter-icon-button" type="submit" title="Lọc danh sách" aria-label="Lọc danh sách">
+        <i class="fas fa-filter"></i>
+    </button>
+
+    <a class="filter-reset-button" th:href="@{/users}" title="Xóa lọc" aria-label="Xóa lọc">
+        <i class="fas fa-xmark"></i>
+        <span>Xóa lọc</span>
+    </a>
+</form>
+
+<form th:fragment="pipelineFilters" class="management-filterbar" th:action="@{/pipeline/find}" method="get">
+    <label class="filter-wide">
+        <span>Cơ hội / Khách hàng</span>
+        <input type="text"
+               name="keyword"
+               th:value="${keyword}"
+               placeholder="Tìm theo mã, khách hàng hoặc người phụ trách">
+    </label>
+
+    <label>
+        <span>Giai đoạn</span>
+        <select name="stage">
+            <option value="" th:selected="${selectedStage == 'ALL'}">Tất cả giai đoạn</option>
+            <option th:each="stage : ${stages}"
+                    th:value="${stage}"
+                    th:text="${stage == 'NEW' ? 'Mới' : (stage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (stage == 'PROPOSAL' ? 'Đề xuất' : (stage == 'NEGOTIATION' ? 'Đàm phán' : (stage == 'WON' ? 'Thắng' : (stage == 'LOST' ? 'Thua' : stage)))))}"
+                    th:selected="${selectedStage == stage}">Mới</option>
+        </select>
+    </label>
+
+    <button class="filter-icon-button" type="submit" title="Áp dụng bộ lọc" aria-label="Áp dụng bộ lọc">
+        <i class="fas fa-filter"></i>
+    </button>
+</form>
+
+</body>
+</html>

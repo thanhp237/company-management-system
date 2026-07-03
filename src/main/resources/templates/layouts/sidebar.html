@@ -1,119 +1,146 @@
-<aside class="sidebar bg-dark border-end" 
+<aside class="sidebar"
        xmlns:th="http://www.thymeleaf.org"
        xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-    
+
     <div class="sidebar-menu">
-        <!-- Main Menu Items -->
-        <ul class="nav flex-column px-3 py-4">
-            <!-- Dashboard -->
-            <li class="nav-item mb-2">
-                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
-                   href="/dashboard">
-                    <i class="fas fa-chart-line me-3 text-success"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            
-            <!-- CRM Section -->
-            <li class="nav-item">
-                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
-                   data-bs-toggle="collapse" href="#crmMenu" role="button">
-                    <i class="fas fa-users me-3 text-success"></i>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a class="sidebar-link" href="/dashboard" data-nav-match="/dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Tổng quan</span>
+            </a>
+
+            <div class="sidebar-group"
+                 sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER','ADMINOFFICER')">
+                <button class="sidebar-link sidebar-toggle collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#adminMenu"
+                        aria-expanded="false"
+                        aria-controls="adminMenu">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Quản trị</span>
+                    <i class="fas fa-chevron-down sidebar-chevron"></i>
+                </button>
+                <div class="collapse sidebar-submenu" id="adminMenu">
+                    <a sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER','ADMINOFFICER')"
+                       href="/business-rules"
+                       data-nav-match="/business-rules">Quy tắc nghiệp vụ</a>
+                    <a sec:authorize="hasRole('ADMIN')"
+                       href="/users"
+                       data-nav-match="/users">Nhân viên</a>
+                    <a sec:authorize="hasRole('ADMIN')"
+                       href="/roles"
+                       data-nav-match="/roles">Vai trò</a>
+                    <a sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER','ADMINOFFICER')"
+                       href="/departments"
+                       data-nav-match="/departments">Phòng ban</a>
+                </div>
+            </div>
+
+            <div class="sidebar-group"
+                 sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN')">
+                <button class="sidebar-link sidebar-toggle collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#crmMenu"
+                        aria-expanded="false"
+                        aria-controls="crmMenu">
+                    <i class="fas fa-users"></i>
                     <span>CRM</span>
-                    <i class="fas fa-chevron-down ms-auto"></i>
-                </a>
-                <div class="collapse" id="crmMenu">
-                    <ul class="nav flex-column ps-5 py-2">
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/users">
-                                Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/departments">
-                                Departments
-                            </a>
-                        </li>
-                    </ul>
+                    <i class="fas fa-chevron-down sidebar-chevron"></i>
+                </button>
+                <div class="collapse sidebar-submenu" id="crmMenu">
+                    <a sec:authorize="hasAnyRole('MANAGER','SALES_MANAGER','ADMIN')"
+                       href="/customers"
+                       data-nav-match="/customers">Hồ sơ khách hàng</a>
+                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
+                       href="/customer-activities"
+                       data-nav-match="/customer-activities">Lịch sử tương tác</a>
+                    <a sec:authorize="hasRole('MARKETING')"
+                       href="/customer"
+                       data-nav-match="/customer">Nhập khách hàng tiềm năng</a>
+                    <a sec:authorize="hasAnyRole('MANAGER','SALES_MANAGER','ADMIN')"
+                       href="/customer"
+                       data-nav-match="/customer">Nhập dữ liệu & phân bổ</a>
+                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
+                       href="/appointments"
+                       data-nav-match="/appointments">Lịch hẹn</a>
+                    <a sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN')"
+                       href="/notifications"
+                       data-nav-match="/notifications">Thông báo</a>
                 </div>
-            </li>
-            
-            <!-- Sales Section -->
-            <li class="nav-item">
-                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
-                   data-bs-toggle="collapse" href="#salesMenu" role="button">
-                    <i class="fas fa-chart-bar me-3 text-success"></i>
-                    <span>Sales</span>
-                    <i class="fas fa-chevron-down ms-auto"></i>
-                </a>
-                <div class="collapse" id="salesMenu">
-                    <ul class="nav flex-column ps-5 py-2">
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/users">
-                                User Accounts
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/departments">
-                                Departments
-                            </a>
-                        </li>
-                    </ul>
+            </div>
+
+            <div class="sidebar-group"
+                 sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER')">
+                <button class="sidebar-link sidebar-toggle collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#salesMenu"
+                        aria-expanded="false"
+                        aria-controls="salesMenu">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Bán hàng</span>
+                    <i class="fas fa-chevron-down sidebar-chevron"></i>
+                </button>
+                <div class="collapse sidebar-submenu" id="salesMenu">
+                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
+                       href="/pipeline"
+                       data-nav-match="/pipeline">Quy trình bán hàng</a>
+                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER')"
+                       href="/contracts"
+                       data-nav-match="/contracts">Hợp đồng</a>
                 </div>
-            </li>
-            
-            <!-- Accounting Section -->
-            <li class="nav-item">
-                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
-                   data-bs-toggle="collapse" href="#accountingMenu" role="button">
-                    <i class="fas fa-file-invoice-dollar me-3 text-success"></i>
-                    <span>Accounting</span>
-                    <i class="fas fa-chevron-down ms-auto"></i>
-                </a>
-                <div class="collapse" id="accountingMenu">
-                    <ul class="nav flex-column ps-5 py-2">
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/users">
-                                Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/departments">
-                                Departments
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            
-            <!-- Settings (Admin only) -->
-            <li sec:authorize="hasRole('ADMIN')" class="nav-item mt-4 border-top pt-4">
-                <a class="nav-link text-light d-flex align-items-center rounded px-3 py-2" 
-                   data-bs-toggle="collapse" href="#settingsMenu" role="button">
-                    <i class="fas fa-cog me-3 text-success"></i>
-                    <span>Settings</span>
-                    <i class="fas fa-chevron-down ms-auto"></i>
-                </a>
-                <div class="collapse" id="settingsMenu">
-                    <ul class="nav flex-column ps-5 py-2">
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/users">
-                                Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/departments">
-                                Departments
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light text-decoration-none" href="/dashboard">
-                                Dashboard
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-        </ul>
+            </div>
+
+            <a class="sidebar-link"
+               sec:authorize="hasAnyRole('MANAGER','SALES_MANAGER','ADMIN')"
+               href="/products"
+               data-nav-match="/products">
+                <i class="fas fa-box"></i>
+                <span>Sản phẩm</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a class="sidebar-link" href="/dashboard/settings" data-nav-match="/dashboard/settings">
+                <i class="fas fa-gear"></i>
+                <span>Cài đặt</span>
+            </a>
+            <a class="sidebar-link" href="/change-password" data-nav-match="/change-password">
+                <i class="fas fa-circle-question"></i>
+                <span>Trợ giúp</span>
+            </a>
+        </div>
     </div>
 </aside>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const currentPath = window.location.pathname;
+        const links = document.querySelectorAll(".sidebar [data-nav-match]");
+
+        links.forEach(function(link) {
+            const match = link.getAttribute("data-nav-match");
+            const alt = link.getAttribute("data-nav-alt");
+            const isDashboard = match === "/dashboard" && currentPath === "/dashboard";
+            const isNestedMatch = match !== "/dashboard" && (currentPath === match || currentPath.startsWith(match + "/"));
+            const isAltMatch = alt && (currentPath === alt || currentPath.startsWith(alt + "/"));
+
+            if (isDashboard || isNestedMatch || isAltMatch) {
+                link.classList.add("active");
+                const submenu = link.closest(".sidebar-submenu");
+
+                if (submenu) {
+                    submenu.classList.add("show");
+                    const toggle = document.querySelector('[data-bs-target="#' + submenu.id + '"]');
+                    if (toggle) {
+                        toggle.classList.add("active");
+                        toggle.classList.remove("collapsed");
+                        toggle.setAttribute("aria-expanded", "true");
+                    }
+                }
+            }
+        });
+    });
+</script>

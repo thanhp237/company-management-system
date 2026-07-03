@@ -19,25 +19,26 @@ public class ChangePasswordService {
     public void changeFirstPassword(String username, ChangePasswordDTO dto) {
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
 
         if (!Boolean.TRUE.equals(user.getFirstLogin())) {
-            throw new RuntimeException("This account is not first login");
+            throw new RuntimeException("Tài khoản này không ở trạng thái đăng nhập lần đầu");
         }
 
         if (dto.getNewPassword() == null || dto.getNewPassword().isBlank()) {
-            throw new RuntimeException("New password is required");
+            throw new RuntimeException("Vui lòng nhập mật khẩu mới");
         }
 
         if (dto.getConfirmPassword() == null || dto.getConfirmPassword().isBlank()) {
-            throw new RuntimeException("Confirm password is required");
+            throw new RuntimeException("Vui lòng xác nhận mật khẩu mới");
         }
 
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            throw new RuntimeException("Confirm password does not match");
+            throw new RuntimeException("Mật khẩu xác nhận không khớp");
         }
 
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+
         user.setFirstLogin(false);
 
         userRepository.save(user);
@@ -47,30 +48,30 @@ public class ChangePasswordService {
     public void changePasswordInSettings(String username, ChangePasswordDTO dto) {
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
 
         if (dto.getCurrentPassword() == null || dto.getCurrentPassword().isBlank()) {
-            throw new RuntimeException("Current password is required");
+            throw new RuntimeException("Vui lòng nhập mật khẩu hiện tại");
         }
 
         if (dto.getNewPassword() == null || dto.getNewPassword().isBlank()) {
-            throw new RuntimeException("New password is required");
+            throw new RuntimeException("Vui lòng nhập mật khẩu mới");
         }
 
         if (dto.getConfirmPassword() == null || dto.getConfirmPassword().isBlank()) {
-            throw new RuntimeException("Confirm password is required");
+            throw new RuntimeException("Vui lòng xác nhận mật khẩu mới");
         }
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Current password is incorrect");
+            throw new RuntimeException("Mật khẩu hiện tại không đúng");
         }
 
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            throw new RuntimeException("Confirm password does not match");
+            throw new RuntimeException("Mật khẩu xác nhận không khớp");
         }
 
         if (passwordEncoder.matches(dto.getNewPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("New password must be different from current password");
+            throw new RuntimeException("Mật khẩu mới phải khác mật khẩu hiện tại");
         }
 
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));

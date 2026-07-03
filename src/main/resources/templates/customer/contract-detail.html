@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết hợp đồng - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/contract.css}">
+    <style>
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .customer-contract-page {
+            min-height: calc(100vh - 72px);
+            padding: 28px;
+            background: #f5f8fb;
+        }
+
+        .customer-contract-shell {
+            width: min(1060px, 100%);
+            margin: 0 auto;
+        }
+
+        .customer-sign-panel {
+            margin-top: 18px;
+            padding: 18px;
+            border: 1px solid #dfe7e2;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 18px 42px rgba(31, 45, 57, 0.08);
+        }
+
+        .customer-sign-panel button,
+        .customer-link-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 0 16px;
+            border: 0;
+            border-radius: 8px;
+            background: #007a3d;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 900;
+            text-decoration: none;
+        }
+
+        .customer-link-button {
+            background: #e8f3ff;
+            color: #1c69b3;
+        }
+
+        .contract-read-section {
+            display: grid;
+            gap: 14px;
+        }
+
+        .contract-read-section + .contract-read-section {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #edf1ee;
+        }
+
+        .contract-read-section h3 {
+            margin: 0;
+            color: #101923;
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .contract-read-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .contract-read-item {
+            min-width: 0;
+        }
+
+        .contract-read-item.wide {
+            grid-column: 1 / -1;
+        }
+
+        .contract-read-item span {
+            display: block;
+            margin-bottom: 6px;
+            color: #657386;
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .contract-read-item strong,
+        .contract-read-item p {
+            margin: 0;
+            color: #101923;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 720px) {
+            .contract-read-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<th:block th:insert="~{layouts/customer-sidebar :: customerLayout}"></th:block>
+
+<main class="customer-contract-page customer-app-content">
+    <div class="customer-contract-shell">
+        <a class="customer-link-button mb-3" th:href="@{/customer/portal/contracts}">
+            <i class="fas fa-arrow-left"></i>
+            Quay lại
+        </a>
+
+        <div th:if="${param.signed != null}" class="alert alert-success">
+            Hợp đồng đã được ký thành công.
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+            Có lỗi xảy ra.
+        </div>
+
+        <section class="contract-detail-card">
+            <div class="contract-card-title">
+                <i class="fas fa-file-contract"></i>
+                <h2 th:text="${contract.contractCode}">CT-001</h2>
+            </div>
+            <div class="contract-info-grid">
+                <div>
+                    <span>Khách hàng</span>
+                    <strong th:text="${contract.customerName != null ? contract.customerName : customer.fullName}">Khách hàng</strong>
+                </div>
+                <div>
+                    <span>Trạng thái</span>
+                    <strong th:text="${contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status))}">Đã gửi khách hàng</strong>
+                </div>
+                <div>
+                    <span>Mã báo giá</span>
+                    <strong th:text="${contract.quotationCode != null ? contract.quotationCode : 'Chưa có'}">QT-001</strong>
+                </div>
+                <div>
+                    <span>Ngày ký</span>
+                    <strong th:text="${contract.signedAt != null ? #temporals.format(contract.signedAt, 'dd/MM/yyyy HH:mm') : 'Chưa ký'}">Chưa ký</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="contract-detail-card">
+            <div class="contract-card-title">
+                <i class="fas fa-boxes-stacked"></i>
+                <h2>Sản phẩm từ báo giá</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="contract-item-table">
+                    <thead>
+                    <tr>
+                        <th>Sản phẩm / Dịch vụ</th>
+                        <th>Mô tả</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${contract.items}">
+                        <td>
+                            <strong th:text="${item.productName}">Sản phẩm</strong>
+                            <small th:text="${item.productCode}">P001</small>
+                        </td>
+                        <td th:text="${item.description != null ? item.description : 'Chưa có'}">Mô tả</td>
+                        <td th:text="${item.quantity}">1</td>
+                        <td th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT') : '0'}">0</td>
+                        <td>
+                            <strong th:text="${item.totalPrice != null ? #numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT') : '0'}">0</strong>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(contract.items)}">
+                        <td colspan="5" class="text-center text-muted py-4">Không có sản phẩm hoặc dịch vụ.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="contract-detail-card">
+            <div class="contract-card-title">
+                <i class="fas fa-scale-balanced"></i>
+                <h2>Điều khoản hợp đồng</h2>
+            </div>
+            <div class="contract-read-section">
+                <h3>Thông tin ký kết</h3>
+                <div class="contract-read-grid">
+                    <div class="contract-read-item">
+                        <span>Ngày ký</span>
+                        <strong th:text="${contract.signingDate != null ? contract.signingDate : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Nơi ký</span>
+                        <strong th:text="${contract.signingPlace != null ? contract.signingPlace : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Ngày bắt đầu</span>
+                        <strong th:text="${contract.contractStartDate != null ? contract.contractStartDate : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Ngày kết thúc</span>
+                        <strong th:text="${contract.contractEndDate != null ? contract.contractEndDate : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contract-read-section">
+                <h3>Bên bán (Bên A)</h3>
+                <div class="contract-read-grid">
+                    <div class="contract-read-item">
+                        <span>Tên doanh nghiệp</span>
+                        <strong th:text="${contract.sellerCompanyName != null ? contract.sellerCompanyName : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Mã số doanh nghiệp</span>
+                        <strong th:text="${contract.sellerTaxCode != null ? contract.sellerTaxCode : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Địa chỉ trụ sở</span>
+                        <p th:text="${contract.sellerAddress != null ? contract.sellerAddress : 'Chưa có'}">Chưa có</p>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Điện thoại</span>
+                        <strong th:text="${contract.sellerPhone != null ? contract.sellerPhone : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Fax</span>
+                        <strong th:text="${contract.sellerFax != null ? contract.sellerFax : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Tài khoản số</span>
+                        <strong th:text="${contract.sellerBankAccount != null ? contract.sellerBankAccount : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Mở tại ngân hàng</span>
+                        <strong th:text="${contract.sellerBankName != null ? contract.sellerBankName : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Đại diện pháp luật</span>
+                        <strong th:text="${contract.sellerRepresentativeName != null ? contract.sellerRepresentativeName : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Chức vụ</span>
+                        <strong th:text="${contract.sellerRepresentativeTitle != null ? contract.sellerRepresentativeTitle : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>CMND/CCCD</span>
+                        <strong th:text="${contract.sellerIdentityNumber != null ? contract.sellerIdentityNumber : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Nơi cấp</span>
+                        <strong th:text="${contract.sellerIdentityIssuedPlace != null ? contract.sellerIdentityIssuedPlace : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Ngày cấp</span>
+                        <strong th:text="${contract.sellerIdentityIssuedDate != null ? contract.sellerIdentityIssuedDate : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Giấy ủy quyền</span>
+                        <p th:text="${contract.sellerAuthorizationInfo != null ? contract.sellerAuthorizationInfo : 'Chưa có'}">Chưa có</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contract-read-section">
+                <h3>Bên mua (Bên B)</h3>
+                <div class="contract-read-grid">
+                    <div class="contract-read-item">
+                        <span>Tên doanh nghiệp</span>
+                        <strong th:text="${contract.buyerCompanyName != null ? contract.buyerCompanyName : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Mã số doanh nghiệp</span>
+                        <strong th:text="${contract.buyerTaxCode != null ? contract.buyerTaxCode : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Địa chỉ trụ sở</span>
+                        <p th:text="${contract.buyerAddress != null ? contract.buyerAddress : 'Chưa có'}">Chưa có</p>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Điện thoại</span>
+                        <strong th:text="${contract.buyerPhone != null ? contract.buyerPhone : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Fax</span>
+                        <strong th:text="${contract.buyerFax != null ? contract.buyerFax : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Tài khoản số</span>
+                        <strong th:text="${contract.buyerBankAccount != null ? contract.buyerBankAccount : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Mở tại ngân hàng</span>
+                        <strong th:text="${contract.buyerBankName != null ? contract.buyerBankName : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Đại diện pháp luật</span>
+                        <strong th:text="${contract.buyerRepresentativeName != null ? contract.buyerRepresentativeName : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Chức vụ</span>
+                        <strong th:text="${contract.buyerRepresentativeTitle != null ? contract.buyerRepresentativeTitle : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>CMND/CCCD</span>
+                        <strong th:text="${contract.buyerIdentityNumber != null ? contract.buyerIdentityNumber : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Nơi cấp</span>
+                        <strong th:text="${contract.buyerIdentityIssuedPlace != null ? contract.buyerIdentityIssuedPlace : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Ngày cấp</span>
+                        <strong th:text="${contract.buyerIdentityIssuedDate != null ? contract.buyerIdentityIssuedDate : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Giấy ủy quyền</span>
+                        <p th:text="${contract.buyerAuthorizationInfo != null ? contract.buyerAuthorizationInfo : 'Chưa có'}">Chưa có</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contract-read-section">
+                <h3>Thanh toán và giao hàng</h3>
+                <div class="contract-read-grid">
+                    <div class="contract-read-item wide">
+                        <span>Số tiền bằng chữ</span>
+                        <p th:text="${contract.amountInWords != null ? contract.amountInWords : 'Chưa có'}">Chưa có</p>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Hạn thanh toán</span>
+                        <strong th:text="${contract.paymentDueDate != null ? contract.paymentDueDate : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Hình thức thanh toán</span>
+                        <strong th:text="${contract.paymentMethod != null ? contract.paymentMethod : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Điều khoản thanh toán</span>
+                        <p th:text="${contract.paymentTerms != null ? contract.paymentTerms : 'Chưa có'}">Chưa có</p>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Lịch giao hàng</span>
+                        <p th:text="${contract.deliverySchedule != null ? contract.deliverySchedule : 'Chưa có'}">Chưa có</p>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Bên chịu phí vận chuyển</span>
+                        <strong th:text="${contract.shippingResponsibility != null ? contract.shippingResponsibility : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Chi phí bốc xếp</span>
+                        <strong th:text="${contract.unloadingCost != null ? contract.unloadingCost : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Phí lưu kho/ngày</span>
+                        <strong th:text="${contract.storageFeePerDay != null ? contract.storageFeePerDay : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Cơ quan kiểm tra trung gian</span>
+                        <strong th:text="${contract.inspectionAgency != null ? contract.inspectionAgency : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Điều khoản giao hàng</span>
+                        <p th:text="${contract.deliveryTerms != null ? contract.deliveryTerms : 'Chưa có'}">Chưa có</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contract-read-section">
+                <h3>Bảo hành, phạt vi phạm và điều khoản chung</h3>
+                <div class="contract-read-grid">
+                    <div class="contract-read-item wide">
+                        <span>Phạm vi bảo hành</span>
+                        <p th:text="${contract.warrantyProductScope != null ? contract.warrantyProductScope : 'Chưa có'}">Chưa có</p>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Thời gian bảo hành (tháng)</span>
+                        <strong th:text="${contract.warrantyMonths != null ? contract.warrantyMonths : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Mức phạt vi phạm (%)</span>
+                        <strong th:text="${contract.penaltyRate != null ? contract.penaltyRate : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Số bản hợp đồng</span>
+                        <strong th:text="${contract.contractCopies != null ? contract.contractCopies : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item">
+                        <span>Mỗi bên giữ</span>
+                        <strong th:text="${contract.copiesPerParty != null ? contract.copiesPerParty : 'Chưa có'}">Chưa có</strong>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Điều khoản pháp lý</span>
+                        <p th:text="${contract.legalTerms != null ? contract.legalTerms : 'Chưa có'}">Chưa có</p>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Điều khoản chung</span>
+                        <p th:text="${contract.generalTerms != null ? contract.generalTerms : 'Chưa có'}">Chưa có</p>
+                    </div>
+                    <div class="contract-read-item wide">
+                        <span>Ghi chú Admin</span>
+                        <p th:text="${contract.adminNote != null ? contract.adminNote : 'Chưa có'}">Chưa có</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="customer-sign-panel">
+            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div>
+                    <strong>Tổng giá trị</strong>
+                    <div th:text="${contract.finalAmount != null ? #numbers.formatDecimal(contract.finalAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</div>
+                </div>
+                <form th:if="${contract.status == 'SENT_TO_CUSTOMER'}"
+                      th:action="@{/customer/portal/contracts/{id}/sign(id=${contract.id})}"
+                      method="post"
+                      onsubmit="return confirm('Bạn xác nhận ký hợp đồng này?');">
+                    <button type="submit">
+                        <i class="fas fa-signature"></i>
+                        Ký hợp đồng
+                    </button>
+                </form>
+                <span th:if="${contract.status == 'SIGNED'}" class="badge text-bg-success">Đã ký</span>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>

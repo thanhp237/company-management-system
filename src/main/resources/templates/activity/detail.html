@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết tương tác - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="admin-workspace with-sidebar customer-workspace">
+    <div class="management-page customer-page">
+        <a class="customer-back-link" th:href="@{/customers/{id}(id=${activity.customerId})}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Chi tiết khách hàng</span>
+        </a>
+
+        <div class="management-taskbar customer-taskbar">
+            <div>
+                <p class="management-eyebrow">CRM / Tương tác</p>
+                <h1 th:text="${activity.activityType == 'CALL' ? 'Gọi điện' : (activity.activityType == 'MEETING' ? 'Cuộc họp' : (activity.activityType == 'EMAIL' ? 'Email' : 'Ghi chú'))}">Gọi điện</h1>
+                <p class="management-subtitle"
+                   th:text="${activity.createdAt != null ? #temporals.format(activity.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có ngày tạo'}">Ngày tạo</p>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="management-alert success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${successMessage}">Thành công.</span>
+        </div>
+
+        <section class="customer-form-shell">
+            <div class="customer-form-header">
+                <div>
+                    <h2>Ghi chú tương tác</h2>
+                    <p>Cập nhật nội dung trao đổi với khách hàng.</p>
+                </div>
+            </div>
+            <form class="customer-form"
+                  method="post"
+                  th:action="@{/customer-activities/{id}/note(id=${activity.id})}">
+                <input type="hidden" name="returnUrl" th:value="${'/customer-activities/' + activity.id}">
+                <div class="customer-form-grid">
+                    <label>
+                        <span>Mã khách hàng</span>
+                        <input type="text" th:value="${activity.customerId}" readonly>
+                    </label>
+                    <label>
+                        <span>Liên quan</span>
+                        <input type="text"
+                               th:value="${activity.relatedType != null ? activity.relatedType + ' #' + activity.relatedId : 'Chưa có'}"
+                               readonly>
+                    </label>
+                    <label class="wide">
+                        <span>Ghi chú</span>
+                        <textarea name="note"
+                                  rows="6"
+                                  th:text="${activity.activityNote}"
+                                  placeholder="Nhập ghi chú tương tác..."></textarea>
+                    </label>
+                </div>
+                <div class="customer-form-actions">
+                    <a class="customer-secondary-button" th:href="@{/customers/{id}(id=${activity.customerId})}">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Về khách hàng</span>
+                    </a>
+                    <button class="customer-primary-button" type="submit">
+                        <i class="fas fa-floppy-disk"></i>
+                        <span>Lưu ghi chú</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

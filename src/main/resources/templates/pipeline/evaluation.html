@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá cơ hội - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="admin-workspace with-sidebar customer-workspace">
+    <div class="management-page customer-page">
+        <div class="management-taskbar customer-taskbar">
+            <div>
+                <p class="management-eyebrow">CRM / Đánh giá cơ hội</p>
+                <h1>Đánh giá cơ hội</h1>
+                <p class="management-subtitle">
+                    <span th:text="${opportunity.customer != null ? opportunity.customer.fullName : 'Khách hàng'}">Khách hàng</span>
+                    <span> • </span>
+                    <span th:text="${opportunity.opportunityCode}">OPP001</span>
+                </p>
+            </div>
+            <div class="management-actions">
+                <a class="customer-secondary-button" th:href="@{/pipeline/{id}(id=${opportunity.id})}">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Quy trình bán hàng</span>
+                </a>
+                <form th:action="@{/pipeline/{id}/evaluation(id=${opportunity.id})}" method="post">
+                    <button type="submit" class="customer-primary-button">
+                        <i class="fas fa-circle-check"></i>
+                        <span>Đánh giá cơ hội</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="evaluation-layout">
+            <aside class="customer-panel evaluation-score-card">
+                <div class="customer-panel-header">
+                    <div>
+                        <h2>Chỉ số tiềm năng</h2>
+                        <p>Điểm tổng hợp từ dữ liệu quy trình bán hàng.</p>
+                    </div>
+                </div>
+                <div class="customer-panel-body">
+                    <div class="score-ring" th:style="${'--score:' + score}">
+                        <strong th:text="${score}">82</strong>
+                        <span>Tốt</span>
+                    </div>
+                    <div class="evaluation-mini-grid">
+                        <div><span>Độ tin cậy</span><strong th:text="${confidence}">94%</strong></div>
+                        <div><span>Xếp hạng</span><strong th:text="${rank}">A+</strong></div>
+                    </div>
+                    <label class="rule-field mt-3">
+                        <span>Trạng thái thẩm định</span>
+                        <select>
+                            <option>Đủ điều kiện - thẩm định thành công</option>
+                            <option>Cần chăm sóc tiếp</option>
+                            <option>Không đủ điều kiện</option>
+                        </select>
+                    </label>
+                    <div class="evaluation-note">
+                        Cơ hội này đạt điều kiện tạo báo giá khi đủ thông tin khách hàng và nằm trong giai đoạn phù hợp.
+                    </div>
+                </div>
+            </aside>
+
+            <section class="customer-panel evaluation-bant-card">
+                <div class="customer-panel-header">
+                    <div>
+                        <h2>Danh sách tiêu chí đánh giá</h2>
+                        <p>Khung đánh giá BANT</p>
+                    </div>
+                    <span class="customer-pill active">Hoàn thành 4/5</span>
+                </div>
+                <div class="customer-panel-body">
+                    <article class="bant-item"
+                             th:classappend="${evaluation.budgetScore > 0} ? ' success' : ' warning'">
+                        <i class="fas" th:classappend="${evaluation.budgetScore > 0} ? ' fa-check' : ' fa-clock'"></i>
+                        <div>
+                            <strong th:text="${'Ngân sách - ' + evaluation.budgetScore + '/30'}">Ngân sách</strong>
+                            <p th:text="${opportunity.expectedAmount != null ? 'Giá trị dự kiến: ' + #numbers.formatDecimal(opportunity.expectedAmount, 0, 'COMMA', 0, 'POINT') : 'Chưa nhập giá trị dự kiến'}">Ngân sách</p>
+                        </div>
+                        <span th:text="${evaluation.budgetScore > 0 ? 'Đạt' : 'Chưa đạt'}">Đạt</span>
+                    </article>
+
+                    <article class="bant-item"
+                             th:classappend="${evaluation.decisionMakerScore > 0} ? ' success' : ' warning'">
+                        <i class="fas" th:classappend="${evaluation.decisionMakerScore > 0} ? ' fa-check' : ' fa-clock'"></i>
+                        <div>
+                            <strong th:text="${'Thẩm quyền quyết định - ' + evaluation.decisionMakerScore + '/20'}">Thẩm quyền quyết định</strong>
+                            <p>Kiểm tra Giám đốc điều hành / Giám đốc / Quản lý trong ghi chú tương tác.</p>
+                        </div>
+                        <span th:text="${evaluation.decisionMakerScore > 0 ? 'Đã xác minh' : 'Chưa rõ'}">Chưa rõ</span>
+                    </article>
+
+                    <article class="bant-item"
+                             th:classappend="${evaluation.needScore > 0} ? ' success' : ' warning'">
+                        <i class="fas" th:classappend="${evaluation.needScore > 0} ? ' fa-check' : ' fa-clock'"></i>
+                        <div>
+                            <strong th:text="${'Nhu cầu - ' + evaluation.needScore + '/20'}">Nhu cầu</strong>
+                            <p>Kiểm tra nhu cầu, vấn đề, yêu cầu hoặc mức độ gấp trong ghi chú.</p>
+                        </div>
+                        <span th:text="${evaluation.needScore > 0 ? 'Có nhu cầu' : 'Đang bổ sung'}">Đang bổ sung</span>
+                    </article>
+
+                    <article class="bant-item"
+                             th:classappend="${evaluation.engagementScore > 0} ? ' success' : ' warning'">
+                        <i class="fas" th:classappend="${evaluation.engagementScore > 0} ? ' fa-check' : ' fa-clock'"></i>
+                        <div>
+                            <strong th:text="${'Tương tác - ' + evaluation.engagementScore + '/15'}">Tương tác</strong>
+                            <p>Kiểm tra các tương tác gọi điện, email hoặc cuộc họp.</p>
+                        </div>
+                        <span th:text="${evaluation.engagementScore > 0 ? 'Có tương tác' : 'Chưa có tương tác'}">Có tương tác</span>
+                    </article>
+
+                    <article class="bant-item"
+                             th:classappend="${evaluation.companySizeScore > 0} ? ' success' : ' warning'">
+                        <i class="fas" th:classappend="${evaluation.companySizeScore > 0} ? ' fa-check' : ' fa-building'"></i>
+                        <div>
+                            <strong th:text="${'Quy mô công ty - ' + evaluation.companySizeScore + '/15'}">Quy mô công ty</strong>
+                            <p>Kiểm tra ghi chú tương tác có thông tin trên 10 nhân viên.</p>
+                        </div>
+                        <span th:text="${evaluation.companySizeScore > 0 ? 'Đạt' : 'Chưa rõ'}">Chưa rõ</span>
+                    </article>
+                </div>
+            </section>
+        </div>
+
+        <section class="customer-stat-grid mt-3">
+            <article class="customer-stat-card success">
+                <span>Cơ hội cùng giai đoạn</span>
+                <strong th:text="${stageCounts.get(opportunity.stage)}">0</strong>
+                <small th:text="${opportunity.stage == 'NEW' ? 'Mới' : (opportunity.stage == 'QUALIFIED' ? 'Đã đủ điều kiện' : (opportunity.stage == 'PROPOSAL' ? 'Đề xuất' : (opportunity.stage == 'NEGOTIATION' ? 'Đàm phán' : (opportunity.stage == 'WON' ? 'Thắng' : (opportunity.stage == 'LOST' ? 'Thua' : opportunity.stage)))))}">Giai đoạn</small>
+            </article>
+            <article class="customer-stat-card info">
+                <span>Khách hàng</span>
+                <strong th:text="${opportunity.customer != null ? 'Đã có' : 'Chưa có'}">Đã có</strong>
+                <small>Hồ sơ liên kết</small>
+            </article>
+            <article class="customer-stat-card warning">
+                <span>Báo giá</span>
+                <strong th:text="${score >= 70 ? 'Sẵn sàng' : 'Chưa đủ'}">Sẵn sàng</strong>
+                <small>Điều kiện tạo báo giá</small>
+            </article>
+            <article class="customer-stat-card neutral">
+                <span>Xếp hạng</span>
+                <strong th:text="${rank}">A+</strong>
+                <small>Ưu tiên chăm sóc</small>
+            </article>
+        </section>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

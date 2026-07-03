@@ -62,7 +62,7 @@ public class SecurityConfig {
          * - Form login for Thymeleaf UI pages
          * - Public endpoints (login, static assets, auth API)
          * - Protected UI pages (require session authentication)
-
+        
          */
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -118,7 +118,6 @@ public class SecurityConfig {
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/images/**",
-                                                                "/uploads/**",
                                                                 "/webjars/**",
                                                                 "/main.css")
                                                 .permitAll()

@@ -5,6 +5,11 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.dto.CustomerResponse;
+import com.group3.company_management.core.entity.CustomerActivity;
+import com.group3.company_management.core.entity.Customer;
+import com.group3.company_management.core.entity.Opportunity;
+import com.group3.company_management.core.repository.OpportunityRepository;
+import com.group3.company_management.core.service.CustomerActivityService;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +27,18 @@ import java.util.List;
 @Controller
 @RequestMapping("/customers")
 @Slf4j
-@PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+@PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')")
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final CustomerActivityService activityService;
+    private final OpportunityRepository opportunityRepository;
 
     @Autowired
-    public CustomerController(CustomerService customerService) {
+    public CustomerController(CustomerService customerService, CustomerActivityService activityService, OpportunityRepository opportunityRepository) {
         this.customerService = customerService;
+        this.activityService = activityService;
+        this.opportunityRepository = opportunityRepository;
     }
 
     /**
@@ -66,6 +75,24 @@ public class CustomerController {
         model.addAttribute("customerForm", id == null ? new CustomerRequest() : toRequest(customerService.getCustomerById(id)));
         model.addAttribute("isEdit", id != null);
         return "customers/add-form";
+    }
+
+    @GetMapping("/{id}")
+    public String detailCustomer(@PathVariable Long id, Model model) {
+        log.info("Showing detail for customer ID: {}", id);
+
+        CustomerResponse customer = customerService.getCustomerById(id);
+        List<CustomerActivity> activities = activityService.getActivitiesByCustomerId(id);
+        Opportunity latestOpportunity = opportunityRepository.findByCustomerIdOrderByUpdatedAtDesc(id)
+                .stream()
+                .findFirst()
+                .orElse(null);
+        model.addAttribute("customer", customer);
+        model.addAttribute("activities", activities);
+        model.addAttribute("activityCount", activities.size());
+        model.addAttribute("latestOpportunity", latestOpportunity);
+        model.addAttribute("canAddInteraction", latestOpportunity == null || !isClosedStage(latestOpportunity.getStage()));
+        return "customers/detail";
     }
 
     /**
@@ -160,4 +187,13 @@ public class CustomerController {
         request.setCustomerStatus(response.getCustomerStatus());
         return request;
     }
+
+    private boolean isClosedStage(String stage) {
+        if (stage == null) {
+            return false;
+        }
+        String normalized = stage.trim().toUpperCase();
+        return "WON".equals(normalized) || "LOST".equals(normalized);
+    }
+
 }

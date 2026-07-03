@@ -3,6 +3,7 @@ package com.group3.company_management.core.controller;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,59 +26,51 @@ import lombok.RequiredArgsConstructor;
  * - Session health check
  */
 @RestController
+@EnableMethodSecurity
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthController {
-    
+
     private final AuthenticationService authenticationService;
-    
+
     /**
      * POST /api/v1/auth/login
      * User login endpoint
      * 
-     * @param request username and password
+     * @param request     username and password
      * @param httpRequest HTTP request context (for IP, user-agent)
      * @return JWT tokens on success
      */
+
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest) {
-        
+
         String ipAddress = getClientIpAddress(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
-        
+
         LoginResponse response = authenticationService.login(request, ipAddress, userAgent);
         return ResponseEntity.ok(response);
     }
+
     
-    /**
-     * POST /api/v1/auth/logout
-     * Logout endpoint (client removes token from storage)
-     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok().body(
-            Map.of("message", "Logged out successfully")
-        );
+                Map.of("message", "Đăng xuất thành công"));
     }
-    
-    /**
-     * GET /api/v1/auth/health
-     * Health check endpoint
-     */
+
     @GetMapping("/health")
     public ResponseEntity<?> health() {
         return ResponseEntity.ok().body(
-            Map.of("status", "Auth service is healthy")
-        );
+                Map.of("status", "Dịch vụ xác thực đang hoạt động"));
     }
-    
-    /**
-     * Extract client IP address from request
-     * Handles X-Forwarded-For header for proxies
-     */
+
+
+
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {

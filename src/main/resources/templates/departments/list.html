@@ -1,48 +1,179 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <title>Departments List</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng ban - Company Management System</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+    <link rel="stylesheet" th:href="@{/css/department.css}">
 </head>
 <body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
 
-<h1>Departments List</h1>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
 
-<a th:href="@{/departments/add}">Add Department</a>
+<main class="admin-workspace with-sidebar user-workspace">
+    <div class="management-page user-management-page">
 
-<table border="1">
+        <div class="management-taskbar user-taskbar">
+            <div>
+                <div class="management-eyebrow">QUẢN TRỊ PHÒNG BAN</div>
+                <h1>Danh sách phòng ban</h1>
+                <p class="management-subtitle">
+                    Quản lý phòng ban, người phụ trách và trạng thái hoạt động trong hệ thống CRM.
+                </p>
+            </div>
 
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-
-    <tbody>
-
-    <tr th:each="department : ${departments}">
-        <td th:text="${department.id}"></td>
-        <td th:text="${department.code}"></td>
-        <td th:text="${department.name}"></td>
-
-        <td>
-            <a th:href="@{/departments/edit/{id}(id=${department.id})}">
-                Edit
+            <a class="management-primary-action"
+               th:href="@{/departments/edit}"
+               sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')">
+                <i class="fa-solid fa-plus"></i>
+                Thêm phòng ban
             </a>
+        </div>
 
-            |
+        <form class="department-searchbar"
+              th:action="@{/departments/search}"
+              method="get">
+            <label>
+                <i class="fas fa-magnifying-glass"></i>
+                <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm phòng ban...">
+            </label>
+            <select name="status">
+                <option value="all" th:selected="${status == 'all'}">Tất cả</option>
+                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Hoạt động</option>
+                <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Ngừng hoạt động</option>
+            </select>
+            <button type="submit"><i class="fas fa-filter"></i></button>
+        </form>
 
-            <a th:href="@{/departments/delete/{id}(id=${department.id})}">
-                Delete
+        <section class="department-stat-grid">
+            <article class="department-stat-card">
+                <i class="fas fa-building"></i>
+                <span>Tổng số phòng ban</span>
+                <strong th:text="${totalDepartments}">12</strong>
+                <small>+2</small>
+            </article>
+            <article class="department-stat-card info">
+                <i class="fas fa-users"></i>
+                <span>Tổng nhân sự</span>
+                <strong th:text="${totalUsers}">348</strong>
+                <small>+14%</small>
+            </article>
+            <article class="department-stat-card warning">
+                <i class="fas fa-user-clock"></i>
+                <span>Đang hoạt động</span>
+                <strong th:text="${activeDepartments}">8</strong>
+                <small>Hoạt động</small>
+            </article>
+            <article class="department-stat-card danger">
+                <i class="fas fa-star"></i>
+                <span>Cần rà soát</span>
+                <strong th:text="${inactiveDepartments}">0</strong>
+                <small>Ngừng hoạt động</small>
+            </article>
+        </section>
+
+        <section class="department-card-grid">
+            <article class="department-card" th:each="department : ${departmentPage.content}">
+                <div class="department-card-top">
+                    <span class="department-badge" th:text="${department.code}">SALES</span>
+                    <div class="department-menu">
+                        <a th:href="@{/departments/edit(id=${department.id})}" sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')" title="Sửa">
+                            <i class="fas fa-ellipsis-vertical"></i>
+                        </a>
+                    </div>
+                </div>
+                <h2 th:text="${department.name}">Kinh doanh & tăng trưởng</h2>
+                <p th:text="${department.description != null and !#strings.isEmpty(department.description) ? department.description : 'Chưa có mô tả phòng ban.'}">
+                    Phòng ban phụ trách vận hành.
+                </p>
+                <div class="department-manager">
+                    <span class="customer-avatar" th:text="${department.name != null ? #strings.substring(department.name, 0, 1) : 'D'}">D</span>
+                    <div>
+                        <small>Trưởng phòng</small>
+                        <strong th:text="${department.managerId != null and managerMap.get(department.managerId) != null ? managerMap.get(department.managerId) : 'Chưa phân công'}">Nguyễn Văn Minh</strong>
+                    </div>
+                </div>
+                <div class="department-capacity">
+    <span>
+        <i class="fas fa-users"></i>
+        <span th:text="${memberCountMap.get(department.id) != null ? memberCountMap.get(department.id) : 0}">0</span>
+        /
+        <span th:text="${department.maxMembers != null ? department.maxMembers : '∞'}">∞</span>
+    </span>
+                </div>
+                <div class="department-card-footer">
+                    <span th:classappend="${department.status == 'ACTIVE'} ? ' active' : ' inactive'"
+                          class="department-status"
+                          th:text="${department.status == 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động'}">Hoạt động</span>
+                    <a th:href="@{/departments/edit(id=${department.id})}">Chi tiết</a>
+
+                </div>
+            </article>
+
+            <a class="department-add-card"
+               th:href="@{/departments/edit}"
+               sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')">
+                <span><i class="fas fa-plus"></i></span>
+                <strong>Thêm phòng ban mới</strong>
+                <small>Tạo không gian làm việc mới cho đội ngũ.</small>
             </a>
-        </td>
-    </tr>
+        </section>
 
-    </tbody>
+        <div class="management-table-shell user-table-shell department-pagination-shell">
+            <div class="management-pagination"
+                 th:if="${departmentPage != null and departmentPage.totalPages > 0}">
+                <span th:text="${'Đang hiển thị ' + #lists.size(departmentPage.content) + ' / ' + departmentPage.totalElements + ' phòng ban'}">
+                    Đang hiển thị phòng ban
+                </span>
 
-</table>
+                <div class="pagination-buttons">
+                    <a th:if="${departmentPage.first}" class="disabled" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
 
+                    <a th:if="${!departmentPage.first}"
+                       th:href="@{/departments/search(page=${departmentPage.number - 1}, keyword=${keyword}, status=${status})}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    <th:block th:with="start=${departmentPage.number - 2 < 0 ? 0 : departmentPage.number - 2},
+                                       end=${departmentPage.number + 2 > departmentPage.totalPages - 1 ? departmentPage.totalPages - 1 : departmentPage.number + 2}">
+                        <a th:each="pageIndex : ${#numbers.sequence(start, end)}"
+                           th:text="${pageIndex + 1}"
+                           th:classappend="${pageIndex == departmentPage.number} ? 'active'"
+                           th:href="@{/departments/search(page=${pageIndex}, keyword=${keyword}, status=${status})}">
+                            1
+                        </a>
+                    </th:block>
+
+                    <a th:if="${departmentPage.last}" class="disabled" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+
+                    <a th:if="${!departmentPage.last}"
+                       th:href="@{/departments/search(page=${departmentPage.number + 1}, keyword=${keyword}, status=${status})}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,0 +1,108 @@
+package com.group3.company_management.core.service.impl;
+
+import com.group3.company_management.core.entity.CustomerActivity;
+import com.group3.company_management.core.repository.CustomerActivityRepository;
+import com.group3.company_management.core.service.CustomerActivityService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class CustomerActivityServiceImpl
+        implements CustomerActivityService {
+
+    private final CustomerActivityRepository repository;
+    
+
+    @Override
+    public Page<CustomerActivity> getActivities(
+            String activityType,
+            int page,
+            int size) {
+
+        Pageable pageable =
+                activityPageable(page, size);
+
+        if (activityType == null || activityType.isBlank()) {
+            return repository.findAll(pageable);
+        }
+
+        return repository.findByActivityTypeIgnoreCase(
+                activityType,
+                pageable);
+    }
+
+    @Override
+    public Page<CustomerActivity> getActivities(
+            Long customerId,
+            String activityType,
+            int page,
+            int size) {
+
+        Pageable pageable = activityPageable(page, size);
+
+        if (customerId == null) {
+            return getActivities(activityType, page, size);
+        }
+
+        if (activityType == null || activityType.isBlank()) {
+            return repository.findByCustomerId(customerId, pageable);
+        }
+
+        return repository.findByCustomerIdAndActivityTypeIgnoreCase(
+                customerId,
+                activityType,
+                pageable);
+    }
+
+    @Override
+    public CustomerActivity getActivityById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Không tìm thấy tương tác."));
+    }
+
+    @Override
+    public void updateActivityNote(Long id,
+                                   String activityNote) {
+
+        CustomerActivity activity =
+                repository.findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Không tìm thấy tương tác."));
+
+        activity.setActivityNote(activityNote);
+
+        repository.save(activity);
+    }
+
+    @Override
+    public List<CustomerActivity> getActivitiesByCustomerId(
+            Long customerId) {
+
+        return repository
+                .findByCustomerIdOrderByCreatedAtDesc(customerId);
+    }
+
+    @Override
+    public CustomerActivity save(CustomerActivity activity) {
+        return repository.save(activity);
+    }
+
+    @Override
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    private Pageable activityPageable(int page, int size) {
+        return PageRequest.of(
+                Math.max(page, 0),
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+    }
+}

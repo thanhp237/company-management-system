@@ -1,0 +1,193 @@
+package com.group3.company_management.core.controller;
+
+// src/main/java/com/group3/company_management/customer/controller/CustomerPortalController.java
+
+
+
+import com.group3.company_management.customer.dto.CustomerPortalResponse;
+import com.group3.company_management.core.dto.ContractResponse;
+import com.group3.company_management.core.dto.CustomerRequest;
+import com.group3.company_management.core.entity.Customer;
+import com.group3.company_management.core.service.ContractService;
+import com.group3.company_management.core.service.CustomerService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Customer portal controller
+ * Dashboard and profile management for logged-in customers
+ * Spring Security 6+ authentication required
+ */
+@Controller
+@RequestMapping("/customer/portal")
+@RequiredArgsConstructor
+@Slf4j
+public class CustomerPortalController {
+    
+    private final CustomerService customerService;
+    private final ContractService contractService;
+    
+    /**
+     * GET /customer/portal
+     * Customer home/dashboard page
+     * Shows contracts, quotes, payment status
+     */
+    @GetMapping
+    public String showCustomerPortal(Model model, Authentication authentication) {
+        Customer customer = getAuthenticatedCustomer(authentication);
+        
+        // Get portal info with metrics
+        CustomerPortalResponse portalInfo = customerService.getCustomerPortalInfo(customer.getId());
+        
+        model.addAttribute("title", "Tài khoản của tôi");
+        model.addAttribute("customer", customer);
+        model.addAttribute("portalInfo", portalInfo);
+        model.addAttribute("contracts", contractService.getCustomerContracts(customer.getId()));
+        
+        log.info("✅ Customer portal accessed: {}", customer.getEmail());
+        return "customer/portal";
+    }
+    
+    /**
+     * GET /customer/portal/profile
+     * Customer profile edit page
+     */
+    @GetMapping("/profile")
+    public String showCustomerProfile(Model model, Authentication authentication) {
+        Customer customer = getAuthenticatedCustomer(authentication);
+        
+        model.addAttribute("title", "Hồ sơ của tôi");
+        model.addAttribute("customer", customer);
+        
+        log.info("✅ Customer profile page accessed: {}", customer.getEmail());
+        return "customer/profile";
+    }
+    
+    /**
+     * POST /customer/portal/profile/update
+     * Update customer profile (limited fields)
+     */
+    @PostMapping("/profile/update")
+    public String updateCustomerProfile(
+            @ModelAttribute CustomerRequest request,
+            Model model,
+            Authentication authentication) {
+        
+        Customer customer = getAuthenticatedCustomer(authentication);
+        log.info("Updating customer profile: {}", customer.getEmail());
+        
+        try {
+            request.setId(customer.getId());
+            customerService.updateCustomerProfile(customer.getId(), request);
+            model.addAttribute("successMessage", "Cập nhật hồ sơ thành công.");
+            return "redirect:/customer/portal/profile?success=true";
+        } catch (Exception e) {
+            log.error("Error updating customer profile: {}", e.getMessage());
+            model.addAttribute("errorMessage", e.getMessage());
+            return "customer/profile";
+        }
+    }
+    
+    /**
+     * GET /customer/portal/contracts
+     * View customer's contracts
+     */
+    @GetMapping("/contracts")
+    public String showCustomerContracts(Model model, Authentication authentication) {
+        Customer customer = getAuthenticatedCustomer(authentication);
+        
+        model.addAttribute("title", "Hợp đồng của tôi");
+        model.addAttribute("customer", customer);
+        model.addAttribute("contracts", contractService.getCustomerContracts(customer.getId()));
+        
+        log.info("✅ Customer contracts page accessed: {}", customer.getEmail());
+        return "customer/contracts";
+    }
+    
+    /**
+     * GET /customer/portal/contracts/{contractId}
+     * View specific contract details
+     */
+    @GetMapping("/contracts/{contractId}")
+    public String showContractDetail(
+            @PathVariable Long contractId,
+            Model model,
+            Authentication authentication) {
+        
+        Customer customer = getAuthenticatedCustomer(authentication);
+        ContractResponse contract = contractService.getCustomerContractDetail(contractId, customer.getId());
+        
+        model.addAttribute("title", "Chi tiết hợp đồng");
+        model.addAttribute("customer", customer);
+        model.addAttribute("contract", contract);
+        
+        log.info("✅ Customer contract detail accessed: {} - Contract ID: {}", customer.getEmail(), contractId);
+        return "customer/contract-detail";
+    }
+
+    @PostMapping("/contracts/{contractId}/sign")
+    public String signContract(
+            @PathVariable Long contractId,
+            Authentication authentication,
+            Model model) {
+
+        Customer customer = getAuthenticatedCustomer(authentication);
+        log.info("Customer signing contract - Customer: {}, Contract ID: {}", customer.getEmail(), contractId);
+
+        try {
+            contractService.customerSignContractByCustomer(contractId, customer.getId());
+            return "redirect:/customer/portal/contracts/" + contractId + "?signed=true";
+        } catch (RuntimeException exception) {
+            ContractResponse contract = contractService.getCustomerContractDetail(contractId, customer.getId());
+            model.addAttribute("title", "Chi tiết hợp đồng");
+            model.addAttribute("customer", customer);
+            model.addAttribute("contract", contract);
+            model.addAttribute("errorMessage", exception.getMessage());
+            return "customer/contract-detail";
+        }
+    }
+    
+    @RequestMapping("/quotes/**")
+    public String redirectLegacyQuotePages() {
+        return "redirect:/customer/portal/contracts";
+    }
+    
+    /**
+     * GET /customer/portal/payments
+     * View payment history
+     */
+    @GetMapping("/payments")
+    public String showCustomerPayments(Model model, Authentication authentication) {
+        Customer customer = getAuthenticatedCustomer(authentication);
+        
+        model.addAttribute("title", "Lịch sử thanh toán");
+        model.addAttribute("customer", customer);
+        // TODO: Fetch payments from PaymentService
+        
+        log.info("✅ Customer payments page accessed: {}", customer.getEmail());
+        return "customer/payments";
+    }
+    
+    // ============= Helper Methods =============
+    
+    /**
+     * Get authenticated customer from security context
+     */
+    private Customer getAuthenticatedCustomer(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof Customer)) {
+            authentication = SecurityContextHolder.getContext().getAuthentication();
+        }
+        
+        if (authentication != null && authentication.getPrincipal() instanceof Customer) {
+            return (Customer) authentication.getPrincipal();
+        }
+        
+        log.error("❌ Unauthenticated or invalid customer session");
+        throw new RuntimeException("Khách hàng chưa đăng nhập.");
+    }
+}

@@ -1,11 +1,15 @@
 package com.group3.company_management.core.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.data.jpa.repository.EntityGraph;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,17 +19,23 @@ import com.group3.company_management.core.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    
+
     // Find user by username for login
     Optional<User> findByUsername(String username);
-    
+
     // Find user by email
     Optional<User> findByEmail(String email);
-    
+
     // Find user by username, excluding soft-deleted users
     @Query("SELECT u FROM User u WHERE u.username = :username AND u.isDeleted = false")
     Optional<User> findByUsernameAndNotDeleted(@Param("username") String username);
-
+    @Query("""
+    select u
+    from User u
+    where u.role.roleCode in :roles
+    and u.isDeleted = false
+""")
+    List<User> findUsersByRoleNames(@Param("roles") List<String> roles);
     boolean existsByUsernameAndIsDeletedFalse(String username);
 
     boolean existsByEmailAndIsDeletedFalse(String email);
@@ -42,7 +52,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")
     List<User> findActiveUsersByRoleCode(@Param("roleCode") String roleCode);
 
+
+    List<User> findByRole_RoleName(String roleName);
+
+
+
     @EntityGraph(attributePaths = {"role", "employee"})
+
     @Query("SELECT u FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")
     Page<User> findActiveUsersByRoleCode(@Param("roleCode") String roleCode, Pageable pageable);
 
@@ -89,6 +105,28 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("roleCode") String roleCode,
             Pageable pageable
     );
+
     @Query(value = "SELECT employee_code FROM employees WHERE account_id = :accountId", nativeQuery = true)
     String findEmployeeCodeByAccountId(@Param("accountId") Long accountId);
+    int countByDepartmentIdAndIsDeletedFalse(Long departmentId);
+
+    @Query("""
+select u.departmentId, count(u)
+from User u
+where u.isDeleted = false
+and u.departmentId in :departmentIds
+group by u.departmentId
+""")
+    List<Object[]> countActiveUsersByDepartmentIds(@Param("departmentIds") Collection<Long> departmentIds);
+
+    @Query("""
+select u
+from User u
+where u.isDeleted = false
+and lower(u.status) = 'active'
+and (:departmentId is null or u.departmentId is null or u.departmentId = :departmentId)
+and u.role.roleCode <> 'ADMIN'
+order by u.fullName asc, u.username asc
+""")
+    List<User> findAssignableUsersForDepartment(@Param("departmentId") Long departmentId);
 }

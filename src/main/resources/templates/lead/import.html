@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập khách hàng tiềm năng - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+</head>
+<body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="admin-workspace with-sidebar customer-workspace">
+    <div class="management-page customer-page">
+        <div class="management-taskbar customer-taskbar">
+            <div>
+                <p class="management-eyebrow">CRM / Nhập khách hàng tiềm năng</p>
+                <h1>Nhập khách hàng tiềm năng</h1>
+                <p class="management-subtitle" sec:authorize="hasRole('MARKETING')">Nhập danh sách khách hàng tiềm năng từ Excel và kiểm tra dữ liệu trước khi chuyển cho quản lý kinh doanh phân bổ.</p>
+                <p class="management-subtitle" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Nhập danh sách khách hàng tiềm năng từ Excel, kiểm tra dữ liệu và phân bổ cho đội kinh doanh.</p>
+            </div>
+        </div>
+
+        <div class="customer-tabs">
+            <a class="active" th:href="@{/customer}">
+                <i class="fas fa-file-import"></i>
+                <span sec:authorize="hasRole('MARKETING')">Nhập khách hàng tiềm năng</span>
+                <span sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Nhập dữ liệu & phân bổ</span>
+            </a>
+            <a sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')" th:href="@{/customers}">
+                <i class="fas fa-table-list"></i>
+                <span>Quản lý khách hàng</span>
+            </a>
+        </div>
+
+        <div th:if="${error}" class="management-alert danger">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${error}">Có lỗi khi import.</span>
+        </div>
+        <div th:if="${nameSale}" class="management-alert success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${'Đã phân bổ khách hàng cho ' + nameSale}">Đã phân bổ.</span>
+        </div>
+
+        <section class="customer-stat-grid">
+            <article class="customer-stat-card success">
+                <span>Tổng khách hàng tiềm năng</span>
+                <strong th:text="${customer != null ? customer.size() : 0}">0</strong>
+                <small>Trong danh sách hiện tại</small>
+            </article>
+            <article class="customer-stat-card warning">
+                <span>Chưa phân bổ</span>
+                <strong th:text="${customer != null ? customer.?[assignedSalesId == null].size() : 0}">0</strong>
+                <small>Cần chọn nhân viên kinh doanh phụ trách</small>
+            </article>
+            <article class="customer-stat-card info">
+                <span>Đã phân bổ</span>
+                <strong th:text="${customer != null ? customer.?[assignedSalesId != null].size() : 0}">0</strong>
+                <small>Đã có nhân viên kinh doanh phụ trách</small>
+            </article>
+            <article class="customer-stat-card neutral" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">
+                <span>Nhân viên kinh doanh khả dụng</span>
+                <strong th:text="${sales != null ? sales.size() : 0}">0</strong>
+                <small>Có thể nhận lead</small>
+            </article>
+        </section>
+
+        <section class="customer-panel">
+            <div class="customer-panel-header">
+                <div>
+                    <h2>Nạp dữ liệu từ Excel</h2>
+                    <p>Dùng file mẫu để dữ liệu import khớp với cấu trúc CRM.</p>
+                </div>
+                <a class="customer-secondary-button" th:href="@{/excel/customer_import_template.xlsx}">
+                    <i class="fas fa-download"></i>
+                    <span>Tải file mẫu</span>
+                </a>
+            </div>
+            <div class="customer-panel-body">
+                <form class="customer-upload-form" th:action="@{/customer/import}" method="post" enctype="multipart/form-data">
+                    <label>
+                        <span>File Excel</span>
+                        <input type="file" name="file" accept=".xlsx,.xls" required>
+                    </label>
+                    <button class="customer-primary-button" type="submit">
+                        <i class="fas fa-upload"></i>
+                        <span>Nhập dữ liệu</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <form th:action="@{/customer/check}" method="post">
+            <section class="customer-panel">
+                <div class="customer-panel-header">
+                    <div>
+                        <h2>Danh sách khách hàng tiềm năng cần xử lý</h2>
+                        <p sec:authorize="hasRole('MARKETING')">Marketing kiểm tra danh sách khách hàng tiềm năng đã nhập. Phân bổ do quản lý kinh doanh thực hiện.</p>
+                        <p sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Chọn nhiều khách hàng rồi phân bổ cho một nhân viên kinh doanh phụ trách.</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="customer-table" th:if="${customer}">
+                        <thead>
+                        <tr>
+                            <th class="customer-select-cell" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')"></th>
+                            <th>Khách hàng</th>
+                            <th>Liên hệ</th>
+                            <th>Công ty</th>
+                            <th>Nguồn</th>
+                            <th>Loại</th>
+                            <th>Nhân viên kinh doanh</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="lead : ${customer}">
+                            <td class="customer-select-cell" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">
+                                <input class="customer-checkbox" type="checkbox" name="checkbox" th:value="${lead.id}">
+                            </td>
+                            <td>
+                                <div class="customer-identity">
+                                    <span class="customer-avatar"
+                                          th:text="${#strings.substring((lead.fullName != null ? lead.fullName : (lead.name != null ? lead.name : 'K')), 0, 1)}">K</span>
+                                    <div>
+                                        <strong th:text="${lead.fullName != null ? lead.fullName : lead.name}">Khách hàng</strong>
+                                        <span th:text="${lead.gender == 'MALE' ? 'Nam' : (lead.gender == 'FEMALE' ? 'Nữ' : (lead.gender == 'OTHER' ? 'Khác' : 'Chưa có giới tính'))}">Giới tính</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong th:text="${lead.phone != null ? lead.phone : 'Chưa có'}">Điện thoại</strong>
+                                <div class="text-muted small" th:text="${lead.email != null ? lead.email : 'Chưa có'}">Email</div>
+                            </td>
+                            <td>
+                                <strong th:text="${lead.companyName != null ? lead.companyName : 'Chưa có'}">Công ty</strong>
+                                <div class="text-muted small" th:text="${lead.taxCode != null ? lead.taxCode : 'Chưa có MST'}">Mã số thuế</div>
+                            </td>
+                            <td th:text="${lead.customerSource != null ? lead.customerSource : 'Chưa có'}">Nguồn</td>
+                            <td>
+                                <span class="customer-pill" th:text="${lead.customerType != null ? lead.customerType : 'Chưa có'}">Loại</span>
+                            </td>
+                            <td>
+                                <span class="customer-pill unassigned" th:if="${lead.assignedSalesId == null}">Chưa phân</span>
+                                <span class="customer-pill assigned"
+                                      th:each="sale : ${sales}"
+                                      th:if="${sale.id == lead.assignedSalesId}"
+                                      th:text="${sale.fullName}">Nhân viên kinh doanh</span>
+                            </td>
+                            <td>
+                                <div class="customer-row-actions">
+                                    <a th:href="@{/customer/detail(id=${lead.id})}" title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(customer)}">
+                            <td colspan="8">
+                                <div class="customer-empty">
+                                    <i class="fas fa-inbox"></i>
+                                    <span>Chưa có khách hàng tiềm năng nào trong danh sách.</span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="customer-assign-form" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">
+                    <label>
+                        <span>Nhân viên kinh doanh nhận khách hàng tiềm năng</span>
+                        <select name="saleId" required>
+                            <option value="">Chọn nhân viên kinh doanh phụ trách</option>
+                            <option th:each="sale : ${sales}"
+                                    th:value="${sale.id}"
+                                    th:text="${sale.fullName}">Nhân viên kinh doanh</option>
+                        </select>
+                    </label>
+                    <button class="customer-primary-button" type="submit">
+                        <i class="fas fa-user-check"></i>
+                        <span>Phân bổ</span>
+                    </button>
+                </div>
+            </section>
+        </form>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

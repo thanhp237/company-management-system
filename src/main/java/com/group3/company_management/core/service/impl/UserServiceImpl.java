@@ -3,8 +3,10 @@ package com.group3.company_management.core.service.impl;
 import com.group3.company_management.core.dto.ProfileUpdateRequest;
 import com.group3.company_management.core.dto.UserRequest;
 import com.group3.company_management.core.dto.UserResponse;
+import com.group3.company_management.core.entity.Department;
 import com.group3.company_management.core.entity.Role;
 import com.group3.company_management.core.entity.User;
+import com.group3.company_management.core.repository.DepartmentRepository;
 import com.group3.company_management.core.repository.RoleRepository;
 import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.UserService;
@@ -18,8 +20,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,16 +34,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final DepartmentRepository departmentRepository;
     private final JdbcTemplate jdbcTemplate;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(UserResponse::fromEntity)
-                .toList();
+        return toResponseList(userRepository.findAll());
     }
 
     @Override
@@ -51,24 +55,25 @@ public class UserServiceImpl implements UserService {
         }else {
             users = userRepository.findAllActiveWithEmployee(pageable);
         }
-        return users.map(UserResponse::fromEntity);
+        return toResponsePage(users);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
-        return UserResponse.fromEntity(findActiveUserById(id));
+        return toResponse(findActiveUserById(id), Map.of());
     }
 
     @Override
     public void createUser(UserRequest request) {
-        String username = normalizeRequired(request.getUsername(), "Username is required");
-        String email = normalizeRequired(request.getEmail(), "Email is required");
-        String password = normalizeRequired(request.getPassword(), "Password is required");
-        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Role is required"));
+        String username = normalizeRequired(request.getUsername(), "Vui lòng nhập tên đăng nhập");
+        String email = normalizeRequired(request.getEmail(), "Vui lòng nhập email");
+        String password = normalizeRequired(request.getPassword(), "Vui lòng nhập mật khẩu");
+        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Vui lòng chọn vai trò"));
 
         validateUniqueUsername(username, null);
         validateUniqueEmail(email, null);
+        validateDepartment(request.getDepartmentId());
 
         User user = new User();
         user.setUsername(username);
@@ -77,7 +82,6 @@ public class UserServiceImpl implements UserService {
         user.setFullName(normalizeOptional(request.getFullName()));
         user.setPhone(normalizeOptional(request.getPhone()));
         user.setDepartmentId(request.getDepartmentId());
-        user.setGroupId(request.getGroupId());
         user.setRole(role);
         user.setStatus("ACTIVE");
         userRepository.saveAndFlush(user);
@@ -86,21 +90,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(UserRequest request) {
-        Long id = normalizeRequired(request.getId(), "User ID is required");
+        Long id = normalizeRequired(request.getId(), "Thiếu mã tài khoản");
         User user = findActiveUserById(id);
-        String username = normalizeRequired(request.getUsername(), "Username is required");
-        String email = normalizeRequired(request.getEmail(), "Email is required");
-        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Role is required"));
+        String username = normalizeRequired(request.getUsername(), "Vui lòng nhập tên đăng nhập");
+        String email = normalizeRequired(request.getEmail(), "Vui lòng nhập email");
+        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Vui lòng chọn vai trò"));
 
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
+        validateDepartment(request.getDepartmentId());
 
         user.setUsername(username);
         user.setEmail(email);
         user.setFullName(normalizeOptional(request.getFullName()));
         user.setPhone(normalizeOptional(request.getPhone()));
         user.setDepartmentId(request.getDepartmentId());
-        user.setGroupId(request.getGroupId());
         user.setRole(role);
         userRepository.saveAndFlush(user);
         syncEmployeeProfile(user, role);
@@ -109,18 +113,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(Long id, User userDetails) {
         User user = findActiveUserById(id);
-        String username = normalizeRequired(userDetails.getUsername(), "Username is required");
-        String email = normalizeRequired(userDetails.getEmail(), "Email is required");
+        String username = normalizeRequired(userDetails.getUsername(), "Vui lòng nhập tên đăng nhập");
+        String email = normalizeRequired(userDetails.getEmail(), "Vui lòng nhập email");
 
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
+        validateDepartment(userDetails.getDepartmentId());
 
         user.setEmail(email);
         user.setUsername(username);
         user.setFullName(normalizeOptional(userDetails.getFullName()));
         user.setPhone(normalizeOptional(userDetails.getPhone()));
         user.setDepartmentId(userDetails.getDepartmentId());
-        user.setGroupId(userDetails.getGroupId());
         user.setRole(userDetails.getRole());
         user.setStatus(normalizeOptional(userDetails.getStatus()));
         User savedUser = userRepository.saveAndFlush(user);
@@ -141,10 +145,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUserStatus(UserRequest request) {
         if (request.getId() == null) {
-            throw new IllegalArgumentException("User ID is required");
+            throw new IllegalArgumentException("Thiếu mã tài khoản");
         }
 
-        String status = normalizeRequired(request.getStatus(), "Status is required").toUpperCase(Locale.ROOT);
+        String status = normalizeRequired(request.getStatus(), "Vui lòng chọn trạng thái").toUpperCase(Locale.ROOT);
         User user = findActiveUserById(request.getId());
         user.setStatus(status);
         userRepository.save(user);
@@ -153,21 +157,28 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+        return roleRepository.findByStatusIgnoreCaseOrderByRoleNameAsc("ACTIVE");
     }
-
+    @Override
+    public List<User> getUsersByRoles(List<String> roles) {
+        return userRepository.findUsersByRoleNames(roles);
+    }
     private User findActiveUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản có mã: " + id));
     }
 
     private Role findRoleById(Long id) {
-        return roleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found with ID: " + id));
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò có mã: " + id));
+        if (!role.isActive()) {
+            throw new IllegalArgumentException("Vai trò đang ngừng hoạt động");
+        }
+        return role;
     }
 
     private void syncEmployeeProfile(User user, Role role) {
-        String roleCode = normalizeRequired(role.getRoleCode(), "Role code is required").toUpperCase(Locale.ROOT);
+        String roleCode = normalizeRequired(role.getRoleCode(), "Vui lòng nhập mã vai trò").toUpperCase(Locale.ROOT);
         String employeeCode = buildEmployeeCode(roleCode, user.getId());
 
         validateEmployeeRole(roleCode);
@@ -190,7 +201,7 @@ public class UserServiceImpl implements UserService {
             case "ACCOUNTANT" -> "ACC";
             case "MARKETING" -> "MKT";
             case "SALES" -> "SAL";
-            default -> throw new IllegalArgumentException("Unsupported role code: " + roleCode);
+            default -> throw new IllegalArgumentException("Mã vai trò không được hỗ trợ: " + roleCode);
         };
 
         return "%s%06d".formatted(prefix, accountId);
@@ -200,7 +211,7 @@ public class UserServiceImpl implements UserService {
         switch (roleCode) {
             case "ADMIN", "ADMIN_OFFICER", "ACCOUNTANT", "MARKETING", "SALES" -> {
             }
-            default -> throw new IllegalArgumentException("Unsupported role code: " + roleCode);
+            default -> throw new IllegalArgumentException("Mã vai trò không được hỗ trợ: " + roleCode);
         }
     }
 
@@ -213,7 +224,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (exists) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại");
         }
     }
 
@@ -226,7 +237,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (exists) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("Email đã tồn tại");
         }
     }
 
@@ -260,30 +271,27 @@ public class UserServiceImpl implements UserService {
 
 @Override
 @Transactional(readOnly = true)
-public List<UserResponse> getActiveUsersByRole(String roleCode) {
+    public List<UserResponse> getActiveUsersByRole(String roleCode) {
     if (roleCode == null || roleCode.trim().isEmpty()) {
         return getAllUsers();
     }
     
-    return userRepository.findActiveUsersByRoleCode(roleCode)
-            .stream()
-            .map(UserResponse::fromEntity) //  hàm có sẵn
-            .toList();
+    return toResponseList(userRepository.findActiveUsersByRoleCode(roleCode));
 }
 
 @Override
 @Transactional(readOnly = true)
 public UserResponse getProfileByUsername(String username) {
     User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-    return UserResponse.fromEntity(user);
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
+    return toResponse(user, Map.of());
 }
 
 @Override
 @Transactional
 public void updateProfile(String username, ProfileUpdateRequest request) {
     User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
     
     // cho update
     user.setFullName(request.getFullName());
@@ -317,22 +325,68 @@ public void updateProfile(String username, ProfileUpdateRequest request) {
                     .searchByStatus(status);
         }
 
-        return users.stream()
-                .map(UserResponse::fromEntity)
-                .toList();
+        return toResponseList(users);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> searchPage(String keyword, String status, String roleCode, int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), size, Sort.by("id").ascending());
-        return userRepository.searchUsers(keyword, status, roleCode, pageable)
-                .map(UserResponse::fromEntity);
+        return toResponsePage(userRepository.searchUsers(keyword, status, roleCode, pageable));
     }
 
     @Override
     @Transactional
     public Long countUsers (){
         return userRepository.count();
+    }
+
+    private Page<UserResponse> toResponsePage(Page<User> users) {
+        Map<Long, String> departmentNames = loadDepartmentNames(users.getContent());
+        return users.map(user -> toResponse(user, departmentNames));
+    }
+
+    private List<UserResponse> toResponseList(List<User> users) {
+        Map<Long, String> departmentNames = loadDepartmentNames(users);
+        return users.stream()
+                .map(user -> toResponse(user, departmentNames))
+                .toList();
+    }
+
+    private UserResponse toResponse(User user, Map<Long, String> departmentNames) {
+        UserResponse response = UserResponse.fromEntity(user);
+        if (response.getDepartmentId() != null) {
+            response.setDepartmentName(departmentNames.get(response.getDepartmentId()));
+        }
+        return response;
+    }
+
+    private Map<Long, String> loadDepartmentNames(Collection<User> users) {
+        List<Long> departmentIds = users.stream()
+                .map(User::getDepartmentId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (departmentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return departmentRepository.findByIdInAndIsDeletedFalse(departmentIds)
+                .stream()
+                .collect(Collectors.toMap(Department::getId, Department::getName));
+    }
+
+    private void validateDepartment(Long departmentId) {
+        if (departmentId == null) {
+            return;
+        }
+
+        Department department = departmentRepository.findByIdAndIsDeletedFalse(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng ban"));
+
+        if (!"ACTIVE".equalsIgnoreCase(department.getStatus())) {
+            throw new IllegalArgumentException("Phòng ban đang ngừng hoạt động");
+        }
     }
 }

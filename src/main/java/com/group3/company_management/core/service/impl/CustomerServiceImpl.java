@@ -1,11 +1,10 @@
-package com.group3.company_management.core.service.impl;
-
 // src/main/java/com/group3/company_management/core/service/impl/CustomerServiceImpl.java
 
-
+package com.group3.company_management.core.service.impl;
 
 import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.dto.CustomerResponse;
+import com.group3.company_management.customer.dto.CustomerPortalResponse;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.repository.CustomerRepository;
 import com.group3.company_management.core.service.CustomerService;
@@ -18,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Customer service implementation - same pattern as UserServiceImpl
+ * Customer service implementation - UPDATED with portal methods
  */
 @Service
 @RequiredArgsConstructor
@@ -26,6 +25,9 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
     
     private final CustomerRepository customerRepository;
+    // TODO: Will need ContractService and QuoteService for portal
+    
+    // ========== MANAGEMENT METHODS (Existing) ==========
     
     @Override
     @Transactional(readOnly = true)
@@ -62,7 +64,7 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponse getCustomerById(Long id) {
         log.info("Fetching customer by ID: {}", id);
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng có mã: " + id));
         return mapToResponse(customer);
     }
     
@@ -71,9 +73,9 @@ public class CustomerServiceImpl implements CustomerService {
     public void createCustomer(CustomerRequest request) {
         log.info("Creating new customer: {}", request.getFullName());
         
-        // Validate phone uniqueness
+         // Validate phone uniqueness
         if (customerRepository.findByPhone(request.getPhone()).isPresent()) {
-            throw new IllegalArgumentException("Phone number already exists");
+            throw new IllegalArgumentException("Số điện thoại đã tồn tại");
         }
         
         Customer customer = Customer.builder()
@@ -96,12 +98,12 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Updating customer with ID: {}", request.getId());
         
         Customer customer = customerRepository.findById(request.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + request.getId()));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng có mã: " + request.getId()));
         
-        // Validate phone uniqueness (if phone changed)
+         // Validate phone uniqueness (if phone changed)
         if (!customer.getPhone().equals(request.getPhone())) {
             if (customerRepository.findByPhone(request.getPhone()).isPresent()) {
-                throw new IllegalArgumentException("Phone number already exists");
+                throw new IllegalArgumentException("Số điện thoại đã tồn tại");
             }
             customer.setPhone(request.getPhone());
         }
@@ -123,7 +125,7 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Updating customer status - ID: {}, Status: {}", request.getId(), request.getCustomerStatus());
         
         Customer customer = customerRepository.findById(request.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found with ID: " + request.getId()));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng có mã: " + request.getId()));
         
         customer.setCustomerStatus(request.getCustomerStatus());
         customerRepository.save(customer);
@@ -137,11 +139,52 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Deleting customer with ID: {}", id);
         
         if (!customerRepository.existsById(id)) {
-            throw new IllegalArgumentException("Customer not found with ID: " + id);
+            throw new IllegalArgumentException("Không tìm thấy khách hàng có mã: " + id);
         }
         
         customerRepository.deleteById(id);
         log.info("Customer deleted successfully (soft delete): {}", id);
+    }
+    
+    // ========== CUSTOMER PORTAL METHODS (NEW) ==========
+    
+    @Override
+    @Transactional(readOnly = true)
+    public CustomerPortalResponse getCustomerPortalInfo(Long customerId) {
+        log.info("Fetching customer portal info for customer ID: {}", customerId);
+        
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng"));
+        
+        return CustomerPortalResponse.builder()
+                .id(customer.getId())
+                .fullName(customer.getFullName())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .address(customer.getAddress())
+                .customerStatus(customer.getCustomerStatus())
+                // TODO: Fetch these from Contract and Quote repositories
+                .contractCount(0L)
+                .pendingQuotesCount(0L)
+                .totalPaidAmount(0L)
+                .build();
+    }
+    
+    @Override
+    @Transactional
+    public void updateCustomerProfile(Long customerId, CustomerRequest request) {
+        log.info("Updating customer profile for customer ID: {}", customerId);
+        
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng"));
+        
+        // Only allow updating certain fields in portal
+        customer.setFullName(request.getFullName());
+        customer.setPhone(request.getPhone());
+        customer.setAddress(request.getAddress());
+        
+        customerRepository.save(customer);
+        log.info("Customer profile updated successfully: {}", customerId);
     }
     
     /**
@@ -161,4 +204,14 @@ public class CustomerServiceImpl implements CustomerService {
                 .updatedAt(customer.getUpdatedAt())
                 .build();
     }
+    @Override
+    public  Customer findCustomerById(Long id){
+        return customerRepository.findCustomerById(id);
+    }
+    @Override
+  public  void saveCustomer(Customer customer){
+        customerRepository.save(customer);
+    }
+
+
 }

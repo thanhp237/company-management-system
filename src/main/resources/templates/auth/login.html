@@ -1,692 +1,577 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Login - Company Management</title>
-
-    <!-- FONT -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet">
-
-    <!-- ICON -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-
+    <title th:text="${title != null ? title : 'Đăng nhập - Hệ thống quản lý'}">Đăng nhập - Hệ thống quản lý</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
+        :root {
+            --green: #008a45;
+            --green-dark: #006b35;
+            --green-soft: #e8f7ef;
+            --ink: #101923;
+            --muted: #667789;
+            --line: #dfe7e2;
+            --panel: #ffffff;
+            --page: #f4f8f6;
+            --danger: #b42318;
+            --danger-bg: #fef3f2;
         }
 
-        body{
-            font-family:'Inter',sans-serif;
-            height:100vh;
-            overflow:hidden;
-            background:#f4f8fb;
+        * {
+            box-sizing: border-box;
         }
 
-        .container{
-            display:flex;
-            width:100%;
-            height:100vh;
+        html,
+        body {
+            min-height: 100%;
         }
 
-        /* =========================================================
-           LEFT SIDE
-        ========================================================= */
+        body {
+            margin: 0;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--ink);
+            background: var(--page);
+        }
 
-        .left-side{
-            width:55%;
-            position:relative;
-            overflow:hidden;
+        .login-page {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: minmax(420px, 0.95fr) minmax(420px, 1.05fr);
+        }
 
+        .brand-panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 42px;
+            overflow: hidden;
+            color: #fff;
             background:
-                    linear-gradient(
-                            135deg,
-                            #00b894 0%,
-                            #00cec9 45%,
-                            #0984e3 100%
-                    );
-
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            padding:70px;
-            color:white;
+                    linear-gradient(rgba(0, 95, 50, 0.82), rgba(0, 95, 50, 0.72)),
+                    url('https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1400&q=80') center/cover;
         }
 
-        .left-overlay{
-            position:absolute;
-            inset:0;
-            background:rgba(0,0,0,0.08);
-            z-index:1;
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            font-weight: 900;
+            letter-spacing: 0;
         }
 
-        /* Floating background circles */
-
-        .circle{
-            position:absolute;
-            border-radius:50%;
-            background:rgba(255,255,255,0.08);
-            backdrop-filter: blur(10px);
+        .brand-icon,
+        .metric-icon,
+        .form-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .circle1{
-            width:280px;
-            height:280px;
-            top:-60px;
-            left:-60px;
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #fff;
+            color: var(--green);
         }
 
-        .circle2{
-            width:220px;
-            height:220px;
-            bottom:-50px;
-            right:40px;
+        .brand-copy {
+            max-width: 560px;
+            padding: 42px 0;
         }
 
-        .circle3{
-            width:140px;
-            height:140px;
-            top:120px;
-            right:100px;
+        .brand-copy h1 {
+            margin: 0 0 18px;
+            font-size: 44px;
+            line-height: 1.12;
+            font-weight: 900;
         }
 
-        .left-content{
-            position:relative;
-            z-index:2;
-            max-width:560px;
+        .brand-copy p {
+            margin: 0;
+            max-width: 500px;
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 16px;
+            line-height: 1.8;
         }
 
-        .logo{
-            font-size:20px;
-            font-weight:700;
-            margin-bottom:45px;
-            letter-spacing:1px;
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            max-width: 520px;
         }
 
-        .hero-title{
-            font-size:58px;
-            font-weight:800;
-            line-height:1.15;
-            margin-bottom:28px;
+        .metric {
+            min-height: 104px;
+            padding: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.12);
         }
 
-        .hero-subtitle{
-            font-size:18px;
-            line-height:1.9;
-            opacity:0.95;
-            margin-bottom:45px;
+        .metric-icon {
+            width: 34px;
+            height: 34px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.18);
         }
 
-        .feature-list{
-            display:flex;
-            flex-direction:column;
-            gap:18px;
+        .metric strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 20px;
+            font-weight: 900;
         }
 
-        .feature-item{
-            display:flex;
-            align-items:center;
-            gap:16px;
-            font-size:16px;
+        .metric span {
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 13px;
+            line-height: 1.45;
         }
 
-        .feature-icon{
-            width:42px;
-            height:42px;
-            border-radius:14px;
-
-            background:rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-
-            display:flex;
-            justify-content:center;
-            align-items:center;
-
-            font-size:16px;
+        .login-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 36px;
         }
 
-        /* =========================================================
-           MOCK DASHBOARD
-        ========================================================= */
-
-        .mock-dashboard{
-            margin-top:45px;
-            width:100%;
-            max-width:520px;
-
-            background:rgba(255,255,255,0.13);
-            border:1px solid rgba(255,255,255,0.18);
-
-            backdrop-filter: blur(18px);
-
-            border-radius:28px;
-            padding:24px;
-
-            box-shadow:
-                    0 20px 60px rgba(0,0,0,0.15);
+        .login-card {
+            width: min(460px, 100%);
+            padding: 32px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel);
+            box-shadow: 0 18px 44px rgba(31, 45, 57, 0.08);
         }
 
-        .mock-header{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:24px;
+        .login-card h2 {
+            margin: 0;
+            color: var(--ink);
+            font-size: 30px;
+            line-height: 1.2;
+            font-weight: 900;
         }
 
-        .mock-title{
-            font-size:18px;
-            font-weight:700;
+        .login-subtitle {
+            min-height: 46px;
+            margin: 10px 0 22px;
+            color: var(--muted);
+            line-height: 1.65;
         }
 
-        .mock-badge{
-            padding:8px 14px;
-            border-radius:999px;
-            background:rgba(255,255,255,0.15);
-            font-size:13px;
+        .login-switch {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 4px;
+            padding: 4px;
+            margin-bottom: 20px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #f7faf8;
         }
 
-        .mock-cards{
-            display:grid;
-            grid-template-columns:1fr 1fr;
-            gap:16px;
+        .switch-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 42px;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: #516374;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
         }
 
-        .mock-card{
-            background:rgba(255,255,255,0.12);
-            border-radius:18px;
-            padding:18px;
+        .switch-btn.active {
+            background: #fff;
+            color: var(--green-dark);
+            box-shadow: 0 1px 8px rgba(31, 45, 57, 0.08);
         }
 
-        .mock-card h4{
-            font-size:14px;
-            margin-bottom:12px;
-            opacity:0.9;
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.45;
         }
 
-        .mock-value{
-            font-size:28px;
-            font-weight:700;
+        .alert-error {
+            border: 1px solid #fecdca;
+            background: var(--danger-bg);
+            color: var(--danger);
         }
 
-        /* =========================================================
-           RIGHT SIDE
-        ========================================================= */
-
-        .right-side{
-            width:45%;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            padding:40px;
-            background:#f8fbff;
+        .alert-success {
+            border: 1px solid #b7ebc6;
+            background: var(--green-soft);
+            color: var(--green-dark);
         }
 
-        .login-wrapper{
-            width:100%;
-            max-width:450px;
+        .login-form {
+            display: none;
         }
 
-        .login-card{
-
-            background:rgba(255,255,255,0.75);
-
-            backdrop-filter: blur(18px);
-
-            border:1px solid rgba(255,255,255,0.7);
-
-            border-radius:30px;
-
-            padding:42px;
-
-            box-shadow:
-                    0 12px 40px rgba(15,23,42,0.08);
+        .login-form.active {
+            display: block;
         }
 
-        .login-title{
-            font-size:38px;
-            font-weight:800;
-            color:#111827;
-            margin-bottom:12px;
+        .form-group {
+            margin-bottom: 16px;
         }
 
-        .login-subtitle{
-            color:#6b7280;
-            line-height:1.8;
-            margin-bottom:34px;
-            font-size:15px;
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #405366;
+            font-size: 13px;
+            font-weight: 900;
         }
 
-        /* =========================================================
-           ALERTS
-        ========================================================= */
-
-        .alert{
-            padding:14px 16px;
-            border-radius:14px;
-            margin-bottom:20px;
-            font-size:14px;
-            font-weight:500;
+        .input-wrap {
+            position: relative;
         }
 
-        .alert-error{
-            background:#fee2e2;
-            color:#dc2626;
+        .form-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            color: #8a99a8;
+            transform: translateY(-50%);
         }
 
-        .alert-success{
-            background:#dcfce7;
-            color:#166534;
+        input {
+            width: 100%;
+            height: 48px;
+            padding: 0 14px 0 44px;
+            border: 1.5px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-size: 14px;
         }
 
-        /* =========================================================
-           FORM
-        ========================================================= */
-
-        .form-group{
-            margin-bottom:22px;
+        input:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 4px rgba(0, 138, 69, 0.1);
         }
 
-        .form-label{
-            display:block;
-            margin-bottom:10px;
-            font-size:14px;
-            font-weight:600;
-            color:#374151;
+        .helper-row {
+            display: flex;
+            justify-content: flex-end;
+            margin: 2px 0 18px;
         }
 
-        .input-wrapper{
-            position:relative;
+        .helper-row a,
+        .link-btn {
+            color: var(--green-dark);
+            font-size: 13px;
+            font-weight: 900;
+            text-decoration: none;
         }
 
-        .input-icon{
-            position:absolute;
-            top:50%;
-            left:18px;
-            transform:translateY(-50%);
-            color:#9ca3af;
-            font-size:15px;
+        .submit-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            height: 48px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--green);
+            color: #fff;
+            font: inherit;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 12px 24px rgba(0, 138, 69, 0.2);
         }
 
-        .form-input{
-            width:100%;
-            height:56px;
-
-            padding-left:50px;
-            padding-right:16px;
-
-            border-radius:16px;
-            border:1px solid #dbe3ea;
-
-            background:white;
-
-            font-size:15px;
-
-            transition:all 0.25s ease;
+        .submit-btn:hover {
+            background: var(--green-dark);
         }
 
-        .form-input:focus{
-            outline:none;
-
-            border-color:#00b894;
-
-            box-shadow:
-                    0 0 0 5px rgba(0,184,148,0.12);
+        .login-note {
+            margin: 22px 0 0;
+            padding-top: 18px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+            text-align: center;
         }
 
-        .forgot-row{
-            display:flex;
-            justify-content:flex-end;
-            margin-top:-10px;
-            margin-bottom:24px;
+        .mobile-brand {
+            display: none;
+            margin-bottom: 24px;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
         }
 
-        .forgot-row a{
-            text-decoration:none;
-            color:#00a86b;
-            font-size:14px;
-            font-weight:600;
+        .mobile-brand .brand-icon {
+            background: var(--green);
+            color: #fff;
         }
 
-        /* =========================================================
-           BUTTON
-        ========================================================= */
-
-        .login-btn{
-            width:100%;
-            height:58px;
-
-            border:none;
-            border-radius:18px;
-
-            background:
-                    linear-gradient(
-                            135deg,
-                            #00b894,
-                            #00cec9
-                    );
-
-            color:white;
-            font-size:16px;
-            font-weight:700;
-
-            cursor:pointer;
-
-            transition:all 0.25s ease;
-
-            box-shadow:
-                    0 10px 25px rgba(0,184,148,0.25);
-        }
-
-        .login-btn:hover{
-
-            transform:translateY(-2px);
-
-            box-shadow:
-                    0 16px 30px rgba(0,184,148,0.35);
-        }
-
-        .bottom-text{
-            text-align:center;
-            margin-top:28px;
-            color:#6b7280;
-            font-size:14px;
-            line-height:1.7;
-        }
-
-        .bottom-text span{
-            color:#00a86b;
-            font-weight:700;
-        }
-
-        /* =========================================================
-           RESPONSIVE
-        ========================================================= */
-
-        @media(max-width:1100px){
-
-            .left-side{
-                display:none;
+        @media (max-width: 980px) {
+            .login-page {
+                display: block;
             }
 
-            .right-side{
-                width:100%;
+            .brand-panel {
+                display: none;
             }
 
-            body{
-                overflow:auto;
+            .login-panel {
+                min-height: 100vh;
+                padding: 24px;
             }
 
+            .mobile-brand {
+                display: flex;
+            }
         }
 
+        @media (max-width: 520px) {
+            .login-panel {
+                padding: 16px;
+                align-items: flex-start;
+            }
+
+            .login-card {
+                padding: 22px;
+            }
+
+            .login-card h2 {
+                font-size: 25px;
+            }
+
+            .login-subtitle {
+                min-height: 0;
+            }
+        }
     </style>
-
 </head>
-
-<body>
-
-<div class="container">
-
-    <!-- =====================================================
-         LEFT
-    ====================================================== -->
-
-    <div class="left-side">
-
-        <div class="left-overlay"></div>
-
-        <!-- circles -->
-        <div class="circle circle1"></div>
-        <div class="circle circle2"></div>
-        <div class="circle circle3"></div>
-
-        <div class="left-content">
-
-            <div class="logo">
-                COMPANY MANAGEMENT SYSTEM
-            </div>
-
-            <div class="hero-title">
-                Manage Contracts.
-                <br>
-                Track Customers.
-                <br>
-                Grow Business.
-            </div>
-
-            <div class="hero-subtitle">
-                A modern CRM & Contract Management platform
-                designed for sales teams, internal operations,
-                customer relationships, and enterprise workflows.
-            </div>
-
-            <div class="feature-list">
-
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-file-contract"></i>
-                    </div>
-
-                    Contract & document workflow management
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-
-                    Customer relationship & sales tracking
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
-
-                    Secure JWT authentication & RBAC system
-                </div>
-
-            </div>
-
-            <!-- MOCK DASHBOARD -->
-
-            <div class="mock-dashboard">
-
-                <div class="mock-header">
-
-                    <div class="mock-title">
-                        Business Overview
-                    </div>
-
-                    <div class="mock-badge">
-                        Live Dashboard
-                    </div>
-
-                </div>
-
-                <div class="mock-cards">
-
-                    <div class="mock-card">
-
-                        <h4>
-                            Active Contracts
-                        </h4>
-
-                        <div class="mock-value">
-                            148
-                        </div>
-
-                    </div>
-
-                    <div class="mock-card">
-
-                        <h4>
-                            Customers
-                        </h4>
-
-                        <div class="mock-value">
-                            1.2K
-                        </div>
-
-                    </div>
-
-                    <div class="mock-card">
-
-                        <h4>
-                            Revenue
-                        </h4>
-
-                        <div class="mock-value">
-                            $84K
-                        </div>
-
-                    </div>
-
-                    <div class="mock-card">
-
-                        <h4>
-                            Team Members
-                        </h4>
-
-                        <div class="mock-value">
-                            24
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+<body th:attr="data-initial-mode=${loginMode != null ? loginMode : 'employee'}">
+<main class="login-page">
+    <section class="brand-panel" aria-label="Tổng quan hệ thống">
+        <div class="brand-mark">
+            <span class="brand-icon"><i class="fa-solid fa-building"></i></span>
+            <span>Company Management</span>
         </div>
 
-    </div>
-
-    <!-- =====================================================
-         RIGHT
-    ====================================================== -->
-
-    <div class="right-side">
-
-        <div class="login-wrapper">
-
-            <div class="login-card">
-
-                <div class="login-title">
-                    Welcome Back 👋
-                </div>
-
-                <div class="login-subtitle">
-                    Sign in to access your workspace,
-                    contracts, customers, and internal dashboards.
-                </div>
-
-                <!-- ERRORS -->
-
-                <div th:if="${error}" class="alert alert-error">
-                    Invalid username or password.
-                </div>
-
-                <div th:if="${locked}" class="alert alert-error">
-                    Your account has been temporarily locked.
-                </div>
-
-                <div th:if="${inactive}" class="alert alert-error">
-                    Your account is inactive.
-                </div>
-
-                <div th:if="${logout}" class="alert alert-success">
-                    You have been logged out successfully.
-                </div>
-
-                <!-- FORM -->
-
-                <form method="post" th:action="@{/login}">
-
-                    <!-- USERNAME -->
-
-                    <div class="form-group">
-
-                        <label class="form-label">
-                            Username
-                        </label>
-
-                        <div class="input-wrapper">
-
-                            <i class="fa-regular fa-user input-icon"></i>
-
-                            <input
-                                    type="text"
-                                    name="username"
-                                    class="form-input"
-                                    placeholder="Enter your username"
-                                    required
-                            >
-
-                        </div>
-
-                    </div>
-
-                    <!-- PASSWORD -->
-
-                    <div class="form-group">
-
-                        <label class="form-label">
-                            Password
-                        </label>
-
-                        <div class="input-wrapper">
-
-                            <i class="fa-solid fa-lock input-icon"></i>
-
-                            <input
-                                    type="password"
-                                    name="password"
-                                    class="form-input"
-                                    placeholder="Enter your password"
-                                    required
-                            >
-
-                        </div>
-
-                    </div>
-
-                    <div class="forgot-row">
-                        <a href="/change-password">
-                            Forgot password?
-                        </a>
-                    </div>
-
-                    <!-- BUTTON -->
-
-                    <button type="submit" class="login-btn">
-                        Sign In
-                    </button>
-
-                </form>
-
-                <div class="bottom-text">
-
-                    Secure internal platform for
-                    <span>
-                        CRM, Sales & Contract Management
-                    </span>
-
-                </div>
-
-            </div>
-
+        <div class="brand-copy">
+            <h1>Quản lý khách hàng, báo giá và hợp đồng trong một hệ thống.</h1>
+            <p>Theo dõi quy trình bán hàng, phân quyền nhân sự, gửi hợp đồng cho khách hàng và xử lý ký kết theo từng vai trò.</p>
         </div>
 
-    </div>
+        <div class="metric-grid" aria-label="Các phân hệ chính">
+            <article class="metric">
+                <span class="metric-icon"><i class="fa-solid fa-chart-line"></i></span>
+                <strong>CRM</strong>
+                <span>Lead, pipeline và chăm sóc khách hàng</span>
+            </article>
+            <article class="metric">
+                <span class="metric-icon"><i class="fa-solid fa-file-contract"></i></span>
+                <strong>Hợp đồng</strong>
+                <span>Điều khoản, gửi khách và ký trực tuyến</span>
+            </article>
+            <article class="metric">
+                <span class="metric-icon"><i class="fa-solid fa-receipt"></i></span>
+                <strong>Báo giá</strong>
+                <span>Sản phẩm, chiết khấu và trạng thái duyệt</span>
+            </article>
+            <article class="metric">
+                <span class="metric-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                <strong>Phân quyền</strong>
+                <span>Nhân viên, quản lý và cổng khách hàng</span>
+            </article>
+        </div>
+    </section>
 
-</div>
+    <section class="login-panel">
+        <div class="login-card">
+            <div class="mobile-brand">
+                <span class="brand-icon"><i class="fa-solid fa-building"></i></span>
+                <span>Company Management</span>
+            </div>
 
+            <h2 id="login-title">Đăng nhập hệ thống</h2>
+            <p class="login-subtitle" id="login-subtitle">Chọn đúng cổng đăng nhập để truy cập không gian làm việc của bạn.</p>
+
+            <div class="login-switch" role="tablist" aria-label="Chọn loại tài khoản">
+                <button class="switch-btn" type="button" role="tab" data-mode="employee" aria-controls="employee-form">
+                    <i class="fa-solid fa-user-tie"></i>
+                    Nhân viên
+                </button>
+                <button class="switch-btn" type="button" role="tab" data-mode="customer" aria-controls="customer-form">
+                    <i class="fa-solid fa-user-check"></i>
+                    Khách hàng
+                </button>
+            </div>
+
+            <div class="alert alert-error" data-alert-mode="employee" th:if="${error}">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Tên đăng nhập hoặc mật khẩu không đúng.</span>
+            </div>
+            <div class="alert alert-error" data-alert-mode="employee" th:if="${locked}">
+                <i class="fa-solid fa-lock"></i>
+                <span>Tài khoản của bạn đang bị khóa tạm thời.</span>
+            </div>
+            <div class="alert alert-error" data-alert-mode="employee" th:if="${inactive}">
+                <i class="fa-solid fa-user-slash"></i>
+                <span>Tài khoản của bạn chưa được kích hoạt.</span>
+            </div>
+            <div class="alert alert-success" data-alert-mode="employee" th:if="${logout}">
+                <i class="fa-solid fa-check-circle"></i>
+                <span>Bạn đã đăng xuất thành công.</span>
+            </div>
+
+            <div class="alert alert-error" data-alert-mode="customer" th:if="${customerError}">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span th:text="${customerError}">Email hoặc mật khẩu không đúng.</span>
+            </div>
+            <div class="alert alert-success" data-alert-mode="customer" th:if="${customerLogout}">
+                <i class="fa-solid fa-check-circle"></i>
+                <span th:text="${customerLogout}">Bạn đã đăng xuất thành công.</span>
+            </div>
+
+            <form id="employee-form" class="login-form" method="post" th:action="@{/login}" data-mode="employee" novalidate>
+                <div class="form-group">
+                    <label for="username">Tên đăng nhập</label>
+                    <div class="input-wrap">
+                        <span class="form-icon"><i class="fa-regular fa-user"></i></span>
+                        <input id="username" type="text" name="username" autocomplete="username" placeholder="Nhập tên đăng nhập" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="employee-password">Mật khẩu</label>
+                    <div class="input-wrap">
+                        <span class="form-icon"><i class="fa-solid fa-lock"></i></span>
+                        <input id="employee-password" type="password" name="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required>
+                    </div>
+                </div>
+
+                <div class="helper-row">
+                    <a th:href="@{/change-password}">Đổi mật khẩu?</a>
+                </div>
+
+                <button class="submit-btn" type="submit">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Đăng nhập nhân viên
+                </button>
+            </form>
+
+            <form id="customer-form" class="login-form" method="post" th:action="@{/customer/login}" data-mode="customer" novalidate>
+                <div class="form-group">
+                    <label for="email">Email khách hàng</label>
+                    <div class="input-wrap">
+                        <span class="form-icon"><i class="fa-regular fa-envelope"></i></span>
+                        <input id="email" type="email" name="email" autocomplete="email" placeholder="Nhập email được cấp" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="customer-password">Mật khẩu</label>
+                    <div class="input-wrap">
+                        <span class="form-icon"><i class="fa-solid fa-lock"></i></span>
+                        <input id="customer-password" type="password" name="password" autocomplete="current-password" placeholder="Nhập mật khẩu khách hàng" required>
+                    </div>
+                </div>
+
+                <div class="helper-row">
+                    <a class="link-btn" th:href="@{/login(mode='employee')}">Dùng tài khoản nhân viên</a>
+                </div>
+
+                <button class="submit-btn" type="submit">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Đăng nhập khách hàng
+                </button>
+            </form>
+
+            <p class="login-note">Nếu bạn là khách hàng, hãy dùng email và mật khẩu được cấp sau khi hợp đồng được gửi.</p>
+        </div>
+    </section>
+</main>
+
+<script>
+    (() => {
+        const page = document.body;
+        const title = document.getElementById('login-title');
+        const subtitle = document.getElementById('login-subtitle');
+        const buttons = Array.from(document.querySelectorAll('.switch-btn'));
+        const forms = Array.from(document.querySelectorAll('.login-form'));
+        const alerts = Array.from(document.querySelectorAll('[data-alert-mode]'));
+        const copy = {
+            employee: {
+                title: 'Đăng nhập nhân viên',
+                subtitle: 'Truy cập bảng điều khiển nội bộ, CRM, báo giá, hợp đồng và phân quyền theo vai trò.'
+            },
+            customer: {
+                title: 'Đăng nhập khách hàng',
+                subtitle: 'Xem báo giá, theo dõi hợp đồng và ký hợp đồng trực tuyến bằng tài khoản được cấp.'
+            }
+        };
+
+        function setMode(mode) {
+            const activeMode = mode === 'customer' ? 'customer' : 'employee';
+            page.dataset.initialMode = activeMode;
+            title.textContent = copy[activeMode].title;
+            subtitle.textContent = copy[activeMode].subtitle;
+
+            buttons.forEach((button) => {
+                const active = button.dataset.mode === activeMode;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+
+            forms.forEach((form) => {
+                const active = form.dataset.mode === activeMode;
+                form.classList.toggle('active', active);
+                form.hidden = !active;
+            });
+
+            alerts.forEach((alert) => {
+                alert.hidden = alert.dataset.alertMode !== activeMode;
+            });
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('mode') !== activeMode) {
+                params.set('mode', activeMode);
+                const query = params.toString();
+                history.replaceState(null, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+            }
+        }
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => setMode(button.dataset.mode));
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        setMode(params.get('mode') || page.dataset.initialMode);
+    })();
+</script>
 </body>
 </html>

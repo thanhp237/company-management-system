@@ -7,12 +7,27 @@ import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @Service
+@Transactional
 public class RoleServiceImpl implements RoleService {
+
+    private static final Set<String> SYSTEM_ROLES = Set.of(
+            "ADMIN",
+            "CEO",
+            "DIRECTOR",
+            "SALES",
+            "SALES_MANAGER",
+            "ADMIN_OFFICER",
+            "ACCOUNTANT",
+            "MARKETING"
+    );
 
     @Autowired
     private RoleRepository roleRepository;
@@ -21,23 +36,133 @@ public class RoleServiceImpl implements RoleService {
     private UserRepository userRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<RoleSummaryDTO> getRoleSummaries() {
-        List<Role> roles = roleRepository.findAll();
+        List<Role> roles = roleRepository.findAllByOrderByIdAsc();
         List<RoleSummaryDTO> summaries = new ArrayList<>();
         
         long stt = 1;
         for (Role role : roles) {
-            // Gọi UserRepository để đếm số user đang hoạt động thuộc role này
             Long totalCount = userRepository.countActiveUsersByRoleCode(role.getRoleCode());
             
             RoleSummaryDTO dto = new RoleSummaryDTO(
+                role.getId(),
                 stt++,
                 role.getRoleCode(),
                 role.getRoleName(),
-                totalCount != null ? totalCount : 0L
+                normalizeStatus(role.getStatus()),
+                totalCount != null ? totalCount : 0L,
+                isSystemRole(role.getRoleCode()),
+                canDelete(role, totalCount)
             );
             summaries.add(dto);
         }
         return summaries;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Role getRoleForm(Long id) {
+        if (id == null) {
+            Role role = new Role();
+            role.setStatus("ACTIVE");
+            return role;
+        }
+
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
+    }
+
+    @Override
+    public void saveRole(Role role) {
+        String roleCode = normalizeRoleCode(role.getRoleCode());
+        String roleName = normalizeRequired(role.getRoleName(), "Vui lòng nhập tên vai trò");
+
+        boolean duplicated = role.getId() == null
+                ? roleRepository.existsByRoleCodeIgnoreCase(roleCode)
+                : roleRepository.existsByRoleCodeIgnoreCaseAndIdNot(roleCode, role.getId());
+
+        if (duplicated) {
+            throw new IllegalArgumentException("Mã vai trò đã tồn tại");
+        }
+
+        Role target = role.getId() == null
+                ? new Role()
+                : roleRepository.findById(role.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
+
+        if (target.getId() != null && isSystemRole(target.getRoleCode()) && !target.getRoleCode().equals(roleCode)) {
+            throw new IllegalArgumentException("Không thể đổi mã vai trò hệ thống");
+        }
+
+        target.setRoleCode(roleCode);
+        target.setRoleName(roleName);
+        target.setStatus(normalizeStatus(role.getStatus()));
+        roleRepository.save(target);
+    }
+
+    @Override
+    public void updateStatus(Long id, String status) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
+        role.setStatus(normalizeStatus(status));
+        roleRepository.save(role);
+    }
+
+    @Override
+    public void deleteRole(Long id) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
+
+        Long userCount = userRepository.countActiveUsersByRoleCode(role.getRoleCode());
+        if (isSystemRole(role.getRoleCode())) {
+            throw new IllegalArgumentException("Không thể xóa vai trò hệ thống. Vui lòng vô hiệu hóa thay thế.");
+        }
+        if (userCount != null && userCount > 0) {
+            throw new IllegalArgumentException("Vai trò đang được gán cho tài khoản. Vui lòng vô hiệu hóa thay thế.");
+        }
+
+        roleRepository.delete(role);
+    }
+
+    @Override
+    public boolean isSystemRole(String roleCode) {
+        if (roleCode == null) {
+            return false;
+        }
+        return SYSTEM_ROLES.contains(roleCode.trim().toUpperCase(Locale.ROOT));
+    }
+
+    private boolean canDelete(Role role, Long totalCount) {
+        return !isSystemRole(role.getRoleCode()) && (totalCount == null || totalCount == 0);
+    }
+
+    private String normalizeRoleCode(String roleCode) {
+        String normalized = normalizeRequired(roleCode, "Vui lòng nhập mã vai trò")
+                .toUpperCase(Locale.ROOT)
+                .replace(' ', '_');
+
+        if (!normalized.matches("[A-Z0-9_]{2,30}")) {
+            throw new IllegalArgumentException("Mã vai trò phải dài 2-30 ký tự và chỉ gồm A-Z, 0-9 hoặc dấu gạch dưới");
+        }
+        return normalized;
+    }
+
+    private String normalizeRequired(String value, String message) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return "ACTIVE";
+        }
+        String normalized = status.trim().toUpperCase(Locale.ROOT);
+        if (!"ACTIVE".equals(normalized) && !"INACTIVE".equals(normalized)) {
+            throw new IllegalArgumentException("Trạng thái vai trò không hợp lệ: " + status);
+        }
+        return normalized;
     }
 }

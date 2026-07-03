@@ -1,111 +1,146 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>User List - System Accounts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách nhân viên - Company Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
 </head>
 <body>
-
-<h2>Account Management</h2>
-<a th:href="@{/users/add}">Add New Account</a>
-<form th:action="@{/users/find}" method="get">
-    <input
-            type="text"
-            name="keyword"
-            th:value="${keyword}"
-            placeholder="Search by username, email, full name..."
-    >
-    <select name="status">
-        <option value="">All Status</option>
-        <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
-        <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Inactive</option>
-    </select>
-    <select name="role">
-        <option value="">All Roles</option>
-        <option th:each="roleItem : ${roles}"
-                th:value="${roleItem.roleCode}"
-                th:text="${roleItem.roleName}"
-                th:selected="${role == roleItem.roleCode}"></option>
-    </select>
-    <button type="submit">Search</button>
-</form>
-
-<p th:if="${countAccount != null}">
-    Found: <strong th:text="${countAccount}"></strong> accounts
-</p>
-
-<br><br>
-
-<table border="1">
-    <thead>
-    <tr>
-        <th>STT</th>
-        <th>Employee Code</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Full Name</th>
-        <th>Phone</th>
-        <th>Role</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="user,stat : ${users}">
-        <td th:text="${userPage != null ? userPage.number * userPage.size + stat.count : stat.count}"></td>
-        <td th:text="${user.employeeCode != null ? user.employeeCode : 'N/A'}"></td>
-        <td th:text="${user.username}"></td>
-        <td th:text="${user.email}"></td>
-        <td th:text="${user.fullName}"></td>
-        <td th:text="${user.phone}"></td>
-        <td th:text="${user.roleName}"></td>
-
-        <td>
-            <form th:action="@{/users/update-status}" method="post" style="margin: 0;">
-                <input type="hidden" name="id" th:value="${user.id}">
-
-                <select name="status"
-                        th:attr="data-current=${user.status}"
-                        onchange="if (confirm('Want to change status?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
-                    <option value="ACTIVE" th:selected="${user.status == 'ACTIVE'}">ACTIVE</option>
-                    <option value="INACTIVE" th:selected="${user.status == 'INACTIVE'}">INACTIVE</option>
-                </select>
-            </form>
-        </td>
-
-        <td>
-            <a th:href="@{/users/add(id=${user.id})}">Edit</a>
-            |
-            <a th:href="@{/users/delete/{id}(id=${user.id})}"
-               onclick="return confirm('Delete this account?')">
-                Delete
-            </a>
-        </td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(users)}">
-        <td colspan="9">No accounts found.</td>
-    </tr>
-    </tbody>
-</table>
-
-
-<div class="pagination" th:if="${userPage != null and userPage.totalPages > 0}">
-    <a th:if="${userPage.hasPrevious() and isSearch != true}"
-       th:href="@{/users(page=${userPage.number - 1}, role=${role})}">&laquo; Back</a>
-    <a th:if="${userPage.hasPrevious() and isSearch == true}"
-       th:href="@{/users/find(page=${userPage.number - 1}, keyword=${keyword}, status=${status}, role=${role})}">&laquo; Back</a>
-
-    <span>
-        Trang <strong th:text="${userPage.number + 1}">1</strong> /
-        <span th:text="${userPage.totalPages}">1</span>
-    </span>
-
-    <a th:if="${userPage.hasNext() and isSearch != true}"
-       th:href="@{/users(page=${userPage.number + 1}, role=${role})}">Next &raquo;</a>
-    <a th:if="${userPage.hasNext() and isSearch == true}"
-       th:href="@{/users/find(page=${userPage.number + 1}, keyword=${keyword}, status=${status}, role=${role})}">Next &raquo;</a>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
 </div>
-<a th:href="@{/users}">Back to List</a>
 
+<main class="admin-workspace with-sidebar user-workspace">
+    <div class="management-page user-management-page">
+        <th:block th:replace="~{fragments/admin-taskbars :: userTaskbar}"></th:block>
+        <th:block th:replace="~{fragments/management-filters :: userFilters}"></th:block>
+
+        <section class="management-table-shell user-table-shell">
+            <div class="table-responsive">
+                <table class="management-table user-table">
+                    <thead>
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Mã nhân viên</th>
+                        <th>Số điện thoại</th>
+                        <th>Phòng ban</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="user : ${users}">
+                        <td>
+                            <div class="identity-cell">
+                                <div class="avatar-circle" th:text="${#strings.substring((user.fullName != null and !#strings.isEmpty(user.fullName) ? user.fullName : user.username), 0, 1)}">U</div>
+                                <div>
+                                    <strong th:text="${user.fullName != null and !#strings.isEmpty(user.fullName) ? user.fullName : user.username}">Tên nhân viên</strong>
+                                    <span th:text="${user.email}">user@enterprise.com</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="muted-code" th:text="${user.employeeCode != null ? user.employeeCode : 'Chưa có'}">NV001</span>
+                        </td>
+                        <td th:text="${user.phone != null and !#strings.isEmpty(user.phone) ? user.phone : 'Chưa có'}">Chưa có</td>
+                        <td>
+                            <span class="department-pill"
+                                  th:classappend="${user.departmentName == null} ? ' empty'"
+                                  th:text="${user.departmentName != null ? user.departmentName : 'Chưa phân'}">Phòng Kinh doanh</span>
+                        </td>
+                        <td>
+                            <span class="role-pill" th:text="${user.roleName != null ? user.roleName : 'Chưa gán'}">Quản trị hệ thống</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/users/update-status}" method="post" class="status-form">
+                                <input type="hidden" name="id" th:value="${user.id}">
+                                <select name="status"
+                                        class="status-select"
+                                        th:classappend="${user.status == 'ACTIVE'} ? ' active' : ' inactive'"
+                                        th:attr="data-current=${user.status}"
+                                        onchange="if (confirm('Bạn muốn đổi trạng thái tài khoản này?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
+                                    <option value="ACTIVE" th:selected="${user.status == 'ACTIVE'}">Hoạt động</option>
+                                    <option value="INACTIVE" th:selected="${user.status == 'INACTIVE'}">Tạm khóa</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <a th:href="@{/users/add(id=${user.id})}" title="Sửa người dùng" aria-label="Sửa người dùng">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <a th:href="@{/users/delete/{id}(id=${user.id})}"
+                                   class="danger"
+                                   title="Xóa người dùng"
+                                   aria-label="Xóa người dùng"
+                                   onclick="return confirm('Xóa tài khoản này?')">
+                                    <i class="fas fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fas fa-users-slash"></i>
+                                <span>Không tìm thấy tài khoản phù hợp.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="management-pagination" th:if="${userPage != null and userPage.totalPages > 0}">
+                <span th:text="${'Đang hiển thị ' + #lists.size(users) + ' / ' + userPage.totalElements + ' nhân viên'}">Đang hiển thị người dùng</span>
+                <div class="pagination-buttons">
+                    <a th:if="${!userPage.hasPrevious()}" class="disabled" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a th:if="${userPage.hasPrevious() and isSearch == true}"
+                       th:href="@{/users/find(page=${userPage.number - 1}, keyword=${keyword}, status=${status}, role=${role})}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a th:if="${userPage.hasPrevious() and isSearch != true}"
+                       th:href="@{/users(page=${userPage.number - 1}, role=${role})}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <th:block th:with="start=${userPage.number - 2 < 0 ? 0 : userPage.number - 2}, end=${userPage.number + 2 > userPage.totalPages - 1 ? userPage.totalPages - 1 : userPage.number + 2}">
+                        <a th:each="pageIndex : ${#numbers.sequence(start, end)}"
+                           th:text="${pageIndex + 1}"
+                           th:classappend="${pageIndex == userPage.number} ? 'active'"
+                           th:href="${isSearch == true} ? @{/users/find(page=${pageIndex}, keyword=${keyword}, status=${status}, role=${role})} : @{/users(page=${pageIndex}, role=${role})}">1</a>
+                    </th:block>
+                    <a th:if="${!userPage.hasNext()}" class="disabled" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a th:if="${userPage.hasNext() and isSearch == true}"
+                       th:href="@{/users/find(page=${userPage.number + 1}, keyword=${keyword}, status=${status}, role=${role})}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a th:if="${userPage.hasNext() and isSearch != true}"
+                       th:href="@{/users(page=${userPage.number + 1}, role=${role})}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <th:block th:replace="~{fragments/management-stats :: userStats}"></th:block>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

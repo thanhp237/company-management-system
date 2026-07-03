@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết báo giá - CompanyMS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/contract.css}">
+    <style>
+        body,
+        button,
+        input,
+        textarea,
+        select {
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="admin-workspace with-sidebar contract-workspace">
+    <div class="management-page contract-detail-page">
+
+        <a class="contract-back-link"
+           th:if="${backPipelineId != null}"
+           th:href="@{/pipeline/{id}(id=${backPipelineId})}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quy trình bán hàng</span>
+        </a>
+
+        <a class="contract-back-link"
+           th:if="${backPipelineId == null}"
+           th:href="@{/pipeline}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quy trình bán hàng</span>
+        </a>
+
+        <div class="contract-detail-header">
+            <div>
+                <p class="management-eyebrow">Chi tiết báo giá</p>
+                <h1 th:text="${quotation.quotationCode}">QT-001</h1>
+                <p>
+                    <span th:text="${quotation.customerName != null ? quotation.customerName : 'Chưa có khách hàng'}">
+                        Khách hàng
+                    </span>
+                    <span> • </span>
+                    <span th:text="${quotation.createdAt != null ? 'Ngày tạo: ' + #temporals.format(quotation.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có ngày tạo'}">
+                        Ngày tạo
+                    </span>
+                </p>
+            </div>
+
+            <span class="contract-status detail"
+                  th:text="${quotation.status == 'DRAFT' ? 'Bản nháp' : (quotation.status == 'ACCEPTED' ? 'Đã chấp nhận' : (quotation.status == 'APPROVED' ? 'Đã duyệt' : (quotation.status == 'REJECTED' ? 'Đã từ chối' : (quotation.status != null ? quotation.status : 'Bản nháp'))))}">
+                Bản nháp
+            </span>
+        </div>
+
+        <div th:if="${successMessage}" class="management-alert success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${successMessage}">Thành công.</span>
+        </div>
+
+        <div th:if="${errorMessage}" class="management-alert danger">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+
+        <div class="contract-detail-layout">
+            <div class="contract-detail-main">
+
+                <section class="contract-detail-card">
+                    <div class="contract-card-title">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <h2>Thông tin báo giá</h2>
+                    </div>
+
+                    <div class="contract-info-grid">
+                        <div>
+                            <span>Mã báo giá</span>
+                            <strong th:text="${quotation.quotationCode != null ? quotation.quotationCode : 'Chưa có'}">
+                                QT-001
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Trạng thái</span>
+                            <strong th:text="${quotation.status == 'DRAFT' ? 'Bản nháp' : (quotation.status == 'ACCEPTED' ? 'Đã chấp nhận' : (quotation.status == 'APPROVED' ? 'Đã duyệt' : (quotation.status == 'REJECTED' ? 'Đã từ chối' : (quotation.status != null ? quotation.status : 'Chưa có'))))}">
+                                Bản nháp
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Ngày tạo</span>
+                            <strong th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có'}">
+                                Chưa có
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Cơ hội</span>
+                            <strong>
+                                <a th:if="${backPipelineId != null}"
+                                   th:href="@{/pipeline/{id}(id=${backPipelineId})}">
+                                    Xem quy trình bán hàng
+                                </a>
+                                <span th:if="${backPipelineId == null}">Chưa có</span>
+                            </strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="contract-detail-card">
+                    <div class="contract-card-title">
+                        <i class="fas fa-building-user"></i>
+                        <h2>Thông tin khách hàng</h2>
+                    </div>
+
+                    <div class="contract-info-grid">
+                        <div>
+                            <span>Khách hàng</span>
+                            <strong th:text="${quotation.customerName != null ? quotation.customerName : 'Chưa có'}">
+                                Khách hàng
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Điện thoại</span>
+                            <strong th:text="${quotation.customerPhone != null ? quotation.customerPhone : 'Chưa có'}">
+                                Điện thoại
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Email</span>
+                            <strong th:text="${quotation.customerEmail != null ? quotation.customerEmail : 'Chưa có'}">
+                                Email
+                            </strong>
+                        </div>
+
+                        <div class="wide">
+                            <span>Địa chỉ</span>
+                            <strong th:text="${quotation.customerAddress != null ? quotation.customerAddress : 'Chưa có'}">
+                                Địa chỉ
+                            </strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="contract-detail-card">
+                    <div class="contract-card-title">
+                        <i class="fas fa-boxes-stacked"></i>
+                        <h2>Sản phẩm báo giá</h2>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="contract-item-table">
+                            <thead>
+                            <tr>
+                                <th>Sản phẩm / Dịch vụ</th>
+                                <th>Mô tả</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="item : ${quotation.details}">
+                                <td>
+                                    <strong th:text="${item.productName != null ? item.productName : 'Chưa có'}">
+                                        Sản phẩm
+                                    </strong>
+                                    <small th:text="${item.productCode != null ? item.productCode : 'Chưa có'}">
+                                        P001
+                                    </small>
+                                </td>
+
+                                <td th:text="${item.description != null ? item.description : 'Chưa có'}">
+                                    Mô tả
+                                </td>
+
+                                <td th:text="${item.quantity != null ? item.quantity : 0}">
+                                    1
+                                </td>
+
+                                <td th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT') : '0'}">
+                                    0
+                                </td>
+
+                                <td>
+                                    <strong th:text="${item.totalPrice != null ? #numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT') : '0'}">
+                                        0
+                                    </strong>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${quotation.details == null || #lists.isEmpty(quotation.details)}">
+                                <td colspan="5">
+                                    <div class="contract-empty compact">
+                                        <i class="fas fa-box-open"></i>
+                                        <span>Không có sản phẩm hoặc dịch vụ.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="contract-detail-card">
+                    <div class="contract-card-title">
+                        <i class="fas fa-note-sticky"></i>
+                        <h2>Ghi chú</h2>
+                    </div>
+
+                    <div class="contract-info-grid">
+                        <div class="wide">
+                            <p th:text="${quotation.note != null && !#strings.isEmpty(quotation.note) ? quotation.note : 'Không có ghi chú.'}">
+                                Không có ghi chú.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="contract-detail-side">
+                <section class="contract-action-card">
+                    <h2>Thao tác nhanh</h2>
+
+                    <form th:if="${quotation.status != null and #strings.toUpperCase(quotation.status) == 'DRAFT'}"
+                          th:action="@{/quotation/{id}/accept(id=${quotation.id})}"
+                          method="post"
+                          onsubmit="return confirm('Chuyển báo giá này sang trạng thái đã chấp nhận?');">
+                        <button type="submit">
+                            <i class="fas fa-check"></i>
+                            Chuyển đã chấp nhận
+                        </button>
+                    </form>
+
+                    <a th:href="@{/quotation/export-pdf/{id}(id=${quotation.id})}">
+                        <i class="fas fa-file-pdf"></i>
+                        Xuất PDF
+                    </a>
+
+                    <a th:if="${backPipelineId != null}"
+                       th:href="@{/pipeline/{id}(id=${backPipelineId})}">
+                        <i class="fas fa-arrow-left"></i>
+                        Về quy trình bán hàng
+                    </a>
+                </section>
+
+                <section class="contract-summary-card">
+                    <h2>Thông tin thanh toán</h2>
+
+                    <dl>
+                        <div>
+                            <dt>Tạm tính</dt>
+                            <dd th:text="${quotation.subTotal != null ? #numbers.formatDecimal(quotation.subTotal, 0, 'COMMA', 0, 'POINT') : '0'}">
+                                0
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>Giảm giá</dt>
+                            <dd th:text="${quotation.discountAmount != null ? #numbers.formatDecimal(quotation.discountAmount, 0, 'COMMA', 0, 'POINT') : '0'}">
+                                0
+                            </dd>
+                        </div>
+
+                        <div class="total">
+                            <dt>Tổng giá trị</dt>
+                            <dd th:text="${quotation.finalAmount != null ? #numbers.formatDecimal(quotation.finalAmount, 0, 'COMMA', 0, 'POINT') : '0'}">
+                                0
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

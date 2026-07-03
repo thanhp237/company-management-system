@@ -2,31 +2,31 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>First Change Password</title>
+    <title>Đổi mật khẩu lần đầu</title>
 </head>
 <body>
 
-<h2>Change Password First Login</h2>
+<h2>Đổi mật khẩu trong lần đăng nhập đầu tiên</h2>
 
 <p style="color:red" th:text="${error}"></p>
 
 <form th:action="@{/first-change-password}" th:object="${changePassword}" method="post">
 
     <div>
-        <label>New Password</label>
+        <label>Mật khẩu mới</label>
         <input type="password" th:field="*{newPassword}">
     </div>
 
     <br>
 
     <div>
-        <label>Confirm Password</label>
+        <label>Xác nhận mật khẩu</label>
         <input type="password" th:field="*{confirmPassword}">
     </div>
 
     <br>
 
-    <button type="submit">Change Password</button>
+    <button type="submit">Đổi mật khẩu</button>
 
 </form>
 
