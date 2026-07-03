@@ -1,99 +1,219 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Product Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh mục sản phẩm - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/product.css}">
 </head>
 <body>
-
-<h2>Product Management</h2>
-
-<a th:href="@{/products/add}">Add New Product</a>
-
-<form th:action="@{/products/find}" method="get">
-    <input
-            type="text"
-            name="keyword"
-            th:value="${keyword}"
-            placeholder="Search by code, name..."
-    >
-    <select name="category">
-        <option value="">All Categories</option>
-        <option th:each="categoryItem : ${categories}"
-                th:value="${categoryItem}"
-                th:text="${categoryItem}"
-                th:selected="${category == categoryItem}"></option>
-    </select>
-    <select name="status">
-        <option value="">All Status</option>
-        <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
-        <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Inactive</option>
-    </select>
-    <button type="submit">Search</button>
-</form>
-
-<p th:if="${countProduct != null}">
-    Found: <strong th:text="${countProduct}"></strong> products
-</p>
-
-<br><br>
-
-<table border="1">
-    <thead>
-    <tr>
-        <th>STT</th>
-        <th>Product Code</th>
-        <th>Category</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Unit Price</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="product,stat : ${products}">
-        <td th:text="${productPage != null ? productPage.number * productPage.size + stat.count : stat.count}"></td>
-        <td th:text="${product.productCode}"></td>
-        <td th:text="${product.category != null ? product.category : 'N/A'}"></td>
-        <td th:text="${product.name}"></td>
-        <td th:text="${product.description}"></td>
-        <td th:text="${#numbers.formatDecimal(product.unitPrice, 0, 'COMMA', 2, 'POINT')}"></td>
-        <td th:text="${product.active == true ? 'ACTIVE' : 'INACTIVE'}"></td>
-        <td>
-            <a th:href="@{/products/add(id=${product.id})}">Edit</a>
-            <span th:if="${product.active == true}"> | </span>
-            <a th:href="@{/products/delete/{id}(id=${product.id})}"
-               th:if="${product.active == true}"
-               onclick="return confirm('Deactivate this product?')">
-                Delete
-            </a>
-        </td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(products)}">
-        <td colspan="8">No products found.</td>
-    </tr>
-    </tbody>
-</table>
-
-<div class="pagination" th:if="${productPage != null and productPage.totalPages > 0}">
-    <a th:if="${productPage.hasPrevious() and isSearch != true}"
-       th:href="@{/products(page=${productPage.number - 1})}">&laquo; Back</a>
-    <a th:if="${productPage.hasPrevious() and isSearch == true}"
-       th:href="@{/products/find(page=${productPage.number - 1}, keyword=${keyword}, category=${category}, status=${status})}">&laquo; Back</a>
-
-    <span>
-        Trang <strong th:text="${productPage.number + 1}">1</strong> /
-        <span th:text="${productPage.totalPages}">1</span>
-    </span>
-
-    <a th:if="${productPage.hasNext() and isSearch != true}"
-       th:href="@{/products(page=${productPage.number + 1})}">Next &raquo;</a>
-    <a th:if="${productPage.hasNext() and isSearch == true}"
-       th:href="@{/products/find(page=${productPage.number + 1}, keyword=${keyword}, category=${category}, status=${status})}">Next &raquo;</a>
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
 </div>
 
-<a th:href="@{/products}">Back to List</a>
+<main class="admin-workspace with-sidebar product-workspace">
+    <div class="management-page product-page">
+        <div class="management-taskbar product-taskbar">
+            <div>
+                <p class="management-eyebrow">Quản lý sản phẩm</p>
+                <h1>Danh mục sản phẩm</h1>
+                <p class="management-subtitle">Theo dõi sản phẩm, danh mục, giá bán và trạng thái kinh doanh.</p>
+            </div>
+            <div class="management-actions">
+                <a class="btn btn-primary management-primary-action" th:href="@{/products/add}">
+                    <i class="fas fa-plus"></i>
+                    <span>Thêm sản phẩm</span>
+                </a>
+            </div>
+        </div>
 
+        <section class="product-stat-grid">
+            <article class="product-stat-card success">
+                <span>Tổng sản phẩm</span>
+                <strong th:text="${countProduct != null ? countProduct : 0}">0</strong>
+                <small><i class="fas fa-boxes-stacked"></i> Bản ghi phù hợp</small>
+            </article>
+            <article class="product-stat-card info">
+                <span>Đang kinh doanh</span>
+                <strong th:text="${products != null ? products.?[active == true].size() : 0}">0</strong>
+                <small><i class="fas fa-circle-check"></i> Trong trang hiện tại</small>
+            </article>
+            <article class="product-stat-card danger">
+                <span>Ngừng kinh doanh</span>
+                <strong th:text="${products != null ? products.?[active != true].size() : 0}">0</strong>
+                <small><i class="fas fa-circle-pause"></i> Trong trang hiện tại</small>
+            </article>
+            <article class="product-stat-card warning">
+                <span>Danh mục</span>
+                <strong th:text="${categories != null ? categories.size() : 0}">0</strong>
+                <small><i class="fas fa-tags"></i> Nhóm sản phẩm</small>
+            </article>
+        </section>
+
+        <form class="product-filterbar" th:action="@{/products/find}" method="get">
+            <label>
+                <span>Tìm kiếm</span>
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       placeholder="Mã, tên hoặc mô tả sản phẩm...">
+            </label>
+            <label>
+                <span>Danh mục</span>
+                <select name="category">
+                    <option value="">Tất cả danh mục</option>
+                    <option th:each="categoryItem : ${categories}"
+                            th:value="${categoryItem}"
+                            th:text="${categoryItem}"
+                            th:selected="${category == categoryItem}">Camera Body</option>
+                </select>
+            </label>
+            <label>
+                <span>Trạng thái</span>
+                <select name="status">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Có hàng</option>
+                    <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Ngừng bán</option>
+                </select>
+            </label>
+            <button class="product-filter-button" type="submit" title="Lọc sản phẩm" aria-label="Lọc sản phẩm">
+                <i class="fas fa-filter"></i>
+            </button>
+            <a class="product-reset-button" th:href="@{/products}" title="Xóa lọc" aria-label="Xóa lọc">
+                <i class="fas fa-xmark"></i>
+                <span>Xóa lọc</span>
+            </a>
+        </form>
+
+        <section class="product-table-shell">
+            <div class="table-responsive">
+                <table class="product-table">
+                    <thead>
+                    <tr>
+                        <th>Mã sản phẩm</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Danh mục</th>
+                        <th>Mô tả</th>
+                        <th>Đơn giá</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="product : ${products}">
+                        <td>
+                            <span class="product-code" th:text="${product.productCode}">SKU-001</span>
+                        </td>
+                        <td>
+                            <div class="product-identity">
+                                <span class="product-thumb" th:if="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)}">
+                                    <i class="fas fa-box"></i>
+                                </span>
+                                <img class="product-thumb product-thumb-image"
+                                     th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                                     th:src="${product.imageUrl}"
+                                     th:alt="${product.name}">
+                                <strong th:text="${product.name}">MacBook Pro M3</strong>
+                            </div>
+                        </td>
+                        <td th:text="${product.category != null ? product.category : 'Chưa có'}">Danh mục</td>
+                        <td>
+                            <span class="product-description" th:text="${product.description != null ? product.description : 'Chưa có mô tả'}">Mô tả</span>
+                        </td>
+                        <td>
+                            <strong th:text="${#numbers.formatDecimal(product.unitPrice, 0, 'COMMA', 2, 'POINT')}">0</strong>
+                        </td>
+                        <td>
+                            <span class="product-status"
+                                  th:classappend="${product.active == true} ? ' active' : ' inactive'"
+                                  th:text="${product.active == true ? 'Có hàng' : 'Ngừng bán'}">Có hàng</span>
+                        </td>
+                        <td>
+                            <div class="product-row-actions">
+                                <a th:href="@{/products/add(id=${product.id})}" title="Sửa sản phẩm" aria-label="Sửa sản phẩm">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <a th:href="@{/products/delete/{id}(id=${product.id})}"
+                                   th:if="${product.active == true}"
+                                   class="danger"
+                                   title="Ngừng bán sản phẩm"
+                                   aria-label="Ngừng bán sản phẩm"
+                                   onclick="return confirm('Ngừng kinh doanh sản phẩm này?')">
+                                    <i class="fas fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(products)}">
+                        <td colspan="7">
+                            <div class="product-empty">
+                                <i class="fas fa-box-open"></i>
+                                <span>Không tìm thấy sản phẩm phù hợp.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="product-pagination" th:if="${productPage != null and productPage.totalPages > 0}">
+                <span th:text="${'Hiển thị ' + #lists.size(products) + ' / ' + productPage.totalElements + ' sản phẩm'}">Hiển thị sản phẩm</span>
+                <div class="product-pagination-buttons">
+                    <a th:if="${productPage.hasPrevious() and isSearch != true}"
+                       th:href="@{/products(page=${productPage.number - 1})}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a th:if="${productPage.hasPrevious() and isSearch == true}"
+                       th:href="@{/products/find(page=${productPage.number - 1}, keyword=${keyword}, category=${category}, status=${status})}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a th:if="${!productPage.hasPrevious()}" class="disabled" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    <a class="active" th:text="${productPage.number + 1}">1</a>
+                    <span th:text="${'/' + productPage.totalPages}">/1</span>
+
+                    <a th:if="${productPage.hasNext() and isSearch != true}"
+                       th:href="@{/products(page=${productPage.number + 1})}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a th:if="${productPage.hasNext() and isSearch == true}"
+                       th:href="@{/products/find(page=${productPage.number + 1}, keyword=${keyword}, category=${category}, status=${status})}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a th:if="${!productPage.hasNext()}" class="disabled" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="product-category-panel">
+            <div class="product-panel-header">
+                <h2>Danh mục sản phẩm</h2>
+                <a th:href="@{/products}">Quản lý tất cả</a>
+            </div>
+            <div class="product-category-grid">
+                <article th:each="categoryItem : ${categories}">
+                    <i class="fas fa-tag"></i>
+                    <strong th:text="${categoryItem}">Camera Body</strong>
+                    <small>Nhóm sản phẩm</small>
+                </article>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
