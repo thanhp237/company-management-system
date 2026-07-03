@@ -123,6 +123,7 @@ public class ProductController {
         request.setName(response.getName());
         request.setCategory(response.getCategory());
         request.setDescription(response.getDescription());
+        request.setImageUrl(response.getImageUrl());
         request.setUnitPrice(response.getUnitPrice());
         request.setActive(response.getActive());
         return request;

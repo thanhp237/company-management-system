@@ -12,15 +12,27 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class ProductServiceImpl implements ProductService {
+    private static final Path PRODUCT_UPLOAD_DIR = Paths.get("uploads", "products");
+    private static final String PRODUCT_UPLOAD_URL_PREFIX = "/uploads/products/";
+    private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp", "gif");
 
     private static final List<String> PRODUCT_CATEGORIES = List.of(
             "Camera Body",
@@ -74,6 +86,7 @@ public class ProductServiceImpl implements ProductService {
                 .name(name)
                 .category(category)
                 .description(normalizeOptional(request.getDescription()))
+                .imageUrl(storeProductImage(request.getImageFile(), null))
                 .unitPrice(unitPrice)
                 .active(request.getActive() == null || request.getActive())
                 .build();
@@ -99,6 +112,7 @@ public class ProductServiceImpl implements ProductService {
         product.setName(name);
         product.setCategory(category);
         product.setDescription(normalizeOptional(request.getDescription()));
+        product.setImageUrl(storeProductImage(request.getImageFile(), product.getImageUrl()));
         product.setUnitPrice(unitPrice);
         product.setActive(request.getActive() == null || request.getActive());
         productRepository.save(product);
@@ -159,6 +173,73 @@ public class ProductServiceImpl implements ProductService {
             return null;
         }
         return value.trim();
+    }
+
+    private String storeProductImage(MultipartFile imageFile, String currentImageUrl) {
+        if (imageFile == null || imageFile.isEmpty()) {
+            return currentImageUrl;
+        }
+
+        validateImageFile(imageFile);
+
+        String extension = getFileExtension(imageFile.getOriginalFilename());
+        String filename = UUID.randomUUID().toString().replace("-", "") + "." + extension;
+
+        try {
+            Files.createDirectories(PRODUCT_UPLOAD_DIR);
+            Path destination = PRODUCT_UPLOAD_DIR.resolve(filename).toAbsolutePath().normalize();
+            Path uploadRoot = PRODUCT_UPLOAD_DIR.toAbsolutePath().normalize();
+            if (!destination.startsWith(uploadRoot)) {
+                throw new IllegalArgumentException("Tên file ảnh không hợp lệ");
+            }
+            Files.copy(imageFile.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+            deleteOldImage(currentImageUrl);
+            return PRODUCT_UPLOAD_URL_PREFIX + filename;
+        } catch (IOException exception) {
+            throw new IllegalArgumentException("Không thể lưu ảnh sản phẩm");
+        }
+    }
+
+    private void validateImageFile(MultipartFile imageFile) {
+        if (imageFile.getSize() > MAX_IMAGE_SIZE) {
+            throw new IllegalArgumentException("Ảnh sản phẩm không được vượt quá 5MB");
+        }
+
+        String extension = getFileExtension(imageFile.getOriginalFilename());
+        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Ảnh sản phẩm chỉ hỗ trợ JPG, PNG, WEBP hoặc GIF");
+        }
+
+        String contentType = imageFile.getContentType();
+        if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+            throw new IllegalArgumentException("File tải lên phải là ảnh");
+        }
+    }
+
+    private String getFileExtension(String originalFilename) {
+        String filename = normalizeOptional(originalFilename);
+        if (filename == null || !filename.contains(".")) {
+            throw new IllegalArgumentException("Ảnh sản phẩm phải có phần mở rộng file");
+        }
+        return filename.substring(filename.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
+    }
+
+    private void deleteOldImage(String currentImageUrl) {
+        String normalized = normalizeOptional(currentImageUrl);
+        if (normalized == null || !normalized.startsWith(PRODUCT_UPLOAD_URL_PREFIX)) {
+            return;
+        }
+
+        try {
+            String filename = normalized.substring(PRODUCT_UPLOAD_URL_PREFIX.length());
+            Path uploadRoot = PRODUCT_UPLOAD_DIR.toAbsolutePath().normalize();
+            Path oldImage = PRODUCT_UPLOAD_DIR.resolve(filename).toAbsolutePath().normalize();
+            if (oldImage.startsWith(uploadRoot)) {
+                Files.deleteIfExists(oldImage);
+            }
+        } catch (IOException ignored) {
+            // The database has already moved on; a stale file should not block product updates.
+        }
     }
 
     private String normalizeRequired(String value, String message) {
