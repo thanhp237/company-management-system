@@ -56,7 +56,10 @@
               th:action="@{/departments/save}"
               th:object="${department}"
               method="post">
-
+            <div class="alert alert-danger"
+                 th:if="${err}"
+                 th:text="${err}">
+            </div>
             <input type="hidden" th:field="*{id}" th:if="${department.id != null}">
 
             <section class="user-form-card">
@@ -121,11 +124,10 @@
 
                     <label class="user-field">
                         <span>Nhân viên phòng ban</span>
-                        <select multiple size="6" th:field="*{employees}">
+                        <select multiple size="6" th:field="*{employeeIds}">
                             <option th:each="user : ${listEmployee}"
                                     th:value="${user.id}"
                                     th:text="${user.fullName + ' - ' + user.role.roleName}">
-                                Trần Văn B - Employee
                             </option>
                         </select>
                     </label>

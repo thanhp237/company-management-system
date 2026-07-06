@@ -72,6 +72,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (departmentRequest.getMaxMembers() == null || departmentRequest.getMaxMembers() <= 0) {
             throw new RuntimeException("Số lượng tối đa phải lớn hơn 0");
         }
+        if (departmentRequest.getEmployees() != null
+                && departmentRequest.getEmployees().size() > departmentRequest.getMaxMembers()) {
+
+            throw new RuntimeException("Số nhân viên được chọn vượt quá số lượng tối đa.");
+        }
         if (departmentRequest.getId() == null) {
             if (departmentRepository.existsByCode(departmentRequest.getCode())) {
                 throw new RuntimeException("Code phòng ban đã tồn tại");
@@ -109,22 +114,49 @@ public class DepartmentServiceImpl implements DepartmentService {
         department.setMaxMembers(departmentRequest.getMaxMembers());
         department.setStatus(departmentRequest.getStatus());
 
-        departmentRepository.save(department);
+        Department savedDepartment = departmentRepository.save(department);
+        List<User> oldUsers =
+                userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(savedDepartment.getId());
+
+        for (User user : oldUsers) {
+            user.setDepartmentId(null);
+        }
+        userRepository.saveAll(oldUsers);
+        if (departmentRequest.getEmployeeIds() != null
+                && !departmentRequest.getEmployeeIds().isEmpty()) {
+
+            List<User> users =
+                    userRepository.findAllById(departmentRequest.getEmployeeIds());
+
+            for (User user : users) {
+                user.setDepartmentId(savedDepartment.getId());
+            }
+
+            userRepository.saveAll(users);
+        }
     }
 
     @Override
     @Transactional
     public void deleteDepartment(Long id, String username) {
 
-        Department department = departmentRepository
-                .findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("Department not found"));
 
-        department.setIsDeleted(true);
-        department.setDeletedAt(LocalDateTime.now());
-        department.setDeletedBy(username);
 
-        departmentRepository.save(department);
+            Department department = departmentRepository
+                    .findByIdAndIsDeletedFalse(id)
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+            List<User> users =
+                    userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(id);
+            for (User user : users) {
+                user.setDepartmentId(null);
+            }
+            userRepository.saveAll(users);
+            department.setIsDeleted(true);
+            department.setDeletedAt(LocalDateTime.now());
+            department.setDeletedBy(username);
+
+            departmentRepository.save(department);
+
     }
     @Override
     @Transactional

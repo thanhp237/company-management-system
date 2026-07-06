@@ -117,7 +117,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findCustomerById(Long id);
     @Query("select u.fullName from User u where u.id=:id")
     String getNameUserById(@Param("id") Long id);
-
+    @Query("""
+SELECT u
+FROM User u
+WHERE u.departmentId IS NULL
+AND u.role.roleCode IN :roles
+AND u.isDeleted=false
+ORDER BY u.fullName
+""")
+    List<User> findAvailableEmployees(
+            @Param("roles") List<String> roles);
+    @Query("""
+SELECT u
+FROM User u
+WHERE
+(
+u.departmentId IS NULL
+OR u.departmentId=:departmentId
+)
+AND u.role.roleCode IN :roles
+AND u.isDeleted=false
+ORDER BY u.fullName
+""")
+    List<User> findAvailableEmployeesForEdit(
+            @Param("departmentId") Long departmentId,
+            @Param("roles") List<String> roles);
 
 
 }

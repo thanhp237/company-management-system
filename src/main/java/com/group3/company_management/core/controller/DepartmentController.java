@@ -4,6 +4,7 @@ import com.group3.company_management.core.dto.DepartmentRequest;
 import com.group3.company_management.core.dto.DepartmentResponse;
 import com.group3.company_management.core.entity.Department;
 import com.group3.company_management.core.entity.User;
+import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.DepartmentService;
 import com.group3.company_management.core.service.UserService;
 import org.springframework.data.domain.Page;
@@ -28,11 +29,14 @@ import java.util.Map;
 public class DepartmentController {
     private final UserService userService;
     private final DepartmentService departmentService;
+   private UserRepository userRepository;
 
-    public DepartmentController(UserService userService, DepartmentService departmentService) {
+    public DepartmentController(UserService userService, DepartmentService departmentService, UserRepository userRepository) {
         this.userService = userService;
         this.departmentService = departmentService;
+        this.userRepository = userRepository;
     }
+
     @GetMapping
     public String getListDepartment(
             @RequestParam(defaultValue = "") String keyword,
@@ -57,7 +61,26 @@ public class DepartmentController {
              department= departmentService.getDepartmentById(id);
         }
         model.addAttribute("department", department);
-        model.addAttribute("listEmployee", userService.getUsersByRoles(List.of("SALES","ACCOUNTANT","MARKETING")));
+        if(id == null){
+
+            model.addAttribute(
+                    "listEmployee",
+                    userRepository.findAvailableEmployees(
+                            List.of("SALES","ACCOUNTANT","MARKETING")
+                    )
+            );
+
+        }else{
+
+            model.addAttribute(
+                    "listEmployee",
+                    userRepository.findAvailableEmployeesForEdit(
+                            id,
+                            List.of("SALES","ACCOUNTANT","MARKETING")
+                    )
+            );
+
+        }
         model.addAttribute(("listManager"), userService.getUsersByRoles(List.of("ADMIN","ADMIN_OFFICER","SALES_MANAGER")));
         return "departments/form";
     }
@@ -72,7 +95,12 @@ public class DepartmentController {
             model.addAttribute("err", e.getMessage());
             model.addAttribute("department", departmentRequest);
             model.addAttribute("listEmployee",
-                    userService.getUsersByRoles(List.of("SALES","ACCOUNTANT","MARKETING")));
+                    userRepository.findAvailableEmployees(
+                            List.of(
+                                    "SALES",
+                                    "ACCOUNTANT",
+                                    "MARKETING"
+                            )));
 
             model.addAttribute("listManager", userService.getUsersByRoles(List.of("ADMIN","ADMIN_OFFICER","SALES_MANAGER")));
             return "departments/form";
@@ -107,229 +135,4 @@ public class DepartmentController {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    @GetMapping
-//    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER','SALES_MANAGER','SALES','ACCOUNTANT','MARKETING')")
-//    public String listDepartments(@RequestParam(defaultValue = "0") int page, Model model) {
-//        Page<Department> departmentPage = departmentService.getDepartmentsPage(page);
-//
-//        model.addAttribute("departmentPage", departmentPage);
-//        model.addAttribute("keyword", "");
-//        model.addAttribute("status", "all");
-//        addDepartmentSummary(model, departmentPage);
-//
-//        return "departments/list";
-//    }
-//
-//    @GetMapping("/edit")
-//    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER')")
-//    public String showEditForm(@RequestParam(required = false) Long id, Model model) {
-//        Department department = id == null
-//                ? new Department()
-//                : departmentService.getDepartmentById(id);
-//
-//        model.addAttribute("department", department);
-//        model.addAttribute("currentMembers", id == null ? 0 : departmentService.countMembers(id));
-//        model.addAttribute("assignableUsers", departmentService.getAssignableUsers(id));
-//        model.addAttribute("managers", userService.getUsersByRoles(
-//                List.of("ADMIN", "SALES_MANAGER")
-//                //  userService.getUserByRoles
-//        ));
-//
-//        return "departments/form";
-//    }
-//    @PostMapping("/save")
-//    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER')")
-//    public String saveDepartment(@ModelAttribute("department") Department department,
-//                                 @RequestParam(required = false) List<Long> userIds,
-//                                 Model model) {
-//        try {
-//            Department savedDepartment = departmentService.saveDepartment(department);
-//            departmentService.addUsersToDepartment(userIds, savedDepartment.getId());
-//
-//            return "redirect:/departments";
-//        } catch (RuntimeException e) {
-//            Long id = department.getId();
-//            model.addAttribute("err", e.getMessage());
-//            model.addAttribute("department", department);
-//            model.addAttribute("currentMembers", id == null ? 0 : departmentService.countMembers(id));
-//            model.addAttribute("assignableUsers", departmentService.getAssignableUsers(id));
-//            model.addAttribute("managers", userService.getUsersByRoles(
-//                    List.of("ADMIN", "SALES_MANAGER")
-//            ));
-//
-//
-//            return "departments/form";
-//        }
-//    }
-//
-//    @PostMapping("/assign-user")
-//    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER')")
-//    public String assignUser(@RequestParam List<Long> userIds,
-//                             @RequestParam Long departmentId,
-//                             RedirectAttributes redirectAttributes) {
-//        try {
-//            departmentService.addUsersToDepartment(userIds, departmentId);
-//            redirectAttributes.addFlashAttribute("success", "Gán nhân viên vào phòng ban thành công");
-//        } catch (RuntimeException e) {
-//
-//            redirectAttributes.addFlashAttribute("err", e.getMessage());
-//        }
-//
-//        return "redirect:/departments/edit?id=" + departmentId;
-//    }
-//
-//    @PostMapping("/update-status")
-//    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER')")
-//    public String updateStatus(@RequestParam Long id, @RequestParam String status) {
-//        departmentService.updateDepartmentStatus(id, status);
-//        return "redirect:/departments";
-//    }
-//
-//    @GetMapping("/delete/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public String deleteDepartment(@PathVariable Long id, Authentication authentication) {
-//        departmentService.deleteDepartment(id, authentication.getName());
-//        return "redirect:/departments";
-//    }
-//
-//    @GetMapping("/search")
-//    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER','SALES_MANAGER','SALES','ACCOUNTANT','MARKETING')")
-//    public String searchByNameAndId(
-//            @RequestParam(defaultValue = "") String keyword,
-//            @RequestParam(defaultValue = "all") String status,
-//            @RequestParam(defaultValue = "0") int page,
-//            Model model) {
-//
-//        Page<Department> listSearch = departmentService.searchByIdandName(keyword, status, page);
-//
-//        model.addAttribute("departmentPage", listSearch);
-//        model.addAttribute("keyword", keyword);
-//        model.addAttribute("status", status);
-//        addDepartmentSummary(model, listSearch);
-//
-//        return "departments/list";
-//    }
-//    @GetMapping("/detail/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER','SALES_MANAGER','SALES','ACCOUNTANT','MARKETING')")
-//    public String detailDepartment(@PathVariable Long id, Model model) {
-//        Department department = departmentService.getDepartmentById(id);
-//
-//        model.addAttribute("department", department);
-//        model.addAttribute("currentMembers", departmentService.countMembers(id));
-//        model.addAttribute("members", departmentService.getUsersInDepartment(id));
-//        model.addAttribute("manager", departmentService.getDepartmentManager(department.getManagerId()));
-//
-//        return "departments/detail";
-//    }
-//
-//    private void addDepartmentSummary(Model model, Page<Department> departmentPage) {
-//
-//        List<Department> departments = departmentPage.getContent();
-//
-//
-//        int activeCount = 0;
-//        int inactiveCount = 0;
-//
-//        for (Department department : departments) {
-//            if ("ACTIVE".equalsIgnoreCase(department.getStatus())) {
-//                activeCount++;
-//            } else {
-//                inactiveCount++;
-//            }
-//        }
-//
-//
-//        List<User> managers = userService.getUsersByRoles(
-//                List.of("ADMIN", "SALES_MANAGER")
-//        );
-//        Map<Long, String> managerMap = new HashMap<>();
-//
-//        for (User manager : managers) {
-//
-//            String managerName = manager.getFullName();
-//
-//            if (managerName == null || managerName.isBlank()) {
-//                managerName = manager.getUsername();
-//            }
-//
-//            managerMap.put(manager.getId(), managerName);
-//        }
-//
-//
-//        List<Long> departmentIds = new ArrayList<>();
-//
-//        for (Department department : departments) {
-//            departmentIds.add(department.getId());
-//        }
-//
-//
-//        Map<Long, Integer> memberCountMap =
-//                departmentService.countMembersByDepartmentIds(departmentIds);
-//
-//
-//        model.addAttribute("totalDepartments", departmentPage.getTotalElements());
-//        model.addAttribute("activeDepartments", activeCount);
-//        model.addAttribute("inactiveDepartments", inactiveCount);
-//        model.addAttribute("totalUsers", userService.countUsers());
-//        model.addAttribute("managerMap", managerMap);
-//        model.addAttribute("memberCountMap", memberCountMap);
-//
-//    }
 }

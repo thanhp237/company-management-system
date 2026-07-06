@@ -22,4 +22,5 @@ public class DepartmentRequest {
     private String status ;
     private String managerName;
     private List<User> employees;
+    private List<Long> employeeIds;
 }
