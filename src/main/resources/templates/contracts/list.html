@@ -614,7 +614,25 @@
                                     <i class="fa-regular fa-eye"></i>
                                 </a>
 
+                                <div th:if="${contract.status == 'SIGNED'}"
+                                     sec:authorize="hasAnyRole('ACCOUNTANT','ADMIN')">
+                                    <a class="icon-action warning"
+                                       th:if="${contract.paymentSchedules == null or #lists.isEmpty(contract.paymentSchedules)}"
+                                       th:href="@{/invoices/create/{id}(id=${contract.id})}"
+                                       title="Tạo hóa đơn">
+                                        <i class="fa-solid fa-file-invoice"></i>
+                                    </a>
+                                    <a class="icon-action warning"
+                                       th:each="schedule : ${contract.paymentSchedules}"
+                                       th:if="${schedule.invoiceId == null}"
+                                       th:href="@{/invoices/create/{id}(id=${contract.id},scheduleId=${schedule.id})}"
+                                       th:title="${'Tạo hóa đơn đợt ' + schedule.installmentNo}">
+                                        <i class="fa-solid fa-file-invoice"></i>
+                                    </a>
+                                </div>
+
                                 <form th:if="${contract.status == 'ADMIN_REVIEWED'}"
+                                      sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                                       th:action="@{/contracts/{id}/send-customer(id=${contract.id})}"
                                       method="post"
                                       onsubmit="return confirm('Gửi hợp đồng này cho khách hàng?');">
@@ -624,6 +642,7 @@
                                 </form>
 
                                 <form th:if="${contract.status != 'SIGNED' and contract.status != 'CANCELLED'}"
+                                      sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                                       th:action="@{/contracts/{id}/delete(id=${contract.id})}"
                                       method="post"
                                       onsubmit="return confirm('Hủy hợp đồng này?');">

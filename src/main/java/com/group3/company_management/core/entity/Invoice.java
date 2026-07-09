@@ -21,6 +21,10 @@ public class Invoice {
     @JoinColumn(name = "contract_id", nullable = false)
     private Contract contract;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_schedule_id", unique = true)
+    private PaymentSchedule paymentSchedule;
+
     @Column(name = "invoice_code", nullable = false, unique = true)
     private String invoiceCode;
 

@@ -20,7 +20,39 @@
     <div class="management-page">
         <a class="btn btn-outline-secondary mb-3" th:href="@{/customer/portal}">Quay lại</a>
         <h1>Thanh toán</h1>
-        <p class="text-muted">Màn lịch sử thanh toán đã sẵn sàng để hiển thị dữ liệu thanh toán.</p>
+        <div th:if="${param.payment != null and param.payment[0] == 'success'}" class="alert alert-success">
+            Thanh toán thành công. Hóa đơn đã được cập nhật.
+        </div>
+        <div th:if="${param.payment != null and param.payment[0] == 'processing'}" class="alert alert-info">
+            Kết quả đang được xác nhận qua VNPAY IPN. Vui lòng tải lại trang sau vài giây.
+        </div>
+        <div th:if="${param.payment != null and param.payment[0] == 'failed'}" class="alert alert-warning">
+            Giao dịch không thành công hoặc đã bị hủy.
+        </div>
+        <div th:if="${param.payment != null and param.payment[0] == 'invalid'}" class="alert alert-danger">
+            Kết quả thanh toán không hợp lệ.
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Mã hóa đơn</th><th>Hợp đồng</th><th>Hạn</th><th>Số tiền</th><th>Trạng thái</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="invoice : ${invoices}">
+                    <td th:text="${invoice.invoiceCode}">INV</td>
+                    <td th:text="${invoice.contract.contractCode}">CT</td>
+                    <td th:text="${invoice.dueDate}">Ngày</td>
+                    <td th:text="${#numbers.formatDecimal(invoice.totalAmount,0,'COMMA',0,'POINT') + ' VNĐ'}">0</td>
+                    <td th:text="${invoice.status}">ISSUED</td>
+                    <td>
+                        <form th:if="${invoice.status.name() == 'ISSUED'}"
+                              th:action="@{/customer/portal/payments/{id}/pay(id=${invoice.id})}" method="post">
+                            <button class="btn btn-primary" type="submit">Thanh toán VNPAY</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(invoices)}"><td colspan="6">Chưa có hóa đơn.</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </main>
 </body>

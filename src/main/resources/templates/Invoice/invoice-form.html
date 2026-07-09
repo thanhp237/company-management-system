@@ -41,6 +41,7 @@
               th:object="${invoiceForm}"
               method="post"
               id="invoiceForm">
+            <input type="hidden" th:field="*{paymentScheduleId}">
 
             <div class="page-top">
                 <div class="page-title">

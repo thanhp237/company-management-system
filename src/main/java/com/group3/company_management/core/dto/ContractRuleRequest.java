@@ -5,6 +5,8 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,6 +19,8 @@ public class ContractRuleRequest {
     private LocalDate contractEndDate;
 
     private String paymentTerms;
+    private String paymentPlanType;
+    private List<PaymentScheduleRequest> paymentSchedules = new ArrayList<>();
 
     private String deliveryTerms;
 

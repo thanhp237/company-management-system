@@ -72,7 +72,7 @@
             </div>
 
             <div class="sidebar-group"
-                 sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER')">
+                 sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER','ACCOUNTANT','DIRECTOR')">
                 <button class="sidebar-link sidebar-toggle collapsed"
                         type="button"
                         data-bs-toggle="collapse"
@@ -87,7 +87,7 @@
                     <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
                        href="/pipeline"
                        data-nav-match="/pipeline">Quy trình bán hàng</a>
-                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER')"
+                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER','ACCOUNTANT','DIRECTOR')"
                        href="/contracts"
                        data-nav-match="/contracts">Hợp đồng</a>
                 </div>
@@ -99,6 +99,13 @@
                data-nav-match="/products">
                 <i class="fas fa-box"></i>
                 <span>Sản phẩm</span>
+            </a>
+            <a class="sidebar-link"
+               sec:authorize="hasAnyRole('ACCOUNTANT','ADMIN')"
+               href="/invoices"
+               data-nav-match="/invoices">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Hóa đơn</span>
             </a>
         </nav>
 

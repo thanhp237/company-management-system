@@ -31,6 +31,7 @@ public interface ContractService {
     void sendToCustomer(Long contractId, String username);
 
     void customerSignContractByCustomer(Long contractId, Long customerId);
+    void customerRequestRevision(Long contractId, Long customerId, String reason);
 
     void cancelContract(Long contractId, String username);
     Page<ContractResponse> searchContracts(
