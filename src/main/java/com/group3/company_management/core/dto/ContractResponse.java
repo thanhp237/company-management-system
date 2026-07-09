@@ -40,6 +40,14 @@ public class ContractResponse {
 
     private BigDecimal finalAmount;
 
+    private Long voucherId;
+
+    private String voucherCode;
+
+    private BigDecimal voucherDiscountPercent;
+
+    private BigDecimal voucherMaxDiscountAmount;
+
     private Long saleId;
 
     private String saleName;
@@ -57,6 +65,9 @@ public class ContractResponse {
     private LocalDate contractEndDate;
 
     private String paymentTerms;
+    private String paymentPlanType;
+    private String revisionReason;
+    private List<PaymentScheduleResponse> paymentSchedules;
 
     private String deliveryTerms;
 

@@ -118,8 +118,11 @@ public class SecurityConfig {
                                                                 "/css/**",
                                                                 "/js/**",
                                                                 "/images/**",
+                                                                "/uploads/**",
                                                                 "/webjars/**",
                                                                 "/main.css")
+                                                .permitAll()
+                                                .requestMatchers("/payments/vnpay/ipn", "/payments/vnpay/return")
                                                 .permitAll()
                                                 .requestMatchers("/dashboard/admin/**")
                                                 .hasRole("ADMIN")
@@ -133,8 +136,14 @@ public class SecurityConfig {
                                                 .requestMatchers("/dashboard/accountant/**")
                                                 .hasRole("ACCOUNTANT")
 
+                                                .requestMatchers("/invoices/**")
+                                                .hasAnyRole("ACCOUNTANT", "ADMIN")
+
                                                 .requestMatchers("/dashboard/admin-officer/**")
                                                 .hasAnyRole("ADMIN_OFFICER", "ADMINOFFICER")
+
+                                                .requestMatchers("/business-rules", "/business-rules/**")
+                                                .hasAnyRole("ADMIN", "ADMIN_OFFICER", "ADMINOFFICER")
 
                                                 .requestMatchers("/dashboard/sales-manager/**")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER")
@@ -175,7 +184,7 @@ public class SecurityConfig {
                                                 .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN")
 
                                                 .requestMatchers("/contracts/**")
-                                                .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN", "ADMIN_OFFICER", "ADMINOFFICER")
+                                                .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "ACCOUNTANT", "DIRECTOR")
 
                                                 .requestMatchers(
                                                                 "/dashboard/**",

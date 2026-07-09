@@ -38,17 +38,9 @@
                 </p>
             </div>
 
-            <!-- NÚT TẠO HÓA ĐƠN -->
-            <div th:if="${contract.status == 'SIGNED'}" class="mt-3">
-                <a th:href="@{/invoices/create/{contractId}(contractId=${contract.id})}"
-                   class="btn btn-primary btn-lg">
-                    <i class="fas fa-file-invoice"></i> Tạo Hóa Đơn
-                </a>
-            </div>
-
             <span class="contract-status detail"
                   th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
-                  th:text="${contract.status == 'DRAFT' ? 'Bản nháp' : (contract.status == 'PENDING_ADMIN_OFFICER' ? 'Chờ hành chính hợp đồng' : (contract.status == 'ADMIN_REVIEWED' ? 'Đã duyệt điều khoản' : (contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status)))))}">Bản nháp</span>
+                  th:text="${contract.status == 'DRAFT' ? 'Bản nháp' : (contract.status == 'PENDING_ADMIN_OFFICER' ? 'Chờ hành chính hợp đồng' : (contract.status == 'ADMIN_REVIEWED' ? 'Đã duyệt điều khoản' : (contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'REVISION_REQUESTED' ? 'Khách yêu cầu chỉnh sửa' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status))))))}">Bản nháp</span>
         </div>
 
         <div th:if="${successMessage}" class="management-alert success">
@@ -124,6 +116,7 @@
 
                 <form class="contract-detail-card contract-rule-form"
                       th:if="${contract.status == 'DRAFT'}"
+                      sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                       th:action="@{/contracts/{id}/draft-info(id=${contract.id})}"
                       th:object="${contractRuleRequest}"
                       method="post">
@@ -282,11 +275,42 @@
                             <span>Ghi chú Admin</span>
                             <p th:text="${contract.adminNote != null ? contract.adminNote : 'Chưa có'}">Chưa có</p>
                         </div>
+                        <div>
+                            <span>Hình thức thu tiền</span>
+                            <strong th:text="${contract.paymentPlanType == 'INSTALLMENTS' ? 'Thanh toán theo đợt' : (contract.paymentPlanType == 'ONE_TIME' ? 'Thanh toán 1 lần' : 'Chưa có')}">Chưa có</strong>
+                        </div>
+                        <div class="wide">
+                            <span>Lịch thanh toán</span>
+                            <div class="table-responsive mt-2" th:if="${contract.paymentSchedules != null and !#lists.isEmpty(contract.paymentSchedules)}">
+                                <table class="contract-item-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Đợt</th>
+                                        <th>Hạn thanh toán</th>
+                                        <th>Số tiền</th>
+                                        <th>Mô tả</th>
+                                        <th>Hóa đơn</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="schedule : ${contract.paymentSchedules}">
+                                        <td th:text="${schedule.installmentNo}">1</td>
+                                        <td th:text="${schedule.dueDate != null ? schedule.dueDate : 'Chưa có'}">Chưa có</td>
+                                        <td th:text="${schedule.amount != null ? #numbers.formatDecimal(schedule.amount, 0, 'COMMA', 0, 'POINT') : '0'}">0</td>
+                                        <td th:text="${schedule.description != null ? schedule.description : '—'}">—</td>
+                                        <td th:text="${schedule.invoiceStatus != null ? schedule.invoiceStatus : 'Chưa tạo'}">Chưa tạo</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p th:if="${contract.paymentSchedules == null or #lists.isEmpty(contract.paymentSchedules)}">Chưa có</p>
+                        </div>
                     </div>
                 </section>
 
                 <form class="contract-detail-card contract-rule-form"
-                      th:if="${contract.status == 'PENDING_ADMIN_OFFICER'}"
+                      th:if="${contract.status == 'PENDING_ADMIN_OFFICER' or contract.status == 'REVISION_REQUESTED'}"
+                      sec:authorize="hasAnyRole('ADMIN_OFFICER','ADMINOFFICER','ADMIN')"
                       th:action="@{/contracts/{id}/rules(id=${contract.id})}"
                       th:object="${contractRuleRequest}"
                       method="post">
@@ -452,6 +476,22 @@
                                 <textarea th:field="*{paymentTerms}" rows="3" required></textarea>
                             </label>
                             <label class="wide">
+                                <span>Hình thức thu tiền</span>
+                                <select th:field="*{paymentPlanType}" required>
+                                    <option value="ONE_TIME">Thanh toán 1 lần</option>
+                                    <option value="INSTALLMENTS">Thanh toán theo đợt</option>
+                                </select>
+                            </label>
+                            <div class="wide">
+                                <span class="d-block mb-2 fw-bold">Lịch thanh toán (để trống các dòng không dùng)</span>
+                                <div class="row g-2 mb-2" th:each="row, stat : *{paymentSchedules}">
+                                    <div class="col-md-3"><input type="date" th:field="*{paymentSchedules[__${stat.index}__].dueDate}"></div>
+                                    <div class="col-md-3"><input type="number" min="1" step="0.01" placeholder="Số tiền" th:field="*{paymentSchedules[__${stat.index}__].amount}"></div>
+                                    <div class="col-md-6"><input type="text" placeholder="Mô tả đợt" th:field="*{paymentSchedules[__${stat.index}__].description}"></div>
+                                </div>
+                                <small>Tổng các đợt phải bằng tổng giá trị hợp đồng.</small>
+                            </div>
+                            <label class="wide">
                                 <span>Lịch giao hàng</span>
                                 <textarea th:field="*{deliverySchedule}" rows="3"></textarea>
                             </label>
@@ -526,6 +566,7 @@
                 <section class="contract-action-card">
                     <h2>Thao tác nhanh</h2>
                     <form th:if="${contract.status == 'DRAFT'}"
+                          sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                           th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}"
                           method="post"
                           onsubmit="return confirm('Bạn đã lưu/xác nhận thông tin bên mua trước khi gửi hành chính hợp đồng?');">
@@ -533,6 +574,7 @@
                     </form>
 
                     <form th:if="${contract.status == 'ADMIN_REVIEWED'}"
+                          sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                           th:action="@{/contracts/{id}/send-customer(id=${contract.id})}"
                           method="post"
                           onsubmit="return confirm('Gửi hợp đồng này cho khách hàng?');">
@@ -540,6 +582,7 @@
                     </form>
 
                     <form th:if="${contract.status == 'SENT_TO_CUSTOMER' and !contract.customerAccountCreated}"
+                          sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                           th:action="@{/contracts/{id}/customer-account(id=${contract.id})}"
                           method="post"
                           onsubmit="return confirm('Cấp account portal cho khách hàng này?');">
@@ -547,13 +590,15 @@
                     </form>
 
                     <form th:if="${contract.status == 'SENT_TO_CUSTOMER' and contract.customerAccountCreated}"
+                          sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                           th:action="@{/contracts/{id}/customer-account/resend(id=${contract.id})}"
                           method="post"
                           onsubmit="return confirm('Tạo mật khẩu mới và gửi lại account cho khách hàng?');">
                         <button type="submit"><i class="fas fa-key"></i> Gửi lại account</button>
                     </form>
 
-                    <form th:if="${contract.status == 'DRAFT' or contract.status == 'PENDING_ADMIN_OFFICER' or contract.status == 'ADMIN_REVIEWED' or contract.status == 'SENT_TO_CUSTOMER'}"
+                    <form th:if="${contract.status == 'DRAFT' or contract.status == 'PENDING_ADMIN_OFFICER' or contract.status == 'ADMIN_REVIEWED' or contract.status == 'SENT_TO_CUSTOMER' or contract.status == 'REVISION_REQUESTED'}"
+                          sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                           th:action="@{/contracts/{id}/cancel(id=${contract.id})}"
                           method="post"
                           onsubmit="return confirm('Hủy hợp đồng này?');">
@@ -574,6 +619,22 @@
                         <i class="fas fa-file-invoice-dollar"></i>
                         Xem báo giá
                     </a>
+                    <div th:if="${contract.status == 'SIGNED'}"
+                         sec:authorize="hasAnyRole('ACCOUNTANT','ADMIN')">
+                        <a class="contract-action-link"
+                           th:if="${contract.paymentSchedules == null or #lists.isEmpty(contract.paymentSchedules)}"
+                           th:href="@{/invoices/create/{id}(id=${contract.id})}">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>Tạo hóa đơn</span>
+                        </a>
+                        <a class="contract-action-link"
+                           th:each="schedule : ${contract.paymentSchedules}"
+                           th:if="${schedule.invoiceId == null}"
+                           th:href="@{/invoices/create/{id}(id=${contract.id},scheduleId=${schedule.id})}">
+                            <i class="fas fa-file-invoice"></i>
+                            <span th:text="${'Tạo hóa đơn đợt ' + schedule.installmentNo}">Tạo hóa đơn</span>
+                        </a>
+                    </div>
 
                     <a class="contract-action-link"
                        th:href="@{/contracts}">
@@ -592,6 +653,10 @@
                         <div>
                             <dt>Giảm giá</dt>
                             <dd th:text="${contract.discountAmount != null ? #numbers.formatDecimal(contract.discountAmount, 0, 'COMMA', 0, 'POINT') : '0'}">0</dd>
+                        </div>
+                        <div>
+                            <dt>Voucher từ báo giá</dt>
+                            <dd th:text="${contract.voucherCode != null ? contract.voucherCode + ' (' + contract.voucherDiscountPercent + '%)' : 'Không áp dụng'}">Không áp dụng</dd>
                         </div>
                         <div class="total">
                             <dt>Tổng giá trị</dt>

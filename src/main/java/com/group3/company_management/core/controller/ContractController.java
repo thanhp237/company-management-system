@@ -3,6 +3,7 @@ package com.group3.company_management.core.controller;
 import com.group3.company_management.core.dto.ContractRuleRequest;
 import com.group3.company_management.core.dto.ContractResponse;
 import com.group3.company_management.core.dto.CustomerAccountResult;
+import com.group3.company_management.core.dto.PaymentScheduleRequest;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.service.ContractService;
 import com.group3.company_management.core.service.CustomerAccountService;
@@ -18,11 +19,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 @Controller
 @RequestMapping("/contracts")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN')")
+@PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
 public class ContractController {
 
     private final ContractService contractService;
@@ -242,6 +244,24 @@ public class ContractController {
         request.setContractStartDate(contract.getContractStartDate());
         request.setContractEndDate(contract.getContractEndDate());
         request.setPaymentTerms(contract.getPaymentTerms());
+        request.setPaymentPlanType(contract.getPaymentPlanType() == null ? "ONE_TIME" : contract.getPaymentPlanType());
+        List<PaymentScheduleRequest> schedules = new ArrayList<>();
+        if (contract.getPaymentSchedules() != null) contract.getPaymentSchedules().forEach(item -> {
+            PaymentScheduleRequest row = new PaymentScheduleRequest();
+            row.setDueDate(item.getDueDate());
+            row.setAmount(item.getAmount());
+            row.setDescription(item.getDescription());
+            schedules.add(row);
+        });
+        if (schedules.isEmpty()) {
+            PaymentScheduleRequest row = new PaymentScheduleRequest();
+            row.setDueDate(contract.getPaymentDueDate());
+            row.setAmount(contract.getFinalAmount());
+            row.setDescription("Thanh toán toàn bộ hợp đồng");
+            schedules.add(row);
+        }
+        while (schedules.size() < 5) schedules.add(new PaymentScheduleRequest());
+        request.setPaymentSchedules(schedules);
         request.setDeliveryTerms(contract.getDeliveryTerms());
         request.setLegalTerms(contract.getLegalTerms());
         request.setAdminNote(contract.getAdminNote());
@@ -296,6 +316,7 @@ public class ContractController {
                 "PENDING_ADMIN_OFFICER", " pending",
                 "ADMIN_REVIEWED", " reviewed",
                 "SENT_TO_CUSTOMER", " sent",
+                "REVISION_REQUESTED", " pending",
                 "SIGNED", " signed",
                 "CANCELLED", " cancelled"
         );

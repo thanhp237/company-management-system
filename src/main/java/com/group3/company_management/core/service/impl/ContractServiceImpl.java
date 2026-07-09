@@ -3,6 +3,8 @@ package com.group3.company_management.core.service.impl;
 import com.group3.company_management.core.dto.ContractItemResponse;
 import com.group3.company_management.core.dto.ContractRuleRequest;
 import com.group3.company_management.core.dto.ContractResponse;
+import com.group3.company_management.core.dto.PaymentScheduleRequest;
+import com.group3.company_management.core.dto.PaymentScheduleResponse;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Employee;
@@ -10,16 +12,21 @@ import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.entity.Product;
 import com.group3.company_management.core.entity.Quotation;
 import com.group3.company_management.core.entity.QuotationDetail;
+import com.group3.company_management.core.entity.PaymentSchedule;
 import com.group3.company_management.core.repository.ContractRepository;
 import com.group3.company_management.core.repository.EmployeeRepository;
 import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.repository.QuotationRepository;
+import com.group3.company_management.core.repository.VoucherRepository;
+import com.group3.company_management.core.repository.PaymentScheduleRepository;
+import com.group3.company_management.core.repository.InvoiceRepository;
 import com.group3.company_management.core.service.ContractService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.List;
@@ -48,6 +55,9 @@ public class ContractServiceImpl implements ContractService {
     private final ContractRepository contractRepository;
     private final EmployeeRepository employeeRepository;
     private final OpportunityRepository opportunityRepository;
+    private final VoucherRepository voucherRepository;
+    private final PaymentScheduleRepository paymentScheduleRepository;
+    private final InvoiceRepository invoiceRepository;
 
     @Override
     @Transactional
@@ -203,7 +213,8 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng."));
 
-        if (contract.getStatus() != Contract.ContractStatus.PENDING_ADMIN_OFFICER) {
+        if (contract.getStatus() != Contract.ContractStatus.PENDING_ADMIN_OFFICER
+                && contract.getStatus() != Contract.ContractStatus.REVISION_REQUESTED) {
             throw new RuntimeException("Chỉ hợp đồng đang chờ hành chính hợp đồng mới được cập nhật điều khoản.");
         }
 
@@ -219,6 +230,10 @@ public class ContractServiceImpl implements ContractService {
         contract.setContractStartDate(request.getContractStartDate());
         contract.setContractEndDate(request.getContractEndDate());
         contract.setPaymentTerms(request.getPaymentTerms());
+        Contract.PaymentPlanType planType = parsePlanType(request.getPaymentPlanType());
+        List<PaymentScheduleRequest> schedules = validateSchedules(planType, request.getPaymentSchedules(), contract.getFinalAmount());
+        contract.setPaymentPlanType(planType);
+        contract.setRevisionReason(null);
         contract.setDeliveryTerms(request.getDeliveryTerms());
         contract.setLegalTerms(request.getLegalTerms());
         contract.setAdminNote(request.getAdminNote());
@@ -267,6 +282,14 @@ public class ContractServiceImpl implements ContractService {
         contract.setStatus(Contract.ContractStatus.ADMIN_REVIEWED);
 
         contractRepository.save(contract);
+        paymentScheduleRepository.deleteByContractId(contractId);
+        paymentScheduleRepository.flush();
+        for (int i = 0; i < schedules.size(); i++) {
+            PaymentScheduleRequest row = schedules.get(i);
+            paymentScheduleRepository.save(PaymentSchedule.builder()
+                    .contract(contract).installmentNo(i + 1).dueDate(row.getDueDate())
+                    .amount(row.getAmount()).description(normalize(row.getDescription())).build());
+        }
     }
 
     @Override
@@ -304,8 +327,23 @@ public class ContractServiceImpl implements ContractService {
             throw new RuntimeException("Chỉ hợp đồng đã gửi cho khách hàng mới có thể ký.");
         }
 
+        ensurePaymentScheduleExists(contract);
         contract.setStatus(Contract.ContractStatus.SIGNED);
         contract.setSignedAt(LocalDateTime.now());
+        contractRepository.save(contract);
+    }
+
+    @Override
+    @Transactional
+    public void customerRequestRevision(Long contractId, Long customerId, String reason) {
+        Contract contract = getCustomerOwnedContract(contractId, customerId);
+        if (contract.getStatus() != Contract.ContractStatus.SENT_TO_CUSTOMER) {
+            throw new RuntimeException("Hợp đồng không ở trạng thái chờ phản hồi.");
+        }
+        if (!hasText(reason)) throw new RuntimeException("Vui lòng nhập nội dung cần chỉnh sửa.");
+        contract.setRevisionReason(reason.trim());
+        contract.setStatus(Contract.ContractStatus.REVISION_REQUESTED);
+        contract.setAssignedEmployee(contract.getAdminOfficer());
         contractRepository.save(contract);
     }
 
@@ -456,6 +494,17 @@ public class ContractServiceImpl implements ContractService {
         response.setContractStartDate(contract.getContractStartDate());
         response.setContractEndDate(contract.getContractEndDate());
         response.setPaymentTerms(contract.getPaymentTerms());
+        response.setPaymentPlanType(contract.getPaymentPlanType() == null ? null : contract.getPaymentPlanType().name());
+        response.setRevisionReason(contract.getRevisionReason());
+        response.setPaymentSchedules(paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contract.getId())
+                .stream().map(schedule -> {
+                    var invoice = invoiceRepository.findByPaymentScheduleId(schedule.getId()).orElse(null);
+                    return PaymentScheduleResponse.builder().id(schedule.getId())
+                            .installmentNo(schedule.getInstallmentNo()).dueDate(schedule.getDueDate())
+                            .amount(schedule.getAmount()).description(schedule.getDescription())
+                            .invoiceId(invoice == null ? null : invoice.getId())
+                            .invoiceStatus(invoice == null ? null : invoice.getStatus().name()).build();
+                }).toList());
         response.setDeliveryTerms(contract.getDeliveryTerms());
         response.setLegalTerms(contract.getLegalTerms());
         response.setAdminNote(contract.getAdminNote());
@@ -506,6 +555,14 @@ public class ContractServiceImpl implements ContractService {
         if (quotation != null) {
             response.setQuotationId(quotation.getId());
             response.setQuotationCode(quotation.getQuotationCode());
+            response.setVoucherId(quotation.getVoucherId());
+            if (quotation.getVoucherId() != null) {
+                voucherRepository.findById(quotation.getVoucherId()).ifPresent(voucher -> {
+                    response.setVoucherCode(voucher.getVoucherCode());
+                    response.setVoucherDiscountPercent(voucher.getDiscountPercent());
+                    response.setVoucherMaxDiscountAmount(voucher.getMaxDiscountAmount());
+                });
+            }
             response.setItems(mapContractItems(quotation.getDetails()));
         }
 
@@ -652,7 +709,30 @@ public class ContractServiceImpl implements ContractService {
 
     private boolean canViewAllContracts(Employee employee) {
         String roleCode = roleCode(employee);
-        return "ADMIN".equals(roleCode) || "MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode);
+        return "ADMIN".equals(roleCode)
+                || "MANAGER".equals(roleCode)
+                || "SALES_MANAGER".equals(roleCode)
+                || "ACCOUNTANT".equals(roleCode)
+                || "DIRECTOR".equals(roleCode);
+    }
+
+    private void ensurePaymentScheduleExists(Contract contract) {
+        if (contract == null || contract.getId() == null
+                || !paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contract.getId()).isEmpty()) {
+            return;
+        }
+
+        if (contract.getPaymentPlanType() == null) {
+            contract.setPaymentPlanType(Contract.PaymentPlanType.ONE_TIME);
+        }
+
+        paymentScheduleRepository.save(PaymentSchedule.builder()
+                .contract(contract)
+                .installmentNo(1)
+                .dueDate(contract.getPaymentDueDate() != null ? contract.getPaymentDueDate() : LocalDate.now())
+                .amount(defaultMoney(contract.getFinalAmount()))
+                .description("Thanh toán toàn bộ hợp đồng")
+                .build());
     }
 
     private void validateSalesStepAccess(Contract contract, Employee employee) {
@@ -676,7 +756,37 @@ public class ContractServiceImpl implements ContractService {
         return contract.getContractStartDate() != null
                 && contract.getContractEndDate() != null
                 && hasText(contract.getPaymentTerms())
+                && contract.getPaymentPlanType() != null
+                && !paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contract.getId()).isEmpty()
                 && hasText(contract.getLegalTerms());
+    }
+
+    private Contract.PaymentPlanType parsePlanType(String value) {
+        try {
+            return Contract.PaymentPlanType.valueOf(value);
+        } catch (Exception e) {
+            throw new RuntimeException("Vui lòng chọn hình thức thanh toán.");
+        }
+    }
+
+    private List<PaymentScheduleRequest> validateSchedules(Contract.PaymentPlanType type,
+                                                            List<PaymentScheduleRequest> rows,
+                                                            BigDecimal finalAmount) {
+        List<PaymentScheduleRequest> valid = rows == null ? List.of() : rows.stream()
+                .filter(r -> r != null && (r.getAmount() != null || r.getDueDate() != null)).toList();
+        if (type == Contract.PaymentPlanType.ONE_TIME && valid.size() != 1)
+            throw new RuntimeException("Thanh toán một lần phải có đúng một mốc.");
+        if (type == Contract.PaymentPlanType.INSTALLMENTS && valid.size() < 2)
+            throw new RuntimeException("Thanh toán theo đợt phải có ít nhất hai đợt.");
+        BigDecimal total = BigDecimal.ZERO;
+        for (PaymentScheduleRequest row : valid) {
+            if (row.getDueDate() == null || row.getAmount() == null || row.getAmount().signum() <= 0)
+                throw new RuntimeException("Mỗi đợt phải có hạn thanh toán và số tiền lớn hơn 0.");
+            total = total.add(row.getAmount());
+        }
+        if (total.compareTo(defaultMoney(finalAmount)) != 0)
+            throw new RuntimeException("Tổng lịch thanh toán phải bằng tổng giá trị hợp đồng.");
+        return valid;
     }
 
     private BigDecimal defaultMoney(BigDecimal value) {

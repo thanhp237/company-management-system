@@ -10,6 +10,7 @@ import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.service.ContractService;
 import com.group3.company_management.core.service.CustomerService;
+import com.group3.company_management.core.repository.InvoiceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -31,6 +32,7 @@ public class CustomerPortalController {
     
     private final CustomerService customerService;
     private final ContractService contractService;
+    private final InvoiceRepository invoiceRepository;
     
     /**
      * GET /customer/portal
@@ -151,6 +153,14 @@ public class CustomerPortalController {
             return "customer/contract-detail";
         }
     }
+
+    @PostMapping("/contracts/{contractId}/request-revision")
+    public String requestRevision(@PathVariable Long contractId, @RequestParam String reason,
+                                  Authentication authentication) {
+        Customer customer = getAuthenticatedCustomer(authentication);
+        contractService.customerRequestRevision(contractId, customer.getId(), reason);
+        return "redirect:/customer/portal/contracts/" + contractId + "?revisionRequested=true";
+    }
     
     @RequestMapping("/quotes/**")
     public String redirectLegacyQuotePages() {
@@ -167,7 +177,7 @@ public class CustomerPortalController {
         
         model.addAttribute("title", "Lịch sử thanh toán");
         model.addAttribute("customer", customer);
-        // TODO: Fetch payments from PaymentService
+        model.addAttribute("invoices", invoiceRepository.findByContractCustomerIdOrderByCreatedAtDesc(customer.getId()));
         
         log.info("✅ Customer payments page accessed: {}", customer.getEmail());
         return "customer/payments";

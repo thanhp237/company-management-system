@@ -76,6 +76,13 @@ public class Contract {
     @Column(name = "payment_terms", columnDefinition = "TEXT")
     private String paymentTerms;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_plan_type", length = 20)
+    private PaymentPlanType paymentPlanType;
+
+    @Column(name = "revision_reason", columnDefinition = "TEXT")
+    private String revisionReason;
+
     @Column(name = "delivery_terms", columnDefinition = "TEXT")
     private String deliveryTerms;
 
@@ -235,8 +242,11 @@ public class Contract {
         PENDING_ADMIN_OFFICER,
         ADMIN_REVIEWED,
         SENT_TO_CUSTOMER,
+        REVISION_REQUESTED,
         SIGNED,
         CANCELLED
     }
+
+    public enum PaymentPlanType { ONE_TIME, INSTALLMENTS }
 
 }

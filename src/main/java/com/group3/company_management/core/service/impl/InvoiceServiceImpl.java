@@ -1,17 +1,19 @@
 package com.group3.company_management.core.service.impl;
 
-import com.group3.company_management.core.dto.CreateInvoiceRequest;
+import com.group3.company_management.core.dto   .CreateInvoiceRequest;
 import com.group3.company_management.core.dto.InvoiceItemFormRow;
 import com.group3.company_management.core.entity.Contract;
-import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Employee;
 import com.group3.company_management.core.entity.Invoice;
 import com.group3.company_management.core.entity.InvoiceItem;
 import com.group3.company_management.core.entity.QuotationDetail;
+import com.group3.company_management.core.entity.PaymentSchedule;
 import com.group3.company_management.core.repository.ContractRepository;
+import com.group3.company_management.core.repository.EmployeeRepository;
 import com.group3.company_management.core.repository.InvoiceItemRepository;
 import com.group3.company_management.core.repository.InvoiceRepository;
 import com.group3.company_management.core.repository.QuotationDetailRepository;
+import com.group3.company_management.core.repository.PaymentScheduleRepository;
 import com.group3.company_management.core.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +38,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceItemRepository invoiceItemRepository;
     private final ContractRepository contractRepository;
     private final QuotationDetailRepository quotationDetailRepository;
+    private final PaymentScheduleRepository paymentScheduleRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public Invoice createInvoice(Long contractId, CreateInvoiceRequest request) {
@@ -45,6 +50,10 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new RuntimeException("Hợp đồng phải ở trạng thái SIGNED");
         }
 
+        PaymentSchedule schedule = resolvePaymentSchedule(contract, request);
+        if (invoiceRepository.existsByPaymentScheduleId(schedule.getId()))
+            throw new RuntimeException("Đợt thanh toán này đã có hóa đơn.");
+
         List<InvoiceItemFormRow> selectedItems = new ArrayList<>();
         if (request.getItems() != null) {
             for (InvoiceItemFormRow row : request.getItems()) {
@@ -54,29 +63,26 @@ public class InvoiceServiceImpl implements InvoiceService {
             }
         }
 
-        if (selectedItems.isEmpty()) {
-            throw new RuntimeException("Vui lòng chọn ít nhất một sản phẩm/dịch vụ để xuất hóa đơn");
-        }
-
         Invoice.InvoiceStatus invoiceStatus = Invoice.InvoiceStatus.DRAFT;
         if ("ISSUED".equalsIgnoreCase(request.getStatus())) {
             invoiceStatus = Invoice.InvoiceStatus.ISSUED;
         }
 
-        Long currentUserId = getCurrentUserId();
+        Long currentEmployeeId = getCurrentEmployeeId();
 
         Invoice invoice = Invoice.builder()
                 .contract(contract)
+                .paymentSchedule(schedule)
                 .invoiceCode(generateInvoiceCode())
-                .dueDate(request.getDueDate())
+                .dueDate(schedule.getDueDate())
                 .note(request.getNote() != null ? request.getNote() : "")
                 .status(invoiceStatus)
                 .totalAmount(BigDecimal.ZERO)
                 .paidAmount(BigDecimal.ZERO)
                 .outstandingAmount(BigDecimal.ZERO)
                 .issuedAt(invoiceStatus == Invoice.InvoiceStatus.ISSUED ? LocalDateTime.now() : null)
-                .createdBy(currentUserId)
-                .updatedBy(currentUserId)
+                .createdBy(currentEmployeeId)
+                .updatedBy(currentEmployeeId)
                 .invoiceItems(new ArrayList<>())
                 .build();
 
@@ -117,8 +123,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             totalAmount = totalAmount.add(subtotal);
         }
 
-        invoice.setTotalAmount(totalAmount);
-        invoice.setOutstandingAmount(totalAmount);
+        invoice.setTotalAmount(schedule.getAmount());
+        invoice.setOutstandingAmount(schedule.getAmount());
 
         return invoiceRepository.save(invoice);
     }
@@ -134,7 +140,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoice.setStatus(Invoice.InvoiceStatus.ISSUED);
         invoice.setIssuedAt(LocalDateTime.now());
-        invoice.setUpdatedBy(getCurrentUserId());
+        invoice.setUpdatedBy(getCurrentEmployeeId());
         return invoiceRepository.save(invoice);
     }
 
@@ -225,6 +231,16 @@ public class InvoiceServiceImpl implements InvoiceService {
                 : new ArrayList<>();
 
         CreateInvoiceRequest request = new CreateInvoiceRequest();
+        paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contractId).stream()
+                .filter(s -> !invoiceRepository.existsByPaymentScheduleId(s.getId()))
+                .findFirst().ifPresent(s -> {
+                    request.setPaymentScheduleId(s.getId());
+                    request.setDueDate(s.getDueDate());
+                    request.setNote(s.getDescription());
+                });
+        if (request.getDueDate() == null) {
+            request.setDueDate(contract.getPaymentDueDate() != null ? contract.getPaymentDueDate() : LocalDate.now());
+        }
         List<InvoiceItemFormRow> items = new ArrayList<>();
 
         for (QuotationDetail qd : quotationDetails) {
@@ -325,7 +341,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         invoice.setDueDate(request.getDueDate());
         invoice.setNote(request.getNote() != null ? request.getNote() : "");
-        invoice.setUpdatedBy(getCurrentUserId());
+        invoice.setUpdatedBy(getCurrentEmployeeId());
 
         if ("ISSUED".equalsIgnoreCase(request.getStatus())) {
             invoice.setStatus(Invoice.InvoiceStatus.ISSUED);
@@ -385,6 +401,37 @@ public class InvoiceServiceImpl implements InvoiceService {
         return generateInvoiceCode();
     }
 
+    private PaymentSchedule resolvePaymentSchedule(Contract contract, CreateInvoiceRequest request) {
+        if (request.getPaymentScheduleId() != null) {
+            PaymentSchedule schedule = paymentScheduleRepository.findById(request.getPaymentScheduleId())
+                    .orElseThrow(() -> new RuntimeException("Vui lòng chọn đợt thanh toán."));
+            if (!schedule.getContract().getId().equals(contract.getId())) {
+                throw new RuntimeException("Đợt thanh toán không thuộc hợp đồng.");
+            }
+            return schedule;
+        }
+
+        List<PaymentSchedule> schedules = paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contract.getId());
+        if (schedules.size() == 1) {
+            return schedules.get(0);
+        }
+        if (schedules.size() > 1) {
+            throw new RuntimeException("Vui lòng chọn đợt thanh toán cần tạo hóa đơn.");
+        }
+
+        if (contract.getPaymentPlanType() == null) {
+            contract.setPaymentPlanType(Contract.PaymentPlanType.ONE_TIME);
+        }
+
+        return paymentScheduleRepository.save(PaymentSchedule.builder()
+                .contract(contract)
+                .installmentNo(1)
+                .dueDate(request.getDueDate() != null ? request.getDueDate() : LocalDate.now())
+                .amount(contract.getFinalAmount() != null ? contract.getFinalAmount() : BigDecimal.ZERO)
+                .description("Thanh toán toàn bộ hợp đồng")
+                .build());
+    }
+
     private String generateInvoiceCode() {
         Long count = invoiceRepository.count() + 1;
         java.time.LocalDate now = java.time.LocalDate.now();
@@ -392,24 +439,19 @@ public class InvoiceServiceImpl implements InvoiceService {
         return String.format("INV%s%03d", yearMonth, count);
     }
 
-    private Long getCurrentUserId() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated()) {
-                Object principal = authentication.getPrincipal();
+    private Long getCurrentEmployeeId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Vui lòng đăng nhập bằng tài khoản nhân viên để thao tác hóa đơn.");
+        }
 
-                if (principal instanceof Employee) {
-                    return ((Employee) principal).getId();
-                } else if (principal instanceof Customer) {
-                    return ((Customer) principal).getId();
-                } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-                    try {
-                        java.lang.reflect.Method getIdMethod = principal.getClass().getMethod("getId");
-                        return (Long) getIdMethod.invoke(principal);
-                    } catch (Exception ignored) {}
-                }
-            }
-        } catch (Exception ignored) {}
-        return null;
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Employee employee) {
+            return employee.getId();
+        }
+
+        return employeeRepository.findByUser_Username(authentication.getName())
+                .map(Employee::getId)
+                .orElseThrow(() -> new RuntimeException("Tài khoản hiện tại chưa liên kết với nhân viên, không thể tạo hóa đơn."));
     }
 }

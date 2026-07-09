@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 public class CreateInvoiceRequest {
+    private Long paymentScheduleId;
     private LocalDate dueDate;
     private String note;
     private String status;

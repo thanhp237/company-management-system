@@ -17,7 +17,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/invoices")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMIN', 'MANAGER')")
+@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
@@ -54,7 +54,8 @@ public class InvoiceController {
     }
 
     @GetMapping("/create/{contractId}")
-    public String createForm(@PathVariable Long contractId, Model model) {
+    public String createForm(@PathVariable Long contractId,
+                             @RequestParam(required = false) Long scheduleId, Model model) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng"));
 
@@ -92,7 +93,9 @@ public class InvoiceController {
         model.addAttribute("customerTaxCode", customerTaxCode);
         model.addAttribute("customerAddress", customerAddress);
         model.addAttribute("invoiceCode", invoiceService.generateNextInvoiceCode());
-        model.addAttribute("invoiceForm", invoiceService.prepareCreateRequest(contractId));
+        CreateInvoiceRequest form = invoiceService.prepareCreateRequest(contractId);
+        if (scheduleId != null) form.setPaymentScheduleId(scheduleId);
+        model.addAttribute("invoiceForm", form);
         return "Invoice/invoice-form";
     }
 
