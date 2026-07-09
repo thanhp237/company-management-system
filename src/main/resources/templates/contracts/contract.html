@@ -38,9 +38,20 @@
                 </p>
             </div>
 
-            <span class="contract-status detail"
-                  th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
-                  th:text="${contract.status == 'DRAFT' ? 'Bản nháp' : (contract.status == 'PENDING_ADMIN_OFFICER' ? 'Chờ hành chính hợp đồng' : (contract.status == 'ADMIN_REVIEWED' ? 'Đã duyệt điều khoản' : (contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'REVISION_REQUESTED' ? 'Khách yêu cầu chỉnh sửa' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status))))))}">Bản nháp</span>
+            <!-- Thêm khối bọc nút in và trạng thái -->
+            <div class="d-flex align-items-center gap-2">
+                <!-- Nút in hợp đồng mới -->
+                <a th:href="@{/contracts/export-pdf/{id}(id=${contract.id})}"
+                   class="btn btn-outline-primary"
+                   style="border-color: #2563eb; color: #2563eb; font-weight: 500;"
+                   target="_blank">
+                    <i class="fas fa-file-pdf me-2"></i>In hợp đồng / Xuất PDF
+                </a>
+
+                <span class="contract-status detail"
+                      th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
+                      th:text="${contract.status == 'DRAFT' ? 'Bản nháp' : (contract.status == 'PENDING_ADMIN_OFFICER' ? 'Chờ hành chính hợp đồng' : (contract.status == 'ADMIN_REVIEWED' ? 'Đã duyệt điều khoản' : (contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'REVISION_REQUESTED' ? 'Khách yêu cầu chỉnh sửa' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status))))))}">Bản nháp</span>
+            </div>
         </div>
 
         <div th:if="${successMessage}" class="management-alert success">

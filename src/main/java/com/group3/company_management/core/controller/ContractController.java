@@ -228,6 +228,20 @@ public class ContractController {
         return "redirect:/contracts";
     }
 
+    @GetMapping("/export-pdf/{id}")
+    public String printPreview(@PathVariable Long id, Model model) {
+
+        ContractResponse contract = contractService.getContractDetail(id);
+
+        model.addAttribute("contract", contract);
+        model.addAttribute("buyerCompanyName", contract.getBuyerCompanyName() != null ? contract.getBuyerCompanyName() : "N/A");
+        model.addAttribute("buyerTaxCode", contract.getBuyerTaxCode() != null ? contract.getBuyerTaxCode() : "N/A");
+        model.addAttribute("buyerAddress", contract.getBuyerAddress() != null ? contract.getBuyerAddress() : "N/A");
+        model.addAttribute("buyerPhone", contract.getBuyerPhone() != null ? contract.getBuyerPhone() : "N/A");
+
+        return "contracts/print";
+    }
+
     private boolean hasRole(Authentication authentication, String role) {
         if (authentication == null) {
             return false;
