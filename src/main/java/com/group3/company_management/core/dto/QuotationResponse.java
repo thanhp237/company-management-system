@@ -39,4 +39,5 @@ public class QuotationResponse {
 
     private List<QuotationDetailResponse> details;
     private Long opportunityId;
+
 }

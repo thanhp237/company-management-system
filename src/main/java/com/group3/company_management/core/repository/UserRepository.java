@@ -110,23 +110,38 @@ public interface UserRepository extends JpaRepository<User, Long> {
     String findEmployeeCodeByAccountId(@Param("accountId") Long accountId);
     int countByDepartmentIdAndIsDeletedFalse(Long departmentId);
 
-    @Query("""
-select u.departmentId, count(u)
-from User u
-where u.isDeleted = false
-and u.departmentId in :departmentIds
-group by u.departmentId
-""")
-    List<Object[]> countActiveUsersByDepartmentIds(@Param("departmentIds") Collection<Long> departmentIds);
 
+
+
+    List<User> findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(Long departmentId);
+    Optional<User> findCustomerById(Long id);
+    @Query("select u.fullName from User u where u.id=:id")
+    String getNameUserById(@Param("id") Long id);
     @Query("""
-select u
-from User u
-where u.isDeleted = false
-and lower(u.status) = 'active'
-and (:departmentId is null or u.departmentId is null or u.departmentId = :departmentId)
-and u.role.roleCode <> 'ADMIN'
-order by u.fullName asc, u.username asc
+SELECT u
+FROM User u
+WHERE u.departmentId IS NULL
+AND u.role.roleCode IN :roles
+AND u.isDeleted=false
+ORDER BY u.fullName
 """)
-    List<User> findAssignableUsersForDepartment(@Param("departmentId") Long departmentId);
+    List<User> findAvailableEmployees(
+            @Param("roles") List<String> roles);
+    @Query("""
+SELECT u
+FROM User u
+WHERE
+(
+u.departmentId IS NULL
+OR u.departmentId=:departmentId
+)
+AND u.role.roleCode IN :roles
+AND u.isDeleted=false
+ORDER BY u.fullName
+""")
+    List<User> findAvailableEmployeesForEdit(
+            @Param("departmentId") Long departmentId,
+            @Param("roles") List<String> roles);
+
+
 }

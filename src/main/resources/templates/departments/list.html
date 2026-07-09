@@ -9,10 +9,6 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" th:href="@{/main.css}">
     <link rel="stylesheet" th:href="@{/css/user.css}">
     <link rel="stylesheet" th:href="@{/css/department.css}">
@@ -32,145 +28,187 @@
                 <div class="management-eyebrow">QUẢN TRỊ PHÒNG BAN</div>
                 <h1>Danh sách phòng ban</h1>
                 <p class="management-subtitle">
-                    Quản lý phòng ban, người phụ trách và trạng thái hoạt động trong hệ thống CRM.
+                    Quản lý phòng ban, người quản lý, số lượng thành viên và trạng thái.
                 </p>
             </div>
 
-            <a class="management-primary-action"
-               th:href="@{/departments/edit}"
-               sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')">
-                <i class="fa-solid fa-plus"></i>
+            <a class="management-primary-action" th:href="@{/departments/edit}">
+                <i class="fas fa-plus"></i>
                 Thêm phòng ban
             </a>
         </div>
 
-        <form class="department-searchbar"
-              th:action="@{/departments/search}"
-              method="get">
+        <form class="management-filterbar user-filterbar" th:action="@{/departments}" method="get">
             <label>
-                <i class="fas fa-magnifying-glass"></i>
-                <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm phòng ban...">
+                <span>Tìm kiếm</span>
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       placeholder="Tên hoặc mã phòng ban...">
             </label>
-            <select name="status">
-                <option value="all" th:selected="${status == 'all'}">Tất cả</option>
-                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Hoạt động</option>
-                <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Ngừng hoạt động</option>
-            </select>
-            <button type="submit"><i class="fas fa-filter"></i></button>
+
+            <label>
+                <span>Trạng thái</span>
+                <select name="status">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Hoạt động</option>
+                    <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">Tạm khóa</option>
+                </select>
+            </label>
+
+            <button class="filter-icon-button" type="submit">
+                <i class="fas fa-filter"></i>
+            </button>
+
+            <a class="filter-reset-button" th:href="@{/departments}">
+                <i class="fas fa-xmark"></i>
+                Xóa lọc
+            </a>
         </form>
 
-        <section class="department-stat-grid">
-            <article class="department-stat-card">
-                <i class="fas fa-building"></i>
-                <span>Tổng số phòng ban</span>
-                <strong th:text="${totalDepartments}">12</strong>
-                <small>+2</small>
-            </article>
-            <article class="department-stat-card info">
-                <i class="fas fa-users"></i>
-                <span>Tổng nhân sự</span>
-                <strong th:text="${totalUsers}">348</strong>
-                <small>+14%</small>
-            </article>
-            <article class="department-stat-card warning">
-                <i class="fas fa-user-clock"></i>
-                <span>Đang hoạt động</span>
-                <strong th:text="${activeDepartments}">8</strong>
-                <small>Hoạt động</small>
-            </article>
-            <article class="department-stat-card danger">
-                <i class="fas fa-star"></i>
-                <span>Cần rà soát</span>
-                <strong th:text="${inactiveDepartments}">0</strong>
-                <small>Ngừng hoạt động</small>
-            </article>
-        </section>
 
-        <section class="department-card-grid">
-            <article class="department-card" th:each="department : ${departmentPage.content}">
-                <div class="department-card-top">
-                    <span class="department-badge" th:text="${department.code}">SALES</span>
-                    <div class="department-menu">
-                        <a th:href="@{/departments/edit(id=${department.id})}" sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')" title="Sửa">
-                            <i class="fas fa-ellipsis-vertical"></i>
-                        </a>
-                    </div>
-                </div>
-                <h2 th:text="${department.name}">Kinh doanh & tăng trưởng</h2>
-                <p th:text="${department.description != null and !#strings.isEmpty(department.description) ? department.description : 'Chưa có mô tả phòng ban.'}">
-                    Phòng ban phụ trách vận hành.
-                </p>
-                <div class="department-manager">
-                    <span class="customer-avatar" th:text="${department.name != null ? #strings.substring(department.name, 0, 1) : 'D'}">D</span>
-                    <div>
-                        <small>Trưởng phòng</small>
-                        <strong th:text="${department.managerId != null and managerMap.get(department.managerId) != null ? managerMap.get(department.managerId) : 'Chưa phân công'}">Nguyễn Văn Minh</strong>
-                    </div>
-                </div>
-                <div class="department-capacity">
-    <span>
-        <i class="fas fa-users"></i>
-        <span th:text="${memberCountMap.get(department.id) != null ? memberCountMap.get(department.id) : 0}">0</span>
-        /
-        <span th:text="${department.maxMembers != null ? department.maxMembers : '∞'}">∞</span>
-    </span>
-                </div>
-                <div class="department-card-footer">
-                    <span th:classappend="${department.status == 'ACTIVE'} ? ' active' : ' inactive'"
-                          class="department-status"
-                          th:text="${department.status == 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động'}">Hoạt động</span>
-                    <a th:href="@{/departments/edit(id=${department.id})}">Chi tiết</a>
+        <section class="management-table-shell user-table-shell">
+            <div class="table-responsive">
+                <table class="management-table user-table">
+                    <thead>
+                    <tr>
+                        <th>Phòng ban</th>
+                        <th>Mã phòng ban</th>
+                        <th>Người quản lý</th>
+                        <th>Số lượng</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
 
-                </div>
-            </article>
+                    <tbody>
+                    <tr th:each="department : ${departments.content}">
+                        <td>
+                            <div class="identity-cell">
+                                <div class="avatar-circle"
+                                     th:text="${#strings.substring((department.name != null and !#strings.isEmpty(department.name) ? department.name : department.code), 0, 1)}">
+                                    P
+                                </div>
 
-            <a class="department-add-card"
-               th:href="@{/departments/edit}"
-               sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER')">
-                <span><i class="fas fa-plus"></i></span>
-                <strong>Thêm phòng ban mới</strong>
-                <small>Tạo không gian làm việc mới cho đội ngũ.</small>
-            </a>
-        </section>
+                                <div>
+                                    <strong th:text="${department.name}">Tên phòng ban</strong>
+                                    <span th:text="${department.description != null and !#strings.isEmpty(department.description) ? department.description : 'Chưa có mô tả'}">
+                                        Chưa có mô tả
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
 
-        <div class="management-table-shell user-table-shell department-pagination-shell">
+                        <td>
+                            <span class="muted-code" th:text="${department.code}">PB001</span>
+                        </td>
+
+                        <td>
+                            <span class="department-pill"
+                                  th:classappend="${department.managerName == null} ? ' empty'"
+                                  th:text="${department.managerName != null ? department.managerName : 'Chưa phân'}">
+                                Chưa phân
+                            </span>
+                        </td>
+
+                        <td>
+                            <strong th:text="${department.currentMembers + '/' + department.maxMembers}">
+                                0/10
+                            </strong>
+                        </td>
+
+                        <td>
+                            <form th:action="@{/departments/active}" method="post" class="status-form">
+                                <input type="hidden" name="id" th:value="${department.id}">
+
+                                <select name="status"
+                                        class="status-select"
+                                        th:classappend="${department.status == 'ACTIVE'} ? ' active' : ' inactive'"
+                                        th:attr="data-current=${department.status}"
+                                        onchange="if (confirm('Bạn muốn đổi trạng thái phòng ban này?')) { this.form.submit(); } else { this.value = this.dataset.current; }">
+                                    <option value="ACTIVE" th:selected="${department.status == 'ACTIVE'}">
+                                        Hoạt động
+                                    </option>
+                                    <option value="INACTIVE" th:selected="${department.status == 'INACTIVE'}">
+                                        Tạm khóa
+                                    </option>
+                                </select>
+                            </form>
+                        </td>
+
+                        <td>
+                            <div class="row-actions">
+                                <a th:href="@{/departments/detail(id=${department.id})}"
+                                   title="Chi tiết phòng ban">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+
+                                <a th:href="@{/departments/edit(id=${department.id})}"
+                                   title="Sửa phòng ban">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+
+                                <a class="danger"
+                                   th:href="@{/departments/delete(id=${department.id})}"
+                                   title="Xóa phòng ban"
+                                   onclick="return confirm('Xác nhận xóa phòng ban này?')">
+                                    <i class="fas fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(departments.content)}">
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="fas fa-building-circle-xmark"></i>
+                                <span>Không tìm thấy phòng ban phù hợp.</span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="management-pagination"
-                 th:if="${departmentPage != null and departmentPage.totalPages > 0}">
-                <span th:text="${'Đang hiển thị ' + #lists.size(departmentPage.content) + ' / ' + departmentPage.totalElements + ' phòng ban'}">
-                    Đang hiển thị phòng ban
+                 th:if="${departments != null and departments.totalPages > 0}">
+                <span>
+                    Đang hiển thị
+                    <strong th:text="${departments.numberOfElements}">0</strong>
+                    /
+                    <strong th:text="${departments.totalElements}">0</strong>
+                    phòng ban
                 </span>
 
                 <div class="pagination-buttons">
-                    <a th:if="${departmentPage.first}" class="disabled" href="#">
+                    <a th:if="${departments.first}" class="disabled" href="#">
                         <i class="fas fa-chevron-left"></i>
                     </a>
 
-                    <a th:if="${!departmentPage.first}"
-                       th:href="@{/departments/search(page=${departmentPage.number - 1}, keyword=${keyword}, status=${status})}">
+                    <a th:if="${!departments.first}"
+                       th:href="@{/departments(page=${departments.number - 1}, keyword=${keyword}, status=${status})}">
                         <i class="fas fa-chevron-left"></i>
                     </a>
 
-                    <th:block th:with="start=${departmentPage.number - 2 < 0 ? 0 : departmentPage.number - 2},
-                                       end=${departmentPage.number + 2 > departmentPage.totalPages - 1 ? departmentPage.totalPages - 1 : departmentPage.number + 2}">
-                        <a th:each="pageIndex : ${#numbers.sequence(start, end)}"
-                           th:text="${pageIndex + 1}"
-                           th:classappend="${pageIndex == departmentPage.number} ? 'active'"
-                           th:href="@{/departments/search(page=${pageIndex}, keyword=${keyword}, status=${status})}">
-                            1
-                        </a>
-                    </th:block>
+                    <a th:each="i : ${#numbers.sequence(0, departments.totalPages - 1)}"
+                       th:href="@{/departments(page=${i}, keyword=${keyword}, status=${status})}"
+                       th:classappend="${i == departments.number} ? 'active'"
+                       th:text="${i + 1}">
+                        1
+                    </a>
 
-                    <a th:if="${departmentPage.last}" class="disabled" href="#">
+                    <a th:if="${departments.last}" class="disabled" href="#">
                         <i class="fas fa-chevron-right"></i>
                     </a>
 
-                    <a th:if="${!departmentPage.last}"
-                       th:href="@{/departments/search(page=${departmentPage.number + 1}, keyword=${keyword}, status=${status})}">
+                    <a th:if="${!departments.last}"
+                       th:href="@{/departments(page=${departments.number + 1}, keyword=${keyword}, status=${status})}">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 </div>
             </div>
-        </div>
+        </section>
+
     </div>
 </main>
 

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Hóa Đơn - CompanyMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/invoice.css}">
+</head>
+<body>
+
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="invoice-workspace with-sidebar">
+    <div class="invoice-page">
+
+        <div class="alert-box alert-error-custom" th:if="${errorMessage}">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+        <div class="alert-box alert-success-custom" th:if="${successMessage}">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}">Thành công.</span>
+        </div>
+
+        <a class="invoice-back-link" th:href="@{/invoices}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quay lại</span>
+        </a>
+
+        <div class="page-top">
+            <div class="page-title">
+                <h1 th:text="'Hóa đơn: ' + ${invoice.invoiceCode}">INV-001</h1>
+                <p>
+                    <span th:text="${invoice.contract.customer != null ? (invoice.contract.customer.fullName != null ? invoice.contract.customer.fullName : invoice.contract.customer.companyName) : invoice.contract.buyerCompanyName}">Khách hàng</span>
+                    <span> • </span>
+                    <span th:text="${invoice.createdAt != null ? 'Ngày tạo: ' + #temporals.format(invoice.createdAt, 'dd/MM/yyyy') : 'Chưa có ngày tạo'}">Ngày tạo</span>
+                </p>
+            </div>
+
+            <div class="top-actions">
+                <th:block th:if="${invoice.status.name() == 'DRAFT'}">
+                    <a th:href="@{/invoices/edit/{id}(id=${invoice.id})}" class="soft-btn">
+                        <i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa
+                    </a>
+                    <form th:action="@{/invoices/{id}/issue(id=${invoice.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="green-btn" onclick="return confirm('Bạn có chắc muốn chốt phát hành hóa đơn này?')">
+                            <i class="fa-solid fa-circle-check"></i> Phát hành
+                        </button>
+                    </form>
+                </th:block>
+            </div>
+        </div>
+
+        <!-- THÔNG TIN HÓA ĐƠN -->
+        <section class="invoice-card">
+            <div class="invoice-card-title">
+                <i class="fa-solid fa-receipt"></i> Thông tin hóa đơn
+            </div>
+            <div class="invoice-info-grid">
+                <div>
+                    <span>Mã hóa đơn</span>
+                    <strong th:text="${invoice.invoiceCode}">INV000001</strong>
+                </div>
+                <div>
+                    <span>Ngày tạo</span>
+                    <strong th:text="${#temporals.format(invoice.createdAt, 'dd/MM/yyyy')}">09/07/2026</strong>
+                </div>
+                <div>
+                    <span>Trạng thái</span>
+                    <div>
+                        <span th:if="${invoice.status.name() == 'DRAFT'}" class="status-badge st-draft">Bản nháp</span>
+                        <span th:if="${invoice.status.name() == 'ISSUED'}" class="status-badge st-issued">Đã chốt</span>
+                        <span th:if="${invoice.status.name() == 'PAID'}" class="status-badge st-paid">Đã thanh toán</span>
+                        <span th:if="${invoice.status.name() == 'CANCELLED'}" class="status-badge st-cancelled">Đã hủy</span>
+                    </div>
+                </div>
+                <div>
+                    <span>Hạn thanh toán</span>
+                    <strong th:text="${#temporals.format(invoice.dueDate, 'dd/MM/yyyy')}">20/07/2026</strong>
+                </div>
+                <div>
+                    <span>Ngày chốt phát hành</span>
+                    <strong th:text="${invoice.issuedAt != null ? #temporals.format(invoice.issuedAt, 'dd/MM/yyyy HH:mm') : '-'}">-</strong>
+                </div>
+                <div>
+                    <span>Liên kết hợp đồng</span>
+                    <strong>
+                        <a th:href="@{/contracts/{id}(id=${invoice.contract.id})}" th:text="${invoice.contract.contractCode}" style="color: #2563eb; text-decoration: none;">CT-001</a>
+                    </strong>
+                </div>
+                <div class="wide">
+                    <span>Ghi chú hóa đơn</span>
+                    <strong th:text="${invoice.note != null && !invoice.note.isEmpty() ? invoice.note : 'Không có ghi chú'}">-</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- THÔNG TIN KHÁCH HÀNG -->
+        <section class="invoice-card">
+            <div class="invoice-card-title">
+                <i class="fa-solid fa-file-invoice"></i> Thông tin khách hàng & Đối tác
+            </div>
+            <div class="invoice-info-grid">
+                <div>
+                    <span>Khách hàng</span>
+                    <strong th:text="${invoice.contract.customer != null ? (invoice.contract.customer.fullName != null ? invoice.contract.customer.fullName : invoice.contract.customer.companyName) : invoice.contract.buyerCompanyName}">Khách hàng ABC</strong>
+                </div>
+                <div>
+                    <span>Mã số thuế</span>
+                    <strong th:text="${invoice.contract.customer != null ? invoice.contract.customer.taxCode : invoice.contract.buyerTaxCode}">-</strong>
+                </div>
+                <div>
+                    <span>Số điện thoại</span>
+                    <strong th:text="${invoice.contract.customer != null ? invoice.contract.customer.phone : invoice.contract.buyerPhone}">-</strong>
+                </div>
+                <div class="wide">
+                    <span>Địa chỉ</span>
+                    <strong th:text="${invoice.contract.customer != null ? invoice.contract.customer.address : invoice.contract.buyerAddress}">-</strong>
+                </div>
+                <div>
+                    <span>Email</span>
+                    <strong th:text="${invoice.contract.customer != null ? invoice.contract.customer.email : 'N/A'}">-</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- DANH SÁCH CHI TIẾT SẢN PHẨM -->
+        <section class="invoice-card">
+            <div class="invoice-card-title">
+                <i class="fa-solid fa-boxes-stacked"></i> Sản phẩm / Dịch vụ xuất hóa đơn
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">STT</th>
+                        <th>Sản phẩm / Dịch vụ</th>
+                        <th>Mô tả</th>
+                        <th style="text-align: right;">Đơn giá</th>
+                        <th style="text-align: center; width: 120px;">Số lượng</th>
+                        <th style="text-align: right;">Thành tiền</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item, stat : ${invoice.invoiceItems}">
+                        <td style="text-align: center;" th:text="${stat.index + 1}">1</td>
+                        <td><strong th:text="${item.serviceName}">Sản phẩm</strong></td>
+                        <td class="text-muted" th:text="${item.description}">Mô tả chi tiết</td>
+                        <td style="text-align: right;" th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' đ'}">10,000 đ</td>
+                        <td style="text-align: center;" th:text="${item.quantity}">1</td>
+                        <td style="text-align: right; font-weight: 700; color: #111827;" th:text="${#numbers.formatDecimal(item.subtotal, 0, 'POINT', 0, 'COMMA') + ' đ'}">10,000 đ</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="summary-wrapper">
+                <div class="summary-box">
+                    <div class="summary-row total-row">
+                        <span>Tổng tiền</span>
+                        <span class="summary-value" th:text="${#numbers.formatDecimal(invoice.totalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Đã thanh toán</span>
+                        <span class="summary-value" th:text="${#numbers.formatDecimal(invoice.paidAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</span>
+                    </div>
+                    <div class="summary-row outstanding-row">
+                        <span>Còn phải thu</span>
+                        <span class="summary-value" th:text="${#numbers.formatDecimal(invoice.outstandingAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

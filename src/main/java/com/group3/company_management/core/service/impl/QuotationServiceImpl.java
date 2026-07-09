@@ -61,8 +61,8 @@ public class QuotationServiceImpl implements QuotationService {
         BigDecimal subTotal = BigDecimal.ZERO;
 
         for (QuotationDetailRequest item : request.getDetails()) {
-
-            if (item.getProductId() == null
+            if (!item.isSelected() // Thêm dòng này để bỏ qua nếu không tích chọn
+                    || item.getProductId() == null
                     || item.getQuantity() == null
                     || item.getQuantity() <= 0) {
                 continue;
@@ -187,8 +187,8 @@ public class QuotationServiceImpl implements QuotationService {
         List<QuotationDetailResponse> detailResponses = new ArrayList<>();
 
         for (QuotationDetailRequest item : request.getDetails()) {
-
-            if (item.getProductId() == null
+            if (!item.isSelected() // Thêm dòng này để bỏ qua nếu không tích chọn
+                    || item.getProductId() == null
                     || item.getQuantity() == null
                     || item.getQuantity() <= 0) {
                 continue;
@@ -208,7 +208,7 @@ public class QuotationServiceImpl implements QuotationService {
             detailResponse.setQuantity(item.getQuantity());
             detailResponse.setUnitPrice(unitPrice);
             detailResponse.setTotalPrice(totalPrice);
-
+            detailResponse.setImageUrl(product.getImageUrl());
             detailResponses.add(detailResponse);
             subTotal = subTotal.add(totalPrice);
         }
@@ -276,7 +276,7 @@ public class QuotationServiceImpl implements QuotationService {
                     d.setQuantity(detail.getQuantity());
                     d.setUnitPrice(detail.getUnitPrice());
                     d.setTotalPrice(detail.getTotalPrice());
-
+                    d.setImageUrl(product.getImageUrl());
                     return d;
                 })
                 .toList();

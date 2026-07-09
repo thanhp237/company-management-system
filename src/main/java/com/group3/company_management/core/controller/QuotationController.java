@@ -1,8 +1,10 @@
 package com.group3.company_management.core.controller;
 
+import com.group3.company_management.core.dto.QuotationDetailRequest;
 import com.group3.company_management.core.dto.QuotationRequest;
 import com.group3.company_management.core.dto.QuotationResponse;
 import com.group3.company_management.core.entity.Customer;
+import com.group3.company_management.core.entity.Product;
 import com.group3.company_management.core.repository.CustomerRepository;
 import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.repository.ProductRepository;
@@ -19,6 +21,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Controller
@@ -42,30 +46,38 @@ public class QuotationController {
         QuotationRequest quotationRequest = new QuotationRequest();
         quotationRequest.setCustomerId(customerId);
         quotationRequest.setOpportunityId(opportunityId);
-
         quotationRequest.setQuotationDate(LocalDate.now());
         quotationRequest.setStatus("DRAFT");
-        model.addAttribute(
-                "vouchers",
-                voucherRepository.findByActiveTrueAndExpiredAtAfter(LocalDateTime.now())
-        );
+
+
+        List<Product> products = productRepository.findByActiveTrue();
+        List<QuotationDetailRequest> details = new ArrayList<>();
+
+
+        for (Product p : products) {
+            QuotationDetailRequest item = new QuotationDetailRequest();
+            item.setProductId(p.getId());
+            item.setQuantity(1);
+            item.setSelected(false);
+            details.add(item);
+        }
+        quotationRequest.setDetails(details);
+
+        model.addAttribute("vouchers", voucherRepository.findByActiveTrueAndExpiredAtAfter(LocalDateTime.now()));
         model.addAttribute("quotationRequest", quotationRequest);
         model.addAttribute("customer", customer);
-        model.addAttribute("products", productRepository.findByActiveTrue());
-
+        model.addAttribute("products", products);
 
         String quotationCode = "QT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-
         quotationRequest.setQuotationCode(quotationCode);
         model.addAttribute("quotationCode", quotationCode);
-        model.addAttribute("opportunities",
-                opportunityRepository.findFirstOpportunityByCustomerId(customerId));
+
+        model.addAttribute("opportunities", opportunityRepository.findFirstOpportunityByCustomerId(customerId));
         model.addAttribute("quotationDate", LocalDate.now());
 
-        model.addAttribute("salesPerson",
-                authentication != null ? authentication.getName() : "");
+        model.addAttribute("salesPerson", authentication != null ? authentication.getName() : "");
+        model.addAttribute("status", "Draft");
 
-        model.addAttribute("status", "Bản nháp");
 
         return "quotation/create";
     }
