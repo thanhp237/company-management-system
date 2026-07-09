@@ -37,6 +37,15 @@
                     <span th:text="${contract.createdAt != null ? 'Ngày tạo: ' + #temporals.format(contract.createdAt, 'dd/MM/yyyy') : 'Chưa có ngày tạo'}">Ngày tạo</span>
                 </p>
             </div>
+
+            <!-- NÚT TẠO HÓA ĐƠN -->
+            <div th:if="${contract.status == 'SIGNED'}" class="mt-3">
+                <a th:href="@{/invoices/create/{contractId}(contractId=${contract.id})}"
+                   class="btn btn-primary btn-lg">
+                    <i class="fas fa-file-invoice"></i> Tạo Hóa Đơn
+                </a>
+            </div>
+
             <span class="contract-status detail"
                   th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
                   th:text="${contract.status}">DRAFT</span>

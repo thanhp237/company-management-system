@@ -22,4 +22,5 @@ public class QuotationDetailResponse {
     private BigDecimal unitPrice;
 
     private BigDecimal totalPrice;
+    private String imageUrl;
 }

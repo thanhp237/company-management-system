@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${invoiceId != null ? 'Chỉnh Sửa Hóa Đơn Nháp - CompanyMS' : 'Tạo Hóa Đơn - CompanyMS'}">Hóa Đơn - CompanyMS</title>
+    <!-- CSS Bootstrap & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Font Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Link CSS dùng chung -->
+    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/invoice.css}">
+</head>
+<body>
+
+<th:block th:insert="~{layouts/navbar}"></th:block>
+<div sec:authorize="isAuthenticated()">
+    <th:block th:insert="~{layouts/sidebar}"></th:block>
+</div>
+
+<main class="invoice-workspace with-sidebar">
+    <div class="invoice-page">
+
+        <div class="alert-box alert-error-custom" th:if="${errorMessage}">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+        <div class="alert-box alert-success-custom" th:if="${successMessage}">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}">Thành công.</span>
+        </div>
+
+        <form th:action="${invoiceId != null ? '/invoices/edit/' + invoiceId : '/invoices/create/' + contractId}"
+              th:object="${invoiceForm}"
+              method="post"
+              id="invoiceForm">
+
+            <div class="page-top">
+                <div class="page-title">
+                    <h1 th:text="${invoiceId != null ? 'Chỉnh sửa hóa đơn nháp' : 'Tạo hóa đơn'}">Tạo hóa đơn</h1>
+                    <p th:text="${invoiceId != null ? 'Chỉnh sửa thông tin hóa đơn nháp.' : 'Tạo hóa đơn mới từ hợp đồng đã ký.'}">Tạo hóa đơn mới.</p>
+                </div>
+
+                <div class="top-actions">
+                    <a th:href="@{/invoices}" class="soft-btn">
+                        <i class="fa-solid fa-arrow-left"></i> Quay lại
+                    </a>
+                    <button type="submit" name="status" value="DRAFT" class="soft-btn">
+                        Lưu nháp
+                    </button>
+                    <button type="submit" name="status" value="ISSUED" class="green-btn">
+                        Phát hành
+                    </button>
+                </div>
+            </div>
+            <section class="invoice-card">
+                <div class="invoice-card-title">
+                    <i class="fa-solid fa-file-invoice"></i> Thông tin hợp đồng
+                </div>
+                <div class="invoice-info-grid">
+                    <div>
+                        <span>Mã hợp đồng</span>
+                        <strong th:text="${contract.contractCode}">CON-001</strong>
+                    </div>
+                    <div>
+                        <span>Mã số thuế</span>
+                        <strong th:text="${customerTaxCode}">-</strong>
+                    </div>
+                    <div>
+                        <span>Giá trị hợp đồng</span>
+                        <strong th:text="${#numbers.formatDecimal(contract.finalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
+                    </div>
+                    <div>
+                        <span>Khách hàng</span>
+                        <strong th:text="${customerName}">-</strong>
+                    </div>
+                    <div>
+                        <span>Ngày ký</span>
+                        <strong th:text="${contract.signedAt != null ? #temporals.format(contract.signedAt, 'dd/MM/yyyy HH:mm') : (contract.signingDate != null ? contract.signingDate : 'N/A')}">-</strong>
+                    </div>
+                    <div>
+                        <span>Trạng thái</span>
+                        <div>
+                            <span class="status-badge st-issued" th:if="${contract.status.name() == 'SIGNED'}">Đã ký</span>
+                            <span class="status-badge st-draft" th:if="${contract.status.name() != 'SIGNED'}" th:text="${contract.status}">DRAFT</span>
+                        </div>
+                    </div>
+                    <div class="wide">
+                        <span>Địa chỉ</span>
+                        <strong th:text="${customerAddress}">-</strong>
+                    </div>
+                    <div>
+                        <span>Điều khoản thanh toán</span>
+                        <strong th:text="${contract.paymentTerms != null ? contract.paymentTerms : 'N/A'}">-</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- THÔNG TIN HÓA ĐƠN -->
+            <section class="invoice-card">
+                <div class="invoice-card-title">
+                    <i class="fa-solid fa-receipt"></i> Thông tin hóa đơn
+                </div>
+                <div class="invoice-info-grid mb-3">
+                    <div class="form-group">
+                        <label class="form-label">Mã hóa đơn</label>
+                        <input type="text" th:value="${invoiceCode}" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hạn thanh toán <span style="color: #dc2626;">*</span></label>
+                        <div class="input-icon-wrapper">
+                            <input type="date" th:field="*{dueDate}" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="note">Ghi chú</label>
+                    <textarea th:field="*{note}" class="form-control" rows="3" maxlength="500" placeholder="Nhập ghi chú hóa đơn (nếu có)..."></textarea>
+                </div>
+            </section>
+
+            <!-- DANH SÁCH SẢN PHẨM / DỊCH VỤ -->
+            <section class="invoice-card">
+                <div class="invoice-card-title">
+                    <i class="fa-solid fa-boxes-stacked"></i> Chọn sản phẩm / dịch vụ muốn xuất hóa đơn
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center;">Chọn</th>
+                            <th>Sản phẩm / Dịch vụ</th>
+                            <th>Mô tả</th>
+                            <th>SL hợp đồng</th>
+                            <th>Đã xuất</th>
+                            <th class="color-green">Còn lại</th>
+                            <th>Đơn giá</th>
+                            <th style="width: 140px;">SL xuất lần này</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Thymeleaf Loop hiển thị sản phẩm -->
+                        <tr th:each="item, stat : *{items}" class="item-row" th:classappend="${item.remainingQuantity == 0 and !item.selected} ? 'disabled-row'">
+                            <td style="text-align: center;">
+                                <label class="checkbox-container">
+                                    <input type="checkbox"
+                                           th:field="*{items[__${stat.index}__].selected}"
+                                           class="row-checkbox"
+                                           th:disabled="${item.remainingQuantity == 0 and !item.selected}">
+                                    <span class="checkmark"></span>
+                                </label>
+                                <input type="hidden" th:field="*{items[__${stat.index}__].quotationDetailId}">
+                            </td>
+                            <td><strong th:text="${item.serviceName}">Sản phẩm</strong></td>
+                            <td class="text-muted" th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'N/A'}">Mô tả</td>
+                            <td th:text="${item.contractQuantity}">0</td>
+                            <td th:text="${item.invoicedQuantity}">0</td>
+                            <td class="color-green" th:text="${item.remainingQuantity}">0</td>
+                            <td th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+                            <td>
+                                <input type="number"
+                                       th:field="*{items[__${stat.index}__].quantity}"
+                                       class="form-control"
+                                       min="1"
+                                       th:max="${item.remainingQuantity + (item.selected ? item.quantity : 0)}"
+                                       style="width: 100px;">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="empty-state" th:if="${#lists.isEmpty(invoiceForm.items)}">
+                    <i class="fa-regular fa-folder-open"></i>
+                    Không có sản phẩm nào thuộc hợp đồng này.
+                </div>
+
+                <div class="summary-wrapper">
+                    <div class="summary-box">
+                        <div class="summary-row total-row">
+                            <span style="color: #6b7280; font-size: 13px; font-weight: 500;">
+                                * Hệ thống sẽ tự động tính toán tổng tiền sau khi bạn nhấn Lưu nháp hoặc Phát hành.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                <a th:href="@{/invoices}" class="soft-btn">Hủy bỏ</a>
+                <div class="d-flex gap-2">
+                    <button type="submit" name="status" value="DRAFT" class="soft-btn">Lưu nháp</button>
+                    <button type="submit" name="status" value="ISSUED" class="green-btn">Phát hành</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
