@@ -7,4 +7,7 @@ public interface CustomerAccountService {
     CustomerAccountResult createFromContract(Long contractId);
 
     CustomerAccountResult resendAccountEmail(Long contractId);
+
+
+    
 }

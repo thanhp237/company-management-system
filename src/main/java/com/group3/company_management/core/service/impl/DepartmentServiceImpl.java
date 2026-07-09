@@ -34,7 +34,9 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+
     public Page<DepartmentResponse> getAllDerpartment(Pageable pageable) {
+
 
         return departmentRepository.findAll(pageable)
                 .map(this::toResponse);
@@ -56,6 +58,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+
     public void saveDepartment(DepartmentRequest departmentRequest, String name) {
         if (departmentRequest.getCode() == null || departmentRequest.getCode().trim().isEmpty()) {
             throw new RuntimeException("Code không được để trống");
@@ -66,6 +69,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         if (departmentRequest.getManagerId() == null) {
             throw new RuntimeException("Vui lòng chọn quản lý");
+
         }
 
 
@@ -84,11 +88,13 @@ public class DepartmentServiceImpl implements DepartmentService {
 
         } else {
 
+
             if (departmentRepository.existsByCodeAndIdNot(
                     departmentRequest.getCode(),
                     departmentRequest.getId())) {
 
                 throw new RuntimeException("Code phòng ban đã tồn tại");
+
             }
         }
 
@@ -142,6 +148,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 
 
+
+
             Department department = departmentRepository
                     .findByIdAndIsDeletedFalse(id)
                     .orElseThrow(() -> new RuntimeException("Department not found"));
@@ -162,11 +170,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Transactional
     public void updateDepartmentStatus(Long id, String status) {
         if (id == null) {
-            throw new IllegalArgumentException("Department ID is required");
+            throw new IllegalArgumentException("Thiếu mã phòng ban");
         }
 
         if (!"ACTIVE".equalsIgnoreCase(status) && !"INACTIVE".equalsIgnoreCase(status)) {
-            throw new RuntimeException("Invalid department status");
+            throw new RuntimeException("Trạng thái phòng ban không hợp lệ");
         }
 
         Department    department = departmentRepository.findByIdAndIsDeletedFalse(id)

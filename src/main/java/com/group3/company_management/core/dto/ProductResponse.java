@@ -15,6 +15,7 @@ public class ProductResponse {
     private String name;
     private String category;
     private String description;
+    private String imageUrl;
     private BigDecimal unitPrice;
     private Boolean active;
     private LocalDateTime createdAt;
@@ -26,6 +27,7 @@ public class ProductResponse {
         response.setName(product.getName());
         response.setCategory(product.getCategory());
         response.setDescription(product.getDescription());
+        response.setImageUrl(product.getImageUrl());
         response.setUnitPrice(product.getUnitPrice());
         response.setActive(product.getActive());
         response.setCreatedAt(product.getCreatedAt());

@@ -24,14 +24,14 @@
     <div class="management-page customer-page">
         <div class="management-taskbar customer-taskbar">
             <div>
-                <p class="management-eyebrow">CRM / Lead detail</p>
+                <p class="management-eyebrow">CRM / Chi tiết khách hàng tiềm năng</p>
                 <h1 th:text="${customer.fullName != null ? customer.fullName : customer.name}">Khách hàng</h1>
                 <p class="management-subtitle">Cập nhật thông tin lead trước khi chuyển sang báo giá hoặc chăm sóc tiếp.</p>
             </div>
             <div class="management-actions">
                 <a class="btn management-secondary-action" th:href="@{/customer}">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Import & phân bổ</span>
+                    <span>Nhập dữ liệu & phân bổ</span>
                 </a>
                 <a class="btn management-primary-action" th:href="@{/quotation/create/{id}(id=${customer.id})}">
                     <i class="fas fa-file-invoice-dollar"></i>
@@ -43,19 +43,19 @@
         <div class="customer-tabs">
             <a th:href="@{/customer}">
                 <i class="fas fa-file-import"></i>
-                <span>Import & phân bổ</span>
+                <span>Nhập dữ liệu & phân bổ</span>
             </a>
             <a th:href="@{/customers}">
                 <i class="fas fa-table-list"></i>
-                <span>CRUD khách hàng</span>
+                <span>Quản lý khách hàng</span>
             </a>
         </div>
 
         <section class="customer-form-shell">
             <div class="customer-form-header">
                 <div>
-                    <h2>Thông tin lead</h2>
-                    <p>Các trường này được dùng cho pipeline, quotation và contract về sau.</p>
+                    <h2>Thông tin khách hàng tiềm năng</h2>
+                    <p>Các trường này được dùng cho quy trình bán hàng, báo giá và hợp đồng về sau.</p>
                 </div>
             </div>
 
@@ -95,21 +95,21 @@
                     <label>
                         <span>Trạng thái</span>
                         <select th:field="*{customerStatus}">
-                            <option value="NEW">NEW</option>
-                            <option value="CONTACTED">CONTACTED</option>
-                            <option value="FOLLOW_UP">FOLLOW_UP</option>
-                            <option value="OPPORTUNITY">OPPORTUNITY</option>
-                            <option value="ACTIVE">ACTIVE</option>
-                            <option value="INACTIVE">INACTIVE</option>
+                            <option value="NEW">Mới</option>
+                            <option value="CONTACTED">Đã liên hệ</option>
+                            <option value="FOLLOW_UP">Cần chăm sóc tiếp</option>
+                            <option value="OPPORTUNITY">Đã thành cơ hội</option>
+                            <option value="ACTIVE">Hoạt động</option>
+                            <option value="INACTIVE">Ngừng hoạt động</option>
                         </select>
                     </label>
                     <label>
                         <span>Mức cơ hội</span>
                         <select th:field="*{opportunityLevel}">
-                            <option value="COLD">COLD</option>
-                            <option value="WARM">WARM</option>
-                            <option value="HOT">HOT</option>
-                            <option value="FAIL">FAIL</option>
+                            <option value="COLD">Lạnh</option>
+                            <option value="WARM">Ấm</option>
+                            <option value="HOT">Nóng</option>
+                            <option value="FAIL">Không phù hợp</option>
                         </select>
                     </label>
                 </div>

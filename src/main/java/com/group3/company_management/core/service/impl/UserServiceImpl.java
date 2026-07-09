@@ -66,10 +66,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(UserRequest request) {
-        String username = normalizeRequired(request.getUsername(), "Username is required");
-        String email = normalizeRequired(request.getEmail(), "Email is required");
-        String password = normalizeRequired(request.getPassword(), "Password is required");
-        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Role is required"));
+        String username = normalizeRequired(request.getUsername(), "Vui lòng nhập tên đăng nhập");
+        String email = normalizeRequired(request.getEmail(), "Vui lòng nhập email");
+        String password = normalizeRequired(request.getPassword(), "Vui lòng nhập mật khẩu");
+        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Vui lòng chọn vai trò"));
 
         validateUniqueUsername(username, null);
         validateUniqueEmail(email, null);
@@ -90,11 +90,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(UserRequest request) {
-        Long id = normalizeRequired(request.getId(), "User ID is required");
+        Long id = normalizeRequired(request.getId(), "Thiếu mã tài khoản");
         User user = findActiveUserById(id);
-        String username = normalizeRequired(request.getUsername(), "Username is required");
-        String email = normalizeRequired(request.getEmail(), "Email is required");
-        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Role is required"));
+        String username = normalizeRequired(request.getUsername(), "Vui lòng nhập tên đăng nhập");
+        String email = normalizeRequired(request.getEmail(), "Vui lòng nhập email");
+        Role role = findRoleById(normalizeRequired(request.getRoleId(), "Vui lòng chọn vai trò"));
 
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
@@ -113,8 +113,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(Long id, User userDetails) {
         User user = findActiveUserById(id);
-        String username = normalizeRequired(userDetails.getUsername(), "Username is required");
-        String email = normalizeRequired(userDetails.getEmail(), "Email is required");
+        String username = normalizeRequired(userDetails.getUsername(), "Vui lòng nhập tên đăng nhập");
+        String email = normalizeRequired(userDetails.getEmail(), "Vui lòng nhập email");
 
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
@@ -145,10 +145,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUserStatus(UserRequest request) {
         if (request.getId() == null) {
-            throw new IllegalArgumentException("User ID is required");
+            throw new IllegalArgumentException("Thiếu mã tài khoản");
         }
 
-        String status = normalizeRequired(request.getStatus(), "Status is required").toUpperCase(Locale.ROOT);
+        String status = normalizeRequired(request.getStatus(), "Vui lòng chọn trạng thái").toUpperCase(Locale.ROOT);
         User user = findActiveUserById(request.getId());
         user.setStatus(status);
         userRepository.save(user);
@@ -167,20 +167,20 @@ public class UserServiceImpl implements UserService {
     }
     private User findActiveUserById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản có mã: " + id));
     }
 
     private Role findRoleById(Long id) {
         Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò có mã: " + id));
         if (!role.isActive()) {
-            throw new IllegalArgumentException("Role is inactive");
+            throw new IllegalArgumentException("Vai trò đang ngừng hoạt động");
         }
         return role;
     }
 
     private void syncEmployeeProfile(User user, Role role) {
-        String roleCode = normalizeRequired(role.getRoleCode(), "Role code is required").toUpperCase(Locale.ROOT);
+        String roleCode = normalizeRequired(role.getRoleCode(), "Vui lòng nhập mã vai trò").toUpperCase(Locale.ROOT);
         String employeeCode = buildEmployeeCode(roleCode, user.getId());
 
         validateEmployeeRole(roleCode);
@@ -203,7 +203,7 @@ public class UserServiceImpl implements UserService {
             case "ACCOUNTANT" -> "ACC";
             case "MARKETING" -> "MKT";
             case "SALES" -> "SAL";
-            default -> throw new IllegalArgumentException("Unsupported role code: " + roleCode);
+            default -> throw new IllegalArgumentException("Mã vai trò không được hỗ trợ: " + roleCode);
         };
 
         return "%s%06d".formatted(prefix, accountId);
@@ -213,7 +213,7 @@ public class UserServiceImpl implements UserService {
         switch (roleCode) {
             case "ADMIN", "ADMIN_OFFICER", "ACCOUNTANT", "MARKETING", "SALES" -> {
             }
-            default -> throw new IllegalArgumentException("Unsupported role code: " + roleCode);
+            default -> throw new IllegalArgumentException("Mã vai trò không được hỗ trợ: " + roleCode);
         }
     }
 
@@ -226,7 +226,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (exists) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại");
         }
     }
 
@@ -239,7 +239,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (exists) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("Email đã tồn tại");
         }
     }
 
@@ -285,7 +285,7 @@ public class UserServiceImpl implements UserService {
 @Transactional(readOnly = true)
 public UserResponse getProfileByUsername(String username) {
     User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
     return toResponse(user, Map.of());
 }
 
@@ -293,7 +293,7 @@ public UserResponse getProfileByUsername(String username) {
 @Transactional
 public void updateProfile(String username, ProfileUpdateRequest request) {
     User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
     
     // cho update
     user.setFullName(request.getFullName());
@@ -385,10 +385,10 @@ public void updateProfile(String username, ProfileUpdateRequest request) {
         }
 
         Department department = departmentRepository.findByIdAndIsDeletedFalse(departmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phòng ban"));
 
         if (!"ACTIVE".equalsIgnoreCase(department.getStatus())) {
-            throw new IllegalArgumentException("Department is inactive");
+            throw new IllegalArgumentException("Phòng ban đang ngừng hoạt động");
         }
     }
 }

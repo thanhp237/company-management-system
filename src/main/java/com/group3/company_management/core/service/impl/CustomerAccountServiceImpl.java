@@ -32,11 +32,11 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
     @Override
     @Transactional
     public CustomerAccountResult createFromContract(Long contractId) {
-        Contract contract = getSignedContract(contractId);
+        Contract contract = getContractReadyForCustomerAccount(contractId);
         Customer customer = getContractCustomer(contract);
 
         if (hasCustomerAccount(customer)) {
-            throw new RuntimeException("Customer already has an account");
+            throw new RuntimeException("Khách hàng đã có tài khoản");
         }
 
         String rawPassword = generateRandomPassword();
@@ -49,11 +49,11 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
     @Override
     @Transactional
     public CustomerAccountResult resendAccountEmail(Long contractId) {
-        Contract contract = getSignedContract(contractId);
+        Contract contract = getContractReadyForCustomerAccount(contractId);
         Customer customer = getContractCustomer(contract);
 
         if (!hasCustomerAccount(customer)) {
-            throw new RuntimeException("Customer account has not been created yet");
+            throw new RuntimeException("Tài khoản khách hàng chưa được tạo");
         }
 
         String rawPassword = generateRandomPassword();
@@ -66,12 +66,13 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
         return new CustomerAccountResult(emailSent, customer.getEmail(), rawPassword);
     }
 
-    private Contract getSignedContract(Long contractId) {
+    private Contract getContractReadyForCustomerAccount(Long contractId) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng"));
 
-        if (contract.getStatus() != Contract.ContractStatus.SIGNED) {
-            throw new RuntimeException("Contract must be signed before creating customer account");
+        if (contract.getStatus() != Contract.ContractStatus.SENT_TO_CUSTOMER
+                && contract.getStatus() != Contract.ContractStatus.SIGNED) {
+            throw new RuntimeException("Cần gửi hợp đồng cho khách hàng trước khi cấp tài khoản");
         }
 
         return contract;
@@ -80,10 +81,10 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
     private Customer getContractCustomer(Contract contract) {
         Customer customer = contract.getCustomer();
         if (customer == null) {
-            throw new RuntimeException("Contract customer not found");
+            throw new RuntimeException("Hợp đồng chưa có thông tin khách hàng");
         }
         if (!hasText(customer.getEmail())) {
-            throw new RuntimeException("Customer email is required to create account");
+            throw new RuntimeException("Cần có email khách hàng để cấp tài khoản");
         }
         return customer;
     }
@@ -118,5 +119,8 @@ public class CustomerAccountServiceImpl implements CustomerAccountService {
             password.append(PASSWORD_CHARS.charAt(index));
         }
         return password.toString();
+
+
+        
     }
 }

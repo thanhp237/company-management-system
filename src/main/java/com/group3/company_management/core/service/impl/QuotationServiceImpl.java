@@ -45,7 +45,7 @@ public class QuotationServiceImpl implements QuotationService {
         validateOpportunityQuotation(request, username);
 
         Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
 
         Quotation quotation = new Quotation();
         quotation.setCustomer(customer);
@@ -55,7 +55,7 @@ public class QuotationServiceImpl implements QuotationService {
         quotation.setStatus("DRAFT");
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản nhân viên"));
         quotation.setEmployeeId(user.getEmployee().getId());
 
         BigDecimal subTotal = BigDecimal.ZERO;
@@ -69,7 +69,7 @@ public class QuotationServiceImpl implements QuotationService {
             }
 
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
             BigDecimal unitPrice = product.getUnitPrice();
             BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
@@ -107,26 +107,26 @@ public class QuotationServiceImpl implements QuotationService {
         }
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản nhân viên"));
         var opportunity = opportunityRepository.findDetailById(request.getOpportunityId())
-                .orElseThrow(() -> new RuntimeException("Opportunity not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cơ hội bán hàng"));
 
         if (!canManageOpportunity(user)
                 && (opportunity.getAssignedTo() == null
                 || !username.equals(opportunity.getAssignedTo().getUsername()))) {
-            throw new RuntimeException("You are not allowed to create quotation for this opportunity");
+            throw new RuntimeException("Bạn không có quyền tạo báo giá cho cơ hội này");
         }
         if (opportunity.getStage() == null
                 || !QUOTATION_STAGES.contains(opportunity.getStage().toUpperCase(Locale.ROOT))) {
-            throw new RuntimeException("Opportunity stage is not ready for quotation");
+            throw new RuntimeException("Giai đoạn cơ hội chưa đủ điều kiện để tạo báo giá");
         }
         if (quotationRepository.findFirstByOpportunityIdOrderByCreatedAtDesc(request.getOpportunityId()).isPresent()) {
-            throw new RuntimeException("Quotation already exists for this opportunity");
+            throw new RuntimeException("Cơ hội này đã có báo giá");
         }
         if (request.getCustomerId() != null
                 && opportunity.getCustomer() != null
                 && !request.getCustomerId().equals(opportunity.getCustomer().getId())) {
-            throw new RuntimeException("Quotation customer does not match opportunity customer");
+            throw new RuntimeException("Khách hàng trong báo giá không khớp với khách hàng của cơ hội");
         }
     }
 
@@ -141,7 +141,7 @@ public class QuotationServiceImpl implements QuotationService {
     @Override
     public QuotationResponse getQuotationDetail(Long id) {
         Quotation quotation = quotationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Quotation not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá"));
 
         return mapToResponse(quotation);
     }
@@ -150,18 +150,18 @@ public class QuotationServiceImpl implements QuotationService {
     @Transactional
     public void acceptQuotation(Long id, String username) {
         Quotation quotation = quotationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Quotation not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá"));
 
         if (quotation.getStatus() == null || !"DRAFT".equalsIgnoreCase(quotation.getStatus())) {
-            throw new RuntimeException("Only draft quotation can be accepted");
+            throw new RuntimeException("Chỉ có thể duyệt báo giá ở trạng thái bản nháp");
         }
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản nhân viên"));
         Long employeeId = user.getEmployee() != null ? user.getEmployee().getId() : null;
         if (!canManageOpportunity(user)
                 && (employeeId == null || !employeeId.equals(quotation.getEmployeeId()))) {
-            throw new RuntimeException("You are not allowed to accept this quotation");
+            throw new RuntimeException("Bạn không có quyền duyệt báo giá này");
         }
 
         quotation.setStatus("APPROVED");
@@ -172,7 +172,7 @@ public class QuotationServiceImpl implements QuotationService {
     public QuotationResponse previewQuotation(QuotationRequest request) {
 
         Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
 
         QuotationResponse response = new QuotationResponse();
         response.setCustomerId(customer.getId());
@@ -195,7 +195,7 @@ public class QuotationServiceImpl implements QuotationService {
             }
 
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
 
             BigDecimal unitPrice = product.getUnitPrice();
             BigDecimal totalPrice = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
@@ -229,7 +229,7 @@ public class QuotationServiceImpl implements QuotationService {
         }
 
         Voucher voucher = voucherRepository.findById(voucherId)
-                .orElseThrow(() -> new RuntimeException("Voucher not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy voucher"));
 
         BigDecimal discountAmount = subTotal
                 .multiply(voucher.getDiscountPercent())

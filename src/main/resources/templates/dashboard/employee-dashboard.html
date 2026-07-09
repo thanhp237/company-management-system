@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title != null ? title + ' - CompanyMS' : 'Dashboard - CompanyMS'}">Dashboard - CompanyMS</title>
+    <title th:text="${title != null ? title + ' - CompanyMS' : 'Bảng điều khiển - CompanyMS'}">Bảng điều khiển - CompanyMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -287,24 +287,24 @@
     <div class="management-page role-dashboard">
         <section class="dashboard-hero">
             <div>
-                <p class="management-eyebrow">Dashboard / <span th:text="${roleLabel}">Role</span></p>
-                <h1 th:text="${title}">Dashboard</h1>
-                <p th:text="${dashboardSubtitle}">Workspace description</p>
+                <p class="management-eyebrow">Bảng điều khiển / <span th:text="${roleLabel}">Vai trò</span></p>
+                <h1 th:text="${title}">Bảng điều khiển</h1>
+                <p th:text="${dashboardSubtitle}">Mô tả khu vực làm việc</p>
             </div>
             <span class="role-chip">
                 <i class="fas fa-user-shield"></i>
-                <span th:text="${roleLabel}">Actor</span>
+                <span th:text="${roleLabel}">Người dùng</span>
             </span>
         </section>
 
-        <section class="dashboard-kpi-grid" aria-label="Role metrics">
+        <section class="dashboard-kpi-grid" aria-label="Chỉ số theo vai trò">
             <article class="dashboard-kpi" th:each="card : ${kpiCards}">
                 <span class="dashboard-kpi-icon" th:classappend="${card.tone}">
                     <i class="fas" th:classappend="${card.icon}"></i>
                 </span>
                 <strong th:text="${card.value}">0</strong>
-                <span class="dashboard-kpi-label" th:text="${card.label}">Metric</span>
-                <small th:text="${card.caption}">Caption</small>
+                <span class="dashboard-kpi-label" th:text="${card.label}">Chỉ số</span>
+                <small th:text="${card.caption}">Ghi chú</small>
             </article>
         </section>
 
@@ -312,8 +312,8 @@
             <div>
                 <section class="dashboard-section" th:each="group : ${actionGroups}">
                     <div class="dashboard-section-header">
-                        <h2 th:text="${group.title}">Workspace</h2>
-                        <p th:text="${group.description}">Description</p>
+                        <h2 th:text="${group.title}">Khu vực làm việc</h2>
+                        <p th:text="${group.description}">Mô tả</p>
                     </div>
                     <div class="dashboard-action-grid">
                         <a th:each="action : ${group.actions}"
@@ -322,8 +322,8 @@
                            th:classappend="${action.disabled == 'true'} ? ' disabled'">
                             <i class="fas" th:classappend="${action.icon}"></i>
                             <span>
-                                <strong th:text="${action.label}">Action</strong>
-                                <small th:text="${action.description}">Description</small>
+                                <strong th:text="${action.label}">Thao tác</strong>
+                                <small th:text="${action.description}">Mô tả</small>
                                 <em class="disabled-badge" th:if="${action.disabled == 'true'}">Đang triển khai</em>
                             </span>
                         </a>
@@ -334,12 +334,12 @@
             <aside class="insight-panel">
                 <div class="insight-panel-header">
                     <h2>Phạm vi quyền hạn</h2>
-                    <p>Các nguyên tắc dashboard áp dụng cho actor hiện tại.</p>
+                    <p>Các nguyên tắc áp dụng cho người dùng hiện tại.</p>
                 </div>
                 <div class="insight-list">
                     <div class="insight-item" th:each="item : ${insightItems}">
-                        <strong th:text="${item.title}">Insight</strong>
-                        <span th:text="${item.description}">Description</span>
+                        <strong th:text="${item.title}">Gợi ý</strong>
+                        <span th:text="${item.description}">Mô tả</span>
                     </div>
                 </div>
             </aside>

@@ -26,7 +26,7 @@
             <div>
                 <p class="management-eyebrow">Admin / Cấu hình nghiệp vụ</p>
                 <h1>Cấu hình quy tắc nghiệp vụ</h1>
-                <p class="management-subtitle">Thiết lập cách tự động phân bổ lead, hoa hồng, voucher và ngưỡng phê duyệt.</p>
+                <p class="management-subtitle">Thiết lập cách tự động phân bổ khách hàng tiềm năng, hoa hồng, voucher và ngưỡng phê duyệt.</p>
             </div>
             <form class="management-actions" method="post" th:action="@{/business-rules/save}" id="businessRuleForm">
                 <a class="customer-secondary-button" th:href="@{/dashboard}">
@@ -49,7 +49,7 @@
             <section class="customer-panel rule-card large">
                 <div class="customer-panel-header">
                     <div>
-                        <h2><i class="fas fa-user-plus"></i> Phân bổ Lead</h2>
+                        <h2><i class="fas fa-user-plus"></i> Phân bổ khách hàng tiềm năng</h2>
                         <p>Quy tắc tự động gán khách hàng tiềm năng cho nhân viên.</p>
                     </div>
                     <span class="customer-pill active">Đang hoạt động</span>
@@ -59,18 +59,18 @@
                         <label class="rule-choice active">
                             <input form="businessRuleForm" type="radio" name="leadAssignmentMode" value="ROUND_ROBIN" checked>
                             <span>Round Robin</span>
-                            <small>Chia đều tuần hoàn cho tất cả sales.</small>
+                            <small>Chia đều tuần hoàn cho tất cả nhân viên kinh doanh.</small>
                         </label>
                         <label class="rule-choice">
                             <input form="businessRuleForm" type="radio" name="leadAssignmentMode" value="MANUAL">
                             <span>Thủ công</span>
-                            <small>Quản lý tự phân phối từng lead.</small>
+                            <small>Quản lý tự phân phối từng khách hàng tiềm năng.</small>
                         </label>
                     </div>
                     <div class="rule-toggle-row">
                         <div>
-                            <span>Ưu tiên sales xuất sắc</span>
-                            <p>Nhân viên có tỷ lệ chốt cao được nhận lead nóng trước 15 phút.</p>
+                            <span>Ưu tiên nhân viên kinh doanh xuất sắc</span>
+                            <p>Nhân viên có tỷ lệ chốt cao được nhận khách hàng tiềm năng nóng trước 15 phút.</p>
                         </div>
                         <label class="rule-switch">
                             <input type="checkbox" checked>
@@ -84,7 +84,7 @@
                 <div class="customer-panel-header">
                     <div>
                         <h2><i class="fas fa-percent"></i> Tỷ lệ hoa hồng</h2>
-                        <p>Thưởng theo doanh số và chất lượng deal.</p>
+                        <p>Thưởng theo doanh số và chất lượng thương vụ.</p>
                     </div>
                 </div>
                 <div class="customer-panel-body">

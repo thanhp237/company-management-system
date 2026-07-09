@@ -33,7 +33,7 @@ public class ChangePasswordController {
 
         User user = userRepository
                 .findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
 
         if (Boolean.TRUE.equals(user.getFirstLogin())) {
             return "redirect:/first-change-password";

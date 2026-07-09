@@ -8,11 +8,11 @@ public class PageController {
 
     @GetMapping("/")
     public String home() {
-        return "auth/select-login";
+        return "redirect:/login";
     }
 
     @GetMapping("/select-login")
     public String selectLogin() {
-        return "auth/select-login";
+        return "redirect:/login";
     }
 }

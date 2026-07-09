@@ -70,29 +70,29 @@ public class RoleServiceImpl implements RoleService {
         }
 
         return roleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
     }
 
     @Override
     public void saveRole(Role role) {
         String roleCode = normalizeRoleCode(role.getRoleCode());
-        String roleName = normalizeRequired(role.getRoleName(), "Role name is required");
+        String roleName = normalizeRequired(role.getRoleName(), "Vui lòng nhập tên vai trò");
 
         boolean duplicated = role.getId() == null
                 ? roleRepository.existsByRoleCodeIgnoreCase(roleCode)
                 : roleRepository.existsByRoleCodeIgnoreCaseAndIdNot(roleCode, role.getId());
 
         if (duplicated) {
-            throw new IllegalArgumentException("Role code already exists");
+            throw new IllegalArgumentException("Mã vai trò đã tồn tại");
         }
 
         Role target = role.getId() == null
                 ? new Role()
                 : roleRepository.findById(role.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
 
         if (target.getId() != null && isSystemRole(target.getRoleCode()) && !target.getRoleCode().equals(roleCode)) {
-            throw new IllegalArgumentException("System role code cannot be changed");
+            throw new IllegalArgumentException("Không thể đổi mã vai trò hệ thống");
         }
 
         target.setRoleCode(roleCode);
@@ -104,7 +104,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void updateStatus(Long id, String status) {
         Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
         role.setStatus(normalizeStatus(status));
         roleRepository.save(role);
     }
@@ -112,14 +112,14 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void deleteRole(Long id) {
         Role role = roleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy vai trò"));
 
         Long userCount = userRepository.countActiveUsersByRoleCode(role.getRoleCode());
         if (isSystemRole(role.getRoleCode())) {
-            throw new IllegalArgumentException("System roles cannot be deleted. Please deactivate instead.");
+            throw new IllegalArgumentException("Không thể xóa vai trò hệ thống. Vui lòng vô hiệu hóa thay thế.");
         }
         if (userCount != null && userCount > 0) {
-            throw new IllegalArgumentException("Role is assigned to users. Please deactivate instead.");
+            throw new IllegalArgumentException("Vai trò đang được gán cho tài khoản. Vui lòng vô hiệu hóa thay thế.");
         }
 
         roleRepository.delete(role);
@@ -138,12 +138,12 @@ public class RoleServiceImpl implements RoleService {
     }
 
     private String normalizeRoleCode(String roleCode) {
-        String normalized = normalizeRequired(roleCode, "Role code is required")
+        String normalized = normalizeRequired(roleCode, "Vui lòng nhập mã vai trò")
                 .toUpperCase(Locale.ROOT)
                 .replace(' ', '_');
 
         if (!normalized.matches("[A-Z0-9_]{2,30}")) {
-            throw new IllegalArgumentException("Role code must be 2-30 characters and only contain A-Z, 0-9 or underscore");
+            throw new IllegalArgumentException("Mã vai trò phải dài 2-30 ký tự và chỉ gồm A-Z, 0-9 hoặc dấu gạch dưới");
         }
         return normalized;
     }
@@ -161,7 +161,7 @@ public class RoleServiceImpl implements RoleService {
         }
         String normalized = status.trim().toUpperCase(Locale.ROOT);
         if (!"ACTIVE".equals(normalized) && !"INACTIVE".equals(normalized)) {
-            throw new IllegalArgumentException("Unsupported role status: " + status);
+            throw new IllegalArgumentException("Trạng thái vai trò không hợp lệ: " + status);
         }
         return normalized;
     }

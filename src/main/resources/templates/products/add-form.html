@@ -47,7 +47,7 @@
                     <i class="fas fa-box"></i>
                 </div>
                 <div>
-                    <h2 th:text="${isEdit} ? 'Thông tin sản phẩm' : 'Tạo sản phẩm trong catalog'">Thông tin sản phẩm</h2>
+                    <h2 th:text="${isEdit} ? 'Thông tin sản phẩm' : 'Tạo sản phẩm trong danh mục'">Thông tin sản phẩm</h2>
                     <p>Những thông tin này sẽ được dùng khi lập báo giá, pipeline và hợp đồng.</p>
                 </div>
             </div>
@@ -90,7 +90,7 @@
                         <input type="checkbox" th:field="*{active}">
                         <span>
                             <strong>Đang kinh doanh</strong>
-                            <small>Sản phẩm active sẽ xuất hiện trong danh sách chọn khi tạo báo giá.</small>
+                            <small>Sản phẩm đang kinh doanh sẽ xuất hiện trong danh sách chọn khi tạo báo giá.</small>
                         </span>
                     </label>
                 </div>

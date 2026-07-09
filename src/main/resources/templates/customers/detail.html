@@ -50,7 +50,7 @@
                    th:if="${canAddInteraction}"
                    th:href="@{/customer-activities/add(customerId=${customer.id},returnUrl=${'/customers/' + customer.id})}">
                     <i class="fas fa-plus"></i>
-                    <span>Thêm activity</span>
+                    <span>Thêm tương tác</span>
                 </a>
             </div>
         </div>
@@ -66,23 +66,23 @@
 
         <section class="customer-stat-grid">
             <article class="customer-stat-card success">
-                <span>Activity</span>
+                <span>Tương tác</span>
                 <strong th:text="${activityCount}">0</strong>
                 <small>Lịch sử tương tác</small>
             </article>
             <article class="customer-stat-card info">
                 <span>Trạng thái</span>
-                <strong th:text="${customer.customerStatus != null ? customer.customerStatus : 'N/A'}">ACTIVE</strong>
+                <strong th:text="${customer.customerStatus == 'ACTIVE' ? 'Hoạt động' : (customer.customerStatus == 'INACTIVE' ? 'Ngừng hoạt động' : 'Chưa có')}">Hoạt động</strong>
                 <small>Hồ sơ khách hàng</small>
             </article>
             <article class="customer-stat-card warning">
                 <span>Nguồn</span>
-                <strong th:text="${customer.customerSource != null ? customer.customerSource : 'N/A'}">Web</strong>
+                <strong th:text="${customer.customerSource != null ? customer.customerSource : 'Chưa có'}">Website</strong>
                 <small>Kênh ghi nhận</small>
             </article>
             <article class="customer-stat-card neutral">
-                <span>Sale ID</span>
-                <strong th:text="${customer.assignedSalesId != null ? customer.assignedSalesId : 'N/A'}">N/A</strong>
+                <span>Mã nhân viên kinh doanh</span>
+                <strong th:text="${customer.assignedSalesId != null ? customer.assignedSalesId : 'Chưa có'}">Chưa có</strong>
                 <small>Người phụ trách</small>
             </article>
         </section>
@@ -103,19 +103,19 @@
                         </div>
                         <div>
                             <span>Email</span>
-                            <strong th:text="${customer.email != null ? customer.email : 'N/A'}">email</strong>
+                            <strong th:text="${customer.email != null ? customer.email : 'Chưa có'}">email</strong>
                         </div>
                         <div>
                             <span>Số điện thoại</span>
-                            <strong th:text="${customer.phone != null ? customer.phone : 'N/A'}">phone</strong>
+                            <strong th:text="${customer.phone != null ? customer.phone : 'Chưa có'}">điện thoại</strong>
                         </div>
                         <div>
                             <span>Nguồn khách</span>
-                            <strong th:text="${customer.customerSource != null ? customer.customerSource : 'N/A'}">source</strong>
+                            <strong th:text="${customer.customerSource != null ? customer.customerSource : 'Chưa có'}">nguồn</strong>
                         </div>
                         <div class="wide">
                             <span>Địa chỉ</span>
-                            <strong th:text="${customer.address != null ? customer.address : 'N/A'}">address</strong>
+                            <strong th:text="${customer.address != null ? customer.address : 'Chưa có'}">địa chỉ</strong>
                         </div>
                     </div>
                 </div>
@@ -125,7 +125,7 @@
                 <div class="customer-panel-header">
                     <div>
                         <h2>Lịch sử tương tác</h2>
-                        <p>Theo dõi call, meeting, email, note và các hoạt động liên quan.</p>
+                        <p>Theo dõi cuộc gọi, cuộc họp, email, ghi chú và các hoạt động liên quan.</p>
                     </div>
                     <a class="customer-secondary-button" th:href="@{/customer-activities(customerId=${customer.id})}">
                         <i class="fas fa-clock-rotate-left"></i>
@@ -136,8 +136,8 @@
                     <div class="management-alert warning"
                          th:if="${!canAddInteraction and latestOpportunity != null}">
                         <i class="fas fa-lock"></i>
-                        <span th:text="${'Opportunity mới nhất đã ' + latestOpportunity.stage + ', không thể thêm call/meeting/email cho deal đã đóng.'}">
-                            Opportunity đã đóng.
+                        <span th:text="${'Cơ hội mới nhất đã ' + (latestOpportunity.stage == 'WON' ? 'Thắng' : (latestOpportunity.stage == 'LOST' ? 'Thua' : latestOpportunity.stage)) + ', không thể thêm cuộc gọi/cuộc họp/email cho thương vụ đã đóng.'}">
+                            Cơ hội đã đóng.
                         </span>
                     </div>
                     <div class="customer-timeline" th:if="${!#lists.isEmpty(activities)}">
@@ -147,17 +147,17 @@
                             </span>
                             <div>
                                 <div class="customer-activity-heading">
-                                    <strong th:text="${activity.activityType}">CALL</strong>
-                                    <time th:text="${activity.createdAt != null ? #temporals.format(activity.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">date</time>
+                                    <strong th:text="${activity.activityType == 'CALL' ? 'Gọi điện' : (activity.activityType == 'MEETING' ? 'Cuộc họp' : (activity.activityType == 'EMAIL' ? 'Email' : 'Ghi chú'))}">Gọi điện</strong>
+                                    <time th:text="${activity.createdAt != null ? #temporals.format(activity.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có'}">ngày</time>
                                 </div>
-                                <p th:text="${activity.activityNote != null ? activity.activityNote : 'Không có ghi chú.'}">Note</p>
+                                <p th:text="${activity.activityNote != null ? activity.activityNote : 'Không có ghi chú.'}">Ghi chú</p>
                                 <a th:href="@{/customer-activities/{id}(id=${activity.id})}">Chi tiết</a>
                             </div>
                         </article>
                     </div>
                     <div class="customer-empty" th:if="${#lists.isEmpty(activities)}">
                         <i class="fas fa-comments"></i>
-                        <span>Chưa có activity nào cho khách hàng này.</span>
+                        <span>Chưa có tương tác nào cho khách hàng này.</span>
                     </div>
                 </div>
             </section>

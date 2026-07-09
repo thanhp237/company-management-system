@@ -20,6 +20,8 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
 
     List<Contract> findBySaleId(Long saleId);
 
+    List<Contract> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
+
     long countByCustomerId(Long customerId);
 
     long countByCustomerIdAndStatus(Long customerId, Contract.ContractStatus status);

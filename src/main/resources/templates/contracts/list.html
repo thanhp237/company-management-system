@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="vi"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contract Management</title>
+    <title>Quản lý hợp đồng</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -401,14 +401,14 @@
 
         <div class="page-top">
             <div class="page-title">
-                <h1>Workspace Hợp đồng</h1>
+                <h1>Khu vực hợp đồng</h1>
                 <p>Theo dõi và quản lý hợp đồng doanh nghiệp.</p>
             </div>
 
             <div class="top-actions">
                 <a class="soft-btn" th:href="@{/pipeline}">
                     <i class="fa-solid fa-arrow-left"></i>
-                    Pipeline
+                    Quy trình bán hàng
                 </a>
             </div>
         </div>
@@ -473,12 +473,12 @@
                     <label class="form-label">Trạng thái</label>
                     <select class="form-select" name="status">
                         <option value="">Tất cả</option>
-                        <option value="DRAFT" th:selected="${status != null and status.toString() == 'DRAFT'}">Draft</option>
-                        <option value="PENDING_ADMIN_OFFICER" th:selected="${status != null and status.toString() == 'PENDING_ADMIN_OFFICER'}">Pending</option>
-                        <option value="ADMIN_REVIEWED" th:selected="${status != null and status.toString() == 'ADMIN_REVIEWED'}">Reviewed</option>
-                        <option value="SENT_TO_CUSTOMER" th:selected="${status != null and status.toString() == 'SENT_TO_CUSTOMER'}">Sent</option>
-                        <option value="SIGNED" th:selected="${status != null and status.toString() == 'SIGNED'}">Signed</option>
-                        <option value="CANCELLED" th:selected="${status != null and status.toString() == 'CANCELLED'}">Cancelled</option>
+                        <option value="DRAFT" th:selected="${status != null and status.toString() == 'DRAFT'}">Bản nháp</option>
+                        <option value="PENDING_ADMIN_OFFICER" th:selected="${status != null and status.toString() == 'PENDING_ADMIN_OFFICER'}">Chờ hành chính hợp đồng</option>
+                        <option value="ADMIN_REVIEWED" th:selected="${status != null and status.toString() == 'ADMIN_REVIEWED'}">Đã duyệt điều khoản</option>
+                        <option value="SENT_TO_CUSTOMER" th:selected="${status != null and status.toString() == 'SENT_TO_CUSTOMER'}">Đã gửi khách hàng</option>
+                        <option value="SIGNED" th:selected="${status != null and status.toString() == 'SIGNED'}">Đã ký</option>
+                        <option value="CANCELLED" th:selected="${status != null and status.toString() == 'CANCELLED'}">Đã hủy</option>
                     </select>
                 </div>
 
@@ -512,7 +512,7 @@
         <section class="table-panel" th:if="${adminOfficerView}">
             <div class="panel-header">
                 <div>
-                    <h2>Hợp đồng chờ Admin Officer</h2>
+                    <h2>Hợp đồng chờ hành chính hợp đồng</h2>
                     <p>Danh sách hợp đồng cần nhập điều khoản và xác nhận.</p>
                 </div>
             </div>
@@ -524,7 +524,7 @@
                         <th>Mã hợp đồng</th>
                         <th>Mã báo giá</th>
                         <th>Khách hàng</th>
-                        <th>Sales</th>
+                        <th>Nhân viên kinh doanh</th>
                         <th>Giá trị cuối</th>
                         <th class="text-end">Thao tác</th>
                     </tr>
@@ -532,9 +532,9 @@
                     <tbody>
                     <tr th:each="contract : ${pendingAdminContracts}">
                         <td class="contract-code" th:text="${contract.contractCode}">CON-001</td>
-                        <td class="muted-text" th:text="${contract.quotationCode != null ? contract.quotationCode : 'N/A'}">QT-001</td>
-                        <td th:text="${contract.customerName != null ? contract.customerName : 'N/A'}">Customer</td>
-                        <td th:text="${contract.saleName != null ? contract.saleName : 'N/A'}">Sale</td>
+                        <td class="muted-text" th:text="${contract.quotationCode != null ? contract.quotationCode : 'Chưa có'}">QT-001</td>
+                        <td th:text="${contract.customerName != null ? contract.customerName : 'Chưa có'}">Khách hàng</td>
+                        <td th:text="${contract.saleName != null ? contract.saleName : 'Chưa có'}">Nhân viên kinh doanh</td>
                         <td class="amount" th:text="${contract.finalAmount != null ? contract.finalAmount : 0}">0</td>
                         <td>
                             <div class="row-actions justify-content-end">
@@ -566,7 +566,7 @@
                     <h2 th:text="${adminOfficerView ? 'Hợp đồng đã xử lý' : 'Danh sách hợp đồng & Trạng thái'}">
                         Danh sách hợp đồng & Trạng thái
                     </h2>
-                    <p>Quản lý danh sách hợp đồng, trạng thái và bước cuối của Sales.</p>
+                    <p>Quản lý danh sách hợp đồng, trạng thái và bước cuối của nhân viên kinh doanh.</p>
                 </div>
             </div>
 
@@ -587,23 +587,23 @@
                     <tbody>
                     <tr th:each="contract : ${contracts}">
                         <td class="contract-code" th:text="${contract.contractCode}">CON-001</td>
-                        <td class="muted-text" th:text="${contract.quotationCode != null ? contract.quotationCode : 'N/A'}">QT-001</td>
-                        <td th:text="${contract.customerName != null ? contract.customerName : 'N/A'}">Customer</td>
+                        <td class="muted-text" th:text="${contract.quotationCode != null ? contract.quotationCode : 'Chưa có'}">QT-001</td>
+                        <td th:text="${contract.customerName != null ? contract.customerName : 'Chưa có'}">Khách hàng</td>
 
                         <td>
-                            <span class="status-badge st-draft" th:if="${contract.status == 'DRAFT'}">Draft</span>
-                            <span class="status-badge st-pending" th:if="${contract.status == 'PENDING_ADMIN_OFFICER'}">Pending</span>
-                            <span class="status-badge st-reviewed" th:if="${contract.status == 'ADMIN_REVIEWED'}">Reviewed</span>
-                            <span class="status-badge st-sent" th:if="${contract.status == 'SENT_TO_CUSTOMER'}">Sent</span>
-                            <span class="status-badge st-signed" th:if="${contract.status == 'SIGNED'}">Signed</span>
-                            <span class="status-badge st-cancelled" th:if="${contract.status == 'CANCELLED'}">Cancelled</span>
+                            <span class="status-badge st-draft" th:if="${contract.status == 'DRAFT'}">Bản nháp</span>
+                            <span class="status-badge st-pending" th:if="${contract.status == 'PENDING_ADMIN_OFFICER'}">Chờ hành chính hợp đồng</span>
+                            <span class="status-badge st-reviewed" th:if="${contract.status == 'ADMIN_REVIEWED'}">Đã duyệt điều khoản</span>
+                            <span class="status-badge st-sent" th:if="${contract.status == 'SENT_TO_CUSTOMER'}">Đã gửi khách hàng</span>
+                            <span class="status-badge st-signed" th:if="${contract.status == 'SIGNED'}">Đã ký</span>
+                            <span class="status-badge st-cancelled" th:if="${contract.status == 'CANCELLED'}">Đã hủy</span>
                         </td>
 
                         <td class="amount" th:text="${contract.finalAmount != null ? contract.finalAmount : 0}">0</td>
 
                         <td class="muted-text"
-                            th:text="${contract.createdAt != null ? #temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
-                            N/A
+                            th:text="${contract.createdAt != null ? #temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có'}">
+                            Chưa có
                         </td>
 
                         <td>
@@ -620,15 +620,6 @@
                                       onsubmit="return confirm('Gửi hợp đồng này cho khách hàng?');">
                                     <button class="icon-action warning" type="submit" title="Gửi khách hàng">
                                         <i class="fa-solid fa-paper-plane"></i>
-                                    </button>
-                                </form>
-
-                                <form th:if="${contract.status == 'SENT_TO_CUSTOMER'}"
-                                      th:action="@{/contracts/{id}/customer-sign(id=${contract.id})}"
-                                      method="post"
-                                      onsubmit="return confirm('Đánh dấu khách hàng đã ký hợp đồng?');">
-                                    <button class="icon-action primary" type="submit" title="Khách đã ký">
-                                        <i class="fa-solid fa-signature"></i>
                                     </button>
                                 </form>
 

@@ -33,29 +33,29 @@
 
 <div th:fragment="pipelineStats" class="management-stat-grid">
     <article class="management-stat-card success">
-        <span>Total Opportunities</span>
+        <span>Tổng cơ hội</span>
         <strong th:text="${countAccount != null ? countAccount : 0}">0</strong>
         <small>
             <i class="fas fa-layer-group"></i>
-            Matching records
+            Bản ghi phù hợp
         </small>
     </article>
 
     <article class="management-stat-card info">
-        <span>Won Deals</span>
+        <span>Thương vụ thắng</span>
         <strong th:text="${stageCounts != null ? stageCounts.get('WON') : 0}">0</strong>
         <small>
             <i class="fas fa-trophy"></i>
-            Closed successfully
+            Đã chốt thành công
         </small>
     </article>
 
     <article class="management-stat-card warning">
-        <span>Lost Deals</span>
+        <span>Thương vụ thua</span>
         <strong th:text="${stageCounts != null ? stageCounts.get('LOST') : 0}">0</strong>
         <small>
             <i class="fas fa-circle-exclamation"></i>
-            Closed unsuccessfully
+            Đã đóng không thành công
         </small>
     </article>
 </div>

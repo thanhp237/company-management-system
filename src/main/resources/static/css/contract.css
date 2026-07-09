@@ -485,6 +485,13 @@
     text-transform: uppercase;
 }
 
+.contract-form-note {
+    margin: -4px 0 16px;
+    color: #657386;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
 .contract-rule-grid .wide {
     grid-column: span 2;
 }
@@ -567,18 +574,32 @@
 }
 
 .contract-action-card form,
-.contract-action-card > button {
+.contract-action-card > button,
+.contract-action-link,
+.contract-action-note {
     margin-top: 10px;
 }
 
-.contract-action-card button {
+.contract-action-card button,
+.contract-action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
+    min-height: 42px;
+    border: 0;
+    border-radius: 8px;
     background: #fff;
     color: #007a3d;
+    font-weight: 900;
+    text-decoration: none;
 }
 
-.contract-action-card button:hover {
+.contract-action-card button:hover,
+.contract-action-link:hover {
     background: #eaffef;
+    color: #007a3d;
 }
 
 .contract-action-card button.danger {
@@ -588,6 +609,22 @@
 
 .contract-action-card button.is-disabled {
     opacity: 0.72;
+}
+
+.contract-action-note {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.contract-action-note i {
+    margin-top: 2px;
 }
 
 .contract-summary-card h2 {

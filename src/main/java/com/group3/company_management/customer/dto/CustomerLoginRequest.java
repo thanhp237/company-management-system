@@ -17,10 +17,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CustomerLoginRequest {
     
-    @Email(message = "Invalid email format")
-    @NotBlank(message = "Email is required")
+    @Email(message = "Email không đúng định dạng")
+    @NotBlank(message = "Vui lòng nhập email")
     private String email;
     
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "Vui lòng nhập mật khẩu")
     private String password;
 }

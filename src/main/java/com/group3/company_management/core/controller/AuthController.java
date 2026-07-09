@@ -60,13 +60,13 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok().body(
-                Map.of("message", "Logged out successfully"));
+                Map.of("message", "Đăng xuất thành công"));
     }
 
     @GetMapping("/health")
     public ResponseEntity<?> health() {
         return ResponseEntity.ok().body(
-                Map.of("status", "Auth service is healthy"));
+                Map.of("status", "Dịch vụ xác thực đang hoạt động"));
     }
 
 
