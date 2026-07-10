@@ -48,8 +48,6 @@ public class QuotationController {
         quotationRequest.setOpportunityId(opportunityId);
         quotationRequest.setQuotationDate(LocalDate.now());
         quotationRequest.setStatus("DRAFT");
-
-
         List<Product> products = productRepository.findByActiveTrue();
         List<QuotationDetailRequest> details = new ArrayList<>();
 
@@ -63,7 +61,10 @@ public class QuotationController {
         }
         quotationRequest.setDetails(details);
 
-        model.addAttribute("vouchers", voucherRepository.findByActiveTrueAndExpiredAtAfter(LocalDateTime.now()));
+        model.addAttribute(
+                "vouchers",
+                voucherRepository.findUsableVouchers(LocalDateTime.now())
+        );
         model.addAttribute("quotationRequest", quotationRequest);
         model.addAttribute("customer", customer);
         model.addAttribute("products", products);
@@ -84,11 +85,18 @@ public class QuotationController {
 
     @PostMapping("/save")
     public String save(@ModelAttribute("quotationRequest") QuotationRequest request,
-                       Authentication authentication) {
+                       Authentication authentication,
+                       RedirectAttributes redirectAttributes) {
 
-        Long quotationId = quotationService.createQuotation(request, authentication.getName());
+        try {
+            Long quotationId = quotationService.createQuotation(request, authentication.getName());
+            return "redirect:/quotation/detail/" + quotationId;
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/quotation/create/" + request.getCustomerId()
+                    + (request.getOpportunityId() == null ? "" : "?opportunityId=" + request.getOpportunityId());
+        }
 
-        return "redirect:/quotation/detail/" + quotationId;
     }
 
     @GetMapping("/detail/{id}")

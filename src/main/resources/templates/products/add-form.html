@@ -52,8 +52,9 @@
                 </div>
             </div>
 
-            <form class="product-form" th:object="${productForm}" method="post">
+            <form class="product-form" th:object="${productForm}" method="post" enctype="multipart/form-data">
                 <input type="hidden" th:field="*{id}">
+                <input type="hidden" th:field="*{imageUrl}">
 
                 <div class="product-form-grid">
                     <label>
@@ -79,6 +80,14 @@
                     <label>
                         <span>Đơn giá</span>
                         <input type="number" th:field="*{unitPrice}" min="0" step="0.01" placeholder="0.00" required>
+                    </label>
+
+                    <label class="wide">
+                        <span>Ảnh sản phẩm</span>
+                        <input type="file" th:field="*{imageFile}" accept="image/png,image/jpeg,image/webp,image/gif">
+                        <small class="product-field-hint" th:if="${productForm.imageUrl != null and !#strings.isEmpty(productForm.imageUrl)}">
+                            Đang dùng ảnh hiện tại. Chọn file mới nếu muốn thay ảnh.
+                        </small>
                     </label>
 
                     <label class="wide">

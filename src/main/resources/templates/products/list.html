@@ -115,7 +115,13 @@
                         </td>
                         <td>
                             <div class="product-identity">
-                                <span class="product-thumb"><i class="fas fa-box"></i></span>
+                                <span class="product-thumb" th:if="${product.imageUrl == null or #strings.isEmpty(product.imageUrl)}">
+                                    <i class="fas fa-box"></i>
+                                </span>
+                                <img class="product-thumb product-thumb-image"
+                                     th:if="${product.imageUrl != null and !#strings.isEmpty(product.imageUrl)}"
+                                     th:src="${product.imageUrl}"
+                                     th:alt="${product.name}">
                                 <strong th:text="${product.name}">MacBook Pro M3</strong>
                             </div>
                         </td>

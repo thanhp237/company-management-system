@@ -182,29 +182,12 @@
                             <tbody>
                             <tr th:each="item : ${quotation.details}">
                                 <td>
-<<<<<<< HEAD
-                                    <div class="d-flex align-items-center gap-3">
-                                        <!-- Khung hiển thị ảnh sản phẩm -->
-                                        <img th:src="${item.imageUrl != null && !item.imageUrl.isEmpty() ? item.imageUrl : '/images/default-product.png'}"
-                                             alt="Ảnh sản phẩm"
-                                             style="width: 48px; height: 48px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;">
-                                        <div>
-                                            <strong th:text="${item.productName != null ? item.productName : 'N/A'}">
-                                                Product
-                                            </strong>
-                                            <div class="text-muted small" th:text="${item.productCode != null ? item.productCode : 'N/A'}">
-                                                P001
-                                            </div>
-                                        </div>
-                                    </div>
-=======
                                     <strong th:text="${item.productName != null ? item.productName : 'Chưa có'}">
                                         Sản phẩm
                                     </strong>
                                     <small th:text="${item.productCode != null ? item.productCode : 'Chưa có'}">
                                         P001
                                     </small>
->>>>>>> main
                                 </td>
 
                                 <td th:text="${item.description != null ? item.description : 'Chưa có'}">
@@ -296,6 +279,13 @@
                             <dt>Giảm giá</dt>
                             <dd th:text="${quotation.discountAmount != null ? #numbers.formatDecimal(quotation.discountAmount, 0, 'COMMA', 0, 'POINT') : '0'}">
                                 0
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>Voucher</dt>
+                            <dd th:text="${quotation.voucherCode != null ? quotation.voucherCode + ' (' + quotation.voucherDiscountPercent + '%)' : 'Không áp dụng'}">
+                                Không áp dụng
                             </dd>
                         </div>
 

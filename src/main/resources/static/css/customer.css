@@ -534,6 +534,48 @@
     grid-row: span 1;
 }
 
+.business-rules-layout {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.business-rules-layout .business-rule-commission,
+.business-rules-layout .business-rule-voucher {
+    width: 100%;
+}
+
+.business-rule-voucher .rule-two-col {
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    align-items: end;
+}
+
+.business-rule-voucher .rule-choice {
+    grid-column: span 2;
+    min-height: 88px;
+}
+
+.business-rule-voucher .rule-tags {
+    grid-column: span 2;
+    align-self: center;
+}
+
+.voucher-table-wrap {
+    border: 1px solid #edf1ee;
+    border-radius: 8px;
+}
+
+.voucher-config-table {
+    min-width: 980px;
+    margin-bottom: 0;
+}
+
+.voucher-config-table th {
+    white-space: nowrap;
+}
+
+.voucher-config-table td {
+    vertical-align: middle;
+}
+
 .rule-card h2 i {
     margin-right: 8px;
     color: #007a3d;
@@ -919,5 +961,18 @@
     .customer-primary-button,
     .customer-secondary-button {
         width: 100%;
+    }
+
+    .business-rule-voucher .rule-two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .business-rule-voucher .rule-choice,
+    .business-rule-voucher .rule-tags {
+        grid-column: span 1;
+    }
+
+    .voucher-config-table {
+        min-width: 760px;
     }
 }

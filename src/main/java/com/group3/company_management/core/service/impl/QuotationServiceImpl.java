@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -59,17 +60,14 @@ public class QuotationServiceImpl implements QuotationService {
         quotation.setEmployeeId(user.getEmployee().getId());
 
         BigDecimal subTotal = BigDecimal.ZERO;
+        List<QuotationDetailRequest> details = requireValidDetails(request.getDetails());
 
-        for (QuotationDetailRequest item : request.getDetails()) {
-            if (!item.isSelected() // Thêm dòng này để bỏ qua nếu không tích chọn
-                    || item.getProductId() == null
-                    || item.getQuantity() == null
-                    || item.getQuantity() <= 0) {
-                continue;
-            }
-
+        for (QuotationDetailRequest item : details) {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+            if (!Boolean.TRUE.equals(product.getActive())) {
+                throw new RuntimeException("Sản phẩm đã ngừng hoạt động, không thể thêm vào báo giá");
+            }
 
             BigDecimal unitPrice = product.getUnitPrice();
             BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
@@ -99,6 +97,26 @@ public class QuotationServiceImpl implements QuotationService {
         Quotation saved = quotationRepository.save(quotation);
 
         return saved.getId();
+    }
+
+    private List<QuotationDetailRequest> requireValidDetails(List<QuotationDetailRequest> details) {
+        if (details == null || details.isEmpty()) {
+            throw new RuntimeException("Báo giá phải có ít nhất một sản phẩm hợp lệ");
+        }
+
+        for (int index = 0; index < details.size(); index += 1) {
+            QuotationDetailRequest item = details.get(index);
+            int lineNumber = index + 1;
+
+            if (item == null || item.getProductId() == null) {
+                throw new RuntimeException("Vui lòng chọn sản phẩm ở dòng " + lineNumber);
+            }
+            if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                throw new RuntimeException("Số lượng ở dòng " + lineNumber + " phải lớn hơn 0");
+            }
+        }
+
+        return details;
     }
 
     private void validateOpportunityQuotation(QuotationRequest request, String username) {
@@ -186,16 +204,12 @@ public class QuotationServiceImpl implements QuotationService {
         BigDecimal subTotal = BigDecimal.ZERO;
         List<QuotationDetailResponse> detailResponses = new ArrayList<>();
 
-        for (QuotationDetailRequest item : request.getDetails()) {
-            if (!item.isSelected() // Thêm dòng này để bỏ qua nếu không tích chọn
-                    || item.getProductId() == null
-                    || item.getQuantity() == null
-                    || item.getQuantity() <= 0) {
-                continue;
-            }
-
+        for (QuotationDetailRequest item : requireValidDetails(request.getDetails())) {
             Product product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+            if (!Boolean.TRUE.equals(product.getActive())) {
+                throw new RuntimeException("Sản phẩm đã ngừng hoạt động, không thể thêm vào báo giá");
+            }
 
             BigDecimal unitPrice = product.getUnitPrice();
             BigDecimal totalPrice = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
@@ -219,6 +233,14 @@ public class QuotationServiceImpl implements QuotationService {
         response.setSubTotal(subTotal);
         response.setDiscountAmount(discountAmount);
         response.setFinalAmount(subTotal.subtract(discountAmount));
+        response.setVoucherId(request.getVoucherId());
+        if (request.getVoucherId() != null) {
+            voucherRepository.findById(request.getVoucherId()).ifPresent(voucher -> {
+                response.setVoucherCode(voucher.getVoucherCode());
+                response.setVoucherDiscountPercent(voucher.getDiscountPercent());
+                response.setVoucherMaxDiscountAmount(voucher.getMaxDiscountAmount());
+            });
+        }
 
         return response;
     }
@@ -230,14 +252,26 @@ public class QuotationServiceImpl implements QuotationService {
 
         Voucher voucher = voucherRepository.findById(voucherId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy voucher"));
+        if (!Boolean.TRUE.equals(voucher.getActive())) {
+            throw new RuntimeException("Voucher đã ngừng hoạt động");
+        }
+        if (voucher.getExpiredAt() != null && !voucher.getExpiredAt().isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("Voucher đã hết hạn");
+        }
+
+        BigDecimal discountPercent = defaultMoney(voucher.getDiscountPercent());
 
         BigDecimal discountAmount = subTotal
-                .multiply(voucher.getDiscountPercent())
+                .multiply(discountPercent)
                 .divide(BigDecimal.valueOf(100));
 
-        if (voucher.getMaxDiscountAmount() != null
-                && discountAmount.compareTo(voucher.getMaxDiscountAmount()) > 0) {
-            discountAmount = voucher.getMaxDiscountAmount();
+        BigDecimal maxDiscountAmount = defaultMoney(voucher.getMaxDiscountAmount());
+        if (maxDiscountAmount.compareTo(BigDecimal.ZERO) > 0
+                && discountAmount.compareTo(maxDiscountAmount) > 0) {
+            discountAmount = maxDiscountAmount;
+        }
+        if (discountAmount.compareTo(subTotal) > 0) {
+            discountAmount = subTotal;
         }
 
         return discountAmount;
@@ -259,9 +293,18 @@ public class QuotationServiceImpl implements QuotationService {
         response.setSubTotal(quotation.getSubTotal());
         response.setDiscountAmount(quotation.getDiscountAmount());
         response.setFinalAmount(quotation.getFinalAmount());
+        response.setVoucherId(quotation.getVoucherId());
+        if (quotation.getVoucherId() != null) {
+            voucherRepository.findById(quotation.getVoucherId()).ifPresent(voucher -> {
+                response.setVoucherCode(voucher.getVoucherCode());
+                response.setVoucherDiscountPercent(voucher.getDiscountPercent());
+                response.setVoucherMaxDiscountAmount(voucher.getMaxDiscountAmount());
+            });
+        }
         response.setStatus(quotation.getStatus());
         response.setNote(quotation.getNote());
         response.setCreatedAt(quotation.getCreatedAt());
+        response.setOpportunityId(quotation.getOpportunityId());
 
         List<QuotationDetailResponse> details = quotation.getDetails()
                 .stream()
@@ -284,5 +327,9 @@ public class QuotationServiceImpl implements QuotationService {
         response.setDetails(details);
 
         return response;
+    }
+
+    private BigDecimal defaultMoney(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 }
