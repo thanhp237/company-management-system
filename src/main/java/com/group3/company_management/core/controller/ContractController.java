@@ -232,9 +232,8 @@ public class ContractController {
 
 
     @GetMapping("/export-pdf/{id}")
-    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR','CUSTOMER')")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
     public String printPreview(@PathVariable Long id, Model model) {
-
         ContractResponse contract = contractService.getContractDetail(id);
 
         String buyerCompanyName = contract.getBuyerCompanyName();
@@ -242,12 +241,10 @@ public class ContractController {
             buyerCompanyName = contract.getCustomerName();
         }
 
-
         String buyerPhone = contract.getBuyerPhone();
         if (buyerPhone == null || buyerPhone.trim().isEmpty()) {
             buyerPhone = contract.getCustomerPhone();
         }
-
 
         String buyerAddress = contract.getBuyerAddress();
         if (buyerAddress == null || buyerAddress.trim().isEmpty()) {
@@ -270,6 +267,7 @@ public class ContractController {
         model.addAttribute("buyerPhone", buyerPhone);
         model.addAttribute("buyerRepresentativeName", buyerRepresentativeName);
         model.addAttribute("buyerRepresentativeTitle", buyerRepresentativeTitle);
+        model.addAttribute("backUrl", "/contracts/" + id);
 
         return "contracts/print";
     }

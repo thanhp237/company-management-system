@@ -14,7 +14,7 @@
         <span style="font-weight: bold; color: #374151; font-family: sans-serif;">Xem trước bản in Hợp đồng</span>
     </div>
     <div style="display: flex; gap: 10px; padding-right: 20px;">
-        <a th:href="@{/contracts/{id}(id=${contract.id})}" class="btn btn-secondary">
+        <a th:href="${backUrl}" class="btn btn-secondary">
             Quay lại chi tiết
         </a>
         <button onclick="window.print()" class="btn btn-primary">
@@ -296,14 +296,14 @@
     <!-- Chữ ký các bên -->
     <div class="signatures-container">
         <div class="signature-box">
-            <div class="title">ĐẠI DIỆN BÊN A</div>
-            <div style="font-style: italic; color: #6b7280; font-size: 11pt; margin-bottom: 70px;">(Ký, ghi rõ họ tên và đóng dấu)</div>
+            <!-- Thiết lập margin-bottom: 60px để thu nhỏ khoảng trống ký tên vừa vặn -->
+            <div class="title" style="margin-bottom: 60px;">ĐẠI DIỆN BÊN A</div>
             <div class="name" th:text="${contract.sellerRepresentativeName}"></div>
         </div>
         <div class="signature-box">
-            <div class="title">ĐẠI DIỆN BÊN B</div>
-            <div style="font-style: italic; color: #6b7280; font-size: 11pt; margin-bottom: 70px;">(Ký, ghi rõ họ tên và đóng dấu)</div>
-            <div class="name" th:text="${contract.buyerRepresentativeName}"></div>
+            <!-- Thiết lập margin-bottom: 60px để thu nhỏ khoảng trống ký tên vừa vặn -->
+            <div class="title" style="margin-bottom: 60px;">ĐẠI DIỆN BÊN B</div>
+            <div class="name" th:text="${buyerRepresentativeName}"></div>
         </div>
     </div>
 

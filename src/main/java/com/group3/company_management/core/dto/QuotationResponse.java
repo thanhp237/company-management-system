@@ -34,9 +34,9 @@ public class QuotationResponse {
     private String status;
 
     private String note;
-
+    private java.time.LocalDate validUntil;
     private LocalDateTime createdAt;
-
+    private String approvedBy;
     private List<QuotationDetailResponse> details;
     private Long opportunityId;
 

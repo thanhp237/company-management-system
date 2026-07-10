@@ -6,7 +6,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+import java.util.List;
 @Entity
 @Table(name = "contracts")
 @Getter
@@ -217,7 +217,9 @@ public class Contract {
 
     @Column(name = "general_terms", columnDefinition = "TEXT")
     private String generalTerms;
-
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PaymentSchedule> paymentSchedules = new java.util.ArrayList<>();
     @PrePersist
     public void prePersist() {
         if (status == null) {

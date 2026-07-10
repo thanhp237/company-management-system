@@ -16,10 +16,9 @@
 
         .customer-contract-page {
             min-height: calc(100vh - 72px);
-            padding: 28px;
+            padding: 80px 28px 28px 28px;
             background: #f5f8fb;
         }
-
         .customer-contract-shell {
             width: min(1060px, 100%);
             margin: 0 auto;
@@ -120,21 +119,22 @@
     <div class="customer-contract-shell">
 
         <!-- Khối bọc nút Quay lại (bên trái) và nút Tải hợp đồng (bên phải) -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <a class="customer-link-button mb-0" th:href="@{/customer/portal/contracts}">
+        <!-- Nút Quay lại và Tải PDF dạng khối đơn giản chuẩn Bootstrap -->
+        <div class="mb-3">
+            <!-- Nút Quay lại bên trái -->
+            <a class="customer-link-button" th:href="@{/customer/portal/contracts}" style="background: #e8f3ff; color: #1c69b3; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 8px; text-decoration: none; font-weight: bold;">
                 <i class="fas fa-arrow-left"></i>
                 Quay lại
             </a>
 
-            <!-- Nút tải PDF chỉ hiển thị khi hợp đồng đã ở trạng thái SIGNED -->
+            <!-- Nút tải PDF bên phải (Dùng màu xanh lá cây mặc định của Bootstrap btn-outline-success) -->
             <a th:if="${contract.status == 'SIGNED'}"
-               th:href="@{/contracts/export-pdf/{id}(id=${contract.id})}"
-               class="btn"
-               style="border: 1px solid #007a3d; border-color: #007a3d; color: #007a3d; font-weight: 600; background-color: transparent; padding: 8px 16px; border-radius: 8px;"
-               target="_blank"
-               onmouseover="this.style.backgroundColor='#eaffef'"
-               onmouseout="this.style.backgroundColor='transparent'">
-                <i class="fas fa-file-pdf me-2"></i>Tải hợp đồng (PDF)
+               th:href="@{/customer/portal/contracts/{id}/export-pdf(id=${contract.id})}"
+               class="btn btn-outline-success ms-2"
+               style="border-color: #007a3d; color: #007a3d; font-weight: 600; min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; border-radius: 8px;"
+               target="_blank">
+                <i class="fas fa-file-pdf"></i>
+                Tải hợp đồng (PDF)
             </a>
         </div>
 
