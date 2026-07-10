@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo giá - CompanyMS</title>
+    <style>
+        /* Thiết lập khổ giấy A4 khi in */
+        @page {
+            size: A4;
+            margin: 0; /* Ẩn toàn bộ Header/Footer mặc định của trình duyệt */
+        }
+
+        body {
+            background-color: #f3f4f6; /* Nền xám khi xem preview */
+            margin: 0;
+            padding: 40px 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .print-container {
+            background: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            padding: 20mm 15mm 20mm 20mm; /* Lề chuẩn A4 */
+            width: 210mm;
+            min-height: 297mm;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            color: #000000;
+            position: relative;
+        }
+
+        /* Thanh công cụ in phía trên */
+        .no-print-bar {
+            background-color: #ffffff;
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-family: sans-serif;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+        }
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background-color: #000000;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #374151;
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            border: none;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        /* Bố cục đầu trang báo giá */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .header-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .company-logo {
+            font-weight: bold;
+            font-size: 16pt;
+            color: #000000;
+            text-transform: uppercase;
+        }
+        .company-info {
+            text-align: right;
+            font-size: 11pt;
+            color: #000000;
+        }
+
+        /* Tiêu đề bảng báo giá */
+        .title-section {
+            text-align: center;
+            margin: 20px 0 30px 0;
+        }
+        .title-section h1 {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 18pt;
+            margin: 0 0 8px 0;
+            letter-spacing: 0.5px;
+        }
+        .title-section p {
+            margin: 0;
+            font-style: italic;
+        }
+
+        /* Thông tin khách hàng gửi đến */
+        .customer-section {
+            margin-bottom: 25px;
+        }
+        .info-row {
+            margin: 8px 0;
+            display: flex;
+            align-items: flex-end;
+        }
+        .info-label {
+            white-space: nowrap;
+        }
+        .info-value {
+            flex-grow: 1;
+            border-bottom: 1px dotted #000000;
+            padding-left: 8px;
+            min-height: 20px;
+            display: inline-block;
+        }
+
+        /* Bảng hàng hóa dịch vụ */
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 12pt;
+        }
+        .item-table th,
+        .item-table td {
+            border: 1px solid #000000;
+            padding: 8px 10px;
+            color: #000000;
+        }
+        .item-table th {
+            font-weight: bold;
+            text-align: center;
+            background-color: #ffffff;
+        }
+        .text-center {
+            text-align: center !important;
+        }
+        .text-right {
+            text-align: right !important;
+        }
+
+        /* Ghi chú & Điều khoản */
+        .note-section {
+            margin-top: 30px;
+            font-size: 12pt;
+        }
+        .note-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 8px;
+        }
+        .note-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .note-section li {
+            margin-bottom: 6px;
+        }
+
+        /* CSS khi in thực tế */
+        @media print {
+            .no-print-bar {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff !important;
+                margin: 0 !important;
+                padding: 20mm 15mm 20mm 20mm !important;
+            }
+            .print-container {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                box-shadow: none !important;
+                min-height: auto !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Thanh công cụ in (Chỉ hiển thị trên web) -->
+<div class="no-print-bar">
+    <div style="padding-left: 20px;">
+        <span style="font-weight: bold; color: #374151; font-family: sans-serif;">Xem trước bản in Báo giá</span>
+    </div>
+    <div style="display: flex; gap: 10px; padding-right: 20px;">
+        <a th:href="@{/quotation/detail/{id}(id=${quotation.id})}" class="btn btn-secondary">
+            Quay lại chi tiết
+        </a>
+        <button onclick="window.print()" class="btn btn-primary">
+            In Báo Giá / Xuất PDF
+        </button>
+    </div>
+</div>
+
+<div class="print-container">
+
+    <!-- Đầu trang: Logo & Thông tin công ty bên bán -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 50%;">
+                <div class="company-logo">CompanyMS</div>
+                <div style="font-size: 11pt; margin-top: 5px; font-weight: bold;">CÔNG TY TNHH CÔNG NGHỆ COMPANYMS</div>
+            </td>
+            <td class="company-info" style="width: 50%;">
+                <div><strong>Địa chỉ:</strong> Số 123 Đường Cầu Giấy, Hà Nội</div>
+                <div><strong>Điện thoại:</strong> 024.1234.5678 - <strong>Email:</strong> contact@companyms.com</div>
+                <div><strong>Mã số thuế:</strong> 0101234567</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Tiêu đề báo giá -->
+    <div class="title-section">
+        <h1>BẢNG BÁO GIÁ</h1>
+        <p>Số: <span th:text="${quotation.quotationCode}">QT-2024-001</span></p>
+        <p>Ngày tạo: <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'dd/MM/yyyy') : '……/……/2024'}"></span></p>
+    </div>
+
+    <!-- Thông tin khách hàng nhận báo giá (Sắp xếp dạng flex chống chồng lấn chữ) -->
+    <div class="customer-section">
+        <div class="info-row">
+            <span class="info-label">Kính gửi: </span>
+            <span class="info-value" style="font-weight: bold;" th:text="${quotation.customerName != null ? quotation.customerName : '………………………………………………………………'}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Địa chỉ: </span>
+            <span class="info-value" th:text="${quotation.customerAddress != null && !quotation.customerAddress.isEmpty() ? quotation.customerAddress : '……………………………………………………………………………………'}"></span>
+        </div>
+
+        <!-- Chia đôi Điện thoại và Email để không bị chồng hàng lên nhau -->
+        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+            <div style="width: 48%; display: flex; align-items: flex-end;">
+                <span class="info-label">Điện thoại: </span>
+                <span class="info-value" th:text="${quotation.customerPhone != null && !quotation.customerPhone.isEmpty() ? quotation.customerPhone : '…………………………………………'}"></span>
+            </div>
+            <div style="width: 48%; display: flex; align-items: flex-end;">
+                <span class="info-label">Email: </span>
+                <span class="info-value" th:text="${quotation.customerEmail != null && !quotation.customerEmail.isEmpty() ? quotation.customerEmail : '…………………………………………'}"></span>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            Công ty TNHH Công nghệ CompanyMS xin trân trọng gửi tới Quý khách hàng bảng báo giá dịch vụ/sản phẩm chi tiết như sau:
+        </div>
+    </div>
+
+    <!-- Bảng chi tiết sản phẩm / dịch vụ -->
+    <table class="item-table">
+        <thead>
+        <tr>
+            <th style="width: 50px;">STT</th>
+            <th>Nội dung công việc / Sản phẩm</th>
+            <th style="width: 80px;">ĐVT</th>
+            <th style="width: 80px;">Số lượng</th>
+            <th style="width: 130px;">Đơn giá (VNĐ)</th>
+            <th style="width: 150px;">Thành tiền (VNĐ)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item, stat : ${quotation.details}">
+            <td class="text-center" th:text="${stat.count}">1</td>
+            <td>
+                <strong th:text="${item.productName}">SmartDoor</strong>
+                <div style="font-size: 10pt; color: #000000;" th:if="${item.description != null}" th:text="${item.description}">Mô tả</div>
+            </td>
+            <td class="text-center">Chiếc</td>
+            <td class="text-center" th:text="${item.quantity}">1</td>
+            <!-- An toàn Null cho đơn giá -->
+            <td class="text-right" th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') : '0'}">0</td>
+            <!-- An toàn Null cho thành tiền -->
+            <td class="text-right" th:text="${item.totalPrice != null ? #numbers.formatDecimal(item.totalPrice, 0, 'POINT', 0, 'COMMA') : '0'}">0</td>
+        </tr>
+
+        <!-- Tạm tính -->
+        <tr>
+            <td colspan="5" style="text-align: right; font-weight: bold;">Tạm tính:</td>
+            <td class="text-right" th:text="${quotation.subTotal != null ? #numbers.formatDecimal(quotation.subTotal, 0, 'POINT', 0, 'COMMA') : (quotation.finalAmount != null ? #numbers.formatDecimal(quotation.finalAmount, 0, 'POINT', 0, 'COMMA') : '0')}">0</td>
+        </tr>
+
+        <!-- Giảm giá (Voucher nếu có) -->
+        <tr th:if="${quotation.discountAmount != null && quotation.discountAmount > 0}">
+            <td colspan="5" style="text-align: right; font-weight: bold;">Giảm giá (Khuyến mãi):</td>
+            <td class="text-right" th:text="${'- ' + #numbers.formatDecimal(quotation.discountAmount, 0, 'POINT', 0, 'COMMA')}">0</td>
+        </tr>
+
+        <!-- Tổng cộng -->
+        <tr>
+            <td colspan="5" style="text-align: right; font-weight: bold; font-size: 13pt;">TỔNG CỘNG (Chưa VAT):</td>
+            <td class="text-right" style="font-weight: bold; font-size: 13pt;" th:text="${quotation.finalAmount != null ? #numbers.formatDecimal(quotation.finalAmount, 0, 'POINT', 0, 'COMMA') : '0'}">0</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Bằng chữ -->
+    <div class="info-row">
+        <span class="info-label">Bằng chữ: </span>
+        <span class="info-value" id="amount-in-words" style="font-style: italic; font-weight: bold;">………………………………………………………………………………</span>
+    </div>
+
+    <!-- Ghi chú và điều khoản -->
+    <div class="note-section">
+        <div class="note-title">Ghi chú:</div>
+        <ul>
+            <li>Đơn giá chưa bao gồm thuế VAT</li>
+            <!-- Hiển thị ngày có hiệu lực động từ Database -->
+            <li th:if="${quotation.validUntil != null}">Báo giá có hiệu lực đến ngày <span th:text="${#temporals.format(quotation.validUntil, 'dd/MM/yyyy')}"></span></li>
+            <li th:if="${quotation.validUntil == null}">Báo giá có hiệu lực trong vòng 14 ngày kể từ ngày ban hành.</li>
+            <li th:if="${quotation.note != null && !quotation.note.isEmpty()}" th:text="${quotation.note}">Ghi chú hệ thống</li>
+        </ul>
+    </div>
+
+    <!-- Layout Liên hệ (Bên trái) và Ký tên đóng dấu (Bên phải) đúng theo mẫu yêu cầu -->
+    <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-start; page-break-inside: avoid;">
+        <!-- Phần liên hệ (Bên trái) -->
+        <div style="width: 55%; font-size: 12pt;">
+            <div style="margin-bottom: 8px;">Mọi chi tiết vui lòng xin liên hệ:</div>
+            <div style="margin-bottom: 25px;">
+                Nhân viên kinh doanh phụ trách
+            </div>
+            <div>Trân trọng kính chào!</div>
+        </div>
+
+        <!-- Phần ký tên công ty (Bên phải) -->
+        <div style="width: 40%; text-align: center; font-size: 12pt;">
+            <div style="font-style: italic; margin-bottom: 8px;">
+                Hà Nội, ngày <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'dd') : '……'}"></span>
+                tháng <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'MM') : '……'}"></span>
+                năm <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'yyyy') : '2024'}"></span>
+            </div>
+            <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">CÔNG TY TNHH CÔNG NGHỆ COMPANYMS</div>
+            <div style="font-style: italic; color: #6b7280; font-size: 11pt; margin-bottom: 60px;">(Ký, đóng dấu)</div>
+
+            <!-- Hiển thị tên người phê duyệt thực tế nếu có trong DTO, nếu không thì hiển thị Ban Giám Đốc -->
+            <div style="font-weight: bold;" th:text="${quotation.approvedBy != null ? quotation.approvedBy : (approverName != null && approverName != '' ? approverName : 'admin')}">Ban Giám Đốc</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Script tự động chuyển đổi số tiền thành chữ Tiếng Việt -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    function convertNumberToVietnameseWords(amount) {
+        if (amount === 0) return "Không đồng";
+
+        var numbers = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+        var units = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"];
+
+        function readGroup3(group) {
+            var hundred = Math.floor(group / 100);
+            var ten = Math.floor((group % 100) / 10);
+            var unit = group % 10;
+            var result = "";
+
+            if (hundred > 0 || (ten >= 0 && unit >= 0)) {
+                result += numbers[hundred] + " trăm ";
+            }
+
+            if (ten > 1) {
+                result += numbers[ten] + " mươi ";
+            } else if (ten === 1) {
+                result += "mười ";
+            } else if (hundred > 0 && unit > 0) {
+                result += "lẻ ";
+            }
+
+            if (unit === 1 && ten > 1) {
+                result += "mốt";
+            } else if (unit === 5 && ten > 0) {
+                result += "lăm";
+            } else if (unit > 0) {
+                result += numbers[unit];
+            }
+
+            return result.trim();
+        }
+
+        var str = "";
+        var groups = [];
+        var temp = amount;
+
+        while (temp > 0) {
+            groups.push(temp % 1000);
+            temp = Math.floor(temp / 1000);
+        }
+
+        for (var i = groups.length - 1; i >= 0; i--) {
+            var groupStr = readGroup3(groups[i]);
+            if (groupStr !== "") {
+                str += groupStr + " " + units[i] + " ";
+            }
+        }
+
+        str = str.trim();
+        return str.charAt(0).toUpperCase() + str.slice(1) + " đồng";
+    }
+
+    // Lấy số tiền từ DTO Thymeleaf và chạy hàm đọc chữ
+    var finalAmount = /*[[${quotation.finalAmount}]]*/ 0;
+    if (finalAmount > 0) {
+        document.getElementById("amount-in-words").innerText = convertNumberToVietnameseWords(finalAmount);
+    }
+    /*]]>*/
+</script>
+</body>
+</html>

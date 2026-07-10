@@ -53,7 +53,7 @@ public class QuotationServiceImpl implements QuotationService {
         quotation.setOpportunityId(request.getOpportunityId());
         quotation.setNote(request.getNote());
         quotation.setStatus("DRAFT");
-
+        quotation.setValidUntil(request.getValidUntil());
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản nhân viên"));
         quotation.setEmployeeId(user.getEmployee().getId());
@@ -164,6 +164,11 @@ public class QuotationServiceImpl implements QuotationService {
             throw new RuntimeException("Bạn không có quyền duyệt báo giá này");
         }
 
+
+        quotation.setApprovedBy(username);
+
+        quotation.setStatus("APPROVED");
+
         quotation.setStatus("APPROVED");
         quotationRepository.save(quotation);
     }
@@ -262,7 +267,8 @@ public class QuotationServiceImpl implements QuotationService {
         response.setStatus(quotation.getStatus());
         response.setNote(quotation.getNote());
         response.setCreatedAt(quotation.getCreatedAt());
-
+        response.setApprovedBy(quotation.getApprovedBy());
+        response.setValidUntil(quotation.getValidUntil());
         List<QuotationDetailResponse> details = quotation.getDetails()
                 .stream()
                 .map(detail -> {

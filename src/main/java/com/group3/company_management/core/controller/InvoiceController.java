@@ -11,13 +11,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-
+import com.group3.company_management.core.entity.PaymentSchedule;
+import java.math.BigDecimal;
+import java.util.List;
 @Controller
 @RequestMapping("/invoices")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
+@Transactional(readOnly = true)
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
@@ -54,11 +57,11 @@ public class InvoiceController {
     }
 
     @GetMapping("/create/{contractId}")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String createForm(@PathVariable Long contractId,
                              @RequestParam(required = false) Long scheduleId, Model model) {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng"));
-
 
         String customerName = "N/A";
         if (contract.getCustomer() != null) {
@@ -93,9 +96,63 @@ public class InvoiceController {
         model.addAttribute("customerTaxCode", customerTaxCode);
         model.addAttribute("customerAddress", customerAddress);
         model.addAttribute("invoiceCode", invoiceService.generateNextInvoiceCode());
+
         CreateInvoiceRequest form = invoiceService.prepareCreateRequest(contractId);
-        if (scheduleId != null) form.setPaymentScheduleId(scheduleId);
+        if (scheduleId != null) {
+            form.setPaymentScheduleId(scheduleId);
+            // Tự động tìm đợt thanh toán trong hợp đồng để gán đúng Hạn thanh toán và nội dung ghi chú
+            if (contract.getPaymentSchedules() != null) {
+                for (PaymentSchedule s : contract.getPaymentSchedules()) {
+                    if (s.getId().equals(scheduleId)) {
+                        form.setDueDate(s.getDueDate());
+                        form.setNote(s.getDescription());
+                        break;
+                    }
+                }
+            }
+        }
         model.addAttribute("invoiceForm", form);
+
+        // --- TỰ ĐỘNG TÍNH TOÁN TIẾN ĐỘ CHO GIAO DIỆN TẠO MỚI ---
+        BigDecimal totalContractAmount = contract.getFinalAmount();
+        BigDecimal paidPreviously = BigDecimal.ZERO;
+        BigDecimal remainingAmount = totalContractAmount;
+        int currentNo = 1;
+        int totalInstallments = 1;
+        double percent = 100.0;
+        BigDecimal installmentAmount = totalContractAmount;
+
+        List<PaymentSchedule> allSchedules = contract.getPaymentSchedules();
+        totalInstallments = allSchedules.size();
+
+        Long resolvedScheduleId = form.getPaymentScheduleId();
+        if (resolvedScheduleId != null) {
+            for (PaymentSchedule s : allSchedules) {
+                if (s.getId().equals(resolvedScheduleId)) {
+                    currentNo = s.getInstallmentNo();
+                    installmentAmount = s.getAmount();
+                }
+            }
+            for (PaymentSchedule s : allSchedules) {
+                if (s.getInstallmentNo() < currentNo) {
+                    paidPreviously = paidPreviously.add(s.getAmount());
+                }
+            }
+            if (totalContractAmount.compareTo(BigDecimal.ZERO) > 0) {
+                percent = (installmentAmount.doubleValue() / totalContractAmount.doubleValue()) * 100;
+            }
+            remainingAmount = totalContractAmount.subtract(paidPreviously).subtract(installmentAmount);
+        } else {
+            remainingAmount = BigDecimal.ZERO;
+        }
+
+        model.addAttribute("currentNo", currentNo);
+        model.addAttribute("totalInstallments", totalInstallments);
+        model.addAttribute("percent", Math.round(percent));
+        model.addAttribute("installmentAmount", installmentAmount);
+        model.addAttribute("paidPreviously", paidPreviously);
+        model.addAttribute("remainingAmount", remainingAmount);
+
         return "Invoice/invoice-form";
     }
 
@@ -118,13 +175,13 @@ public class InvoiceController {
     }
 
     @GetMapping("/edit/{id}")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String editForm(@PathVariable Long id, Model model) {
         Invoice invoice = invoiceService.getInvoiceById(id);
         if (invoice.getStatus() != Invoice.InvoiceStatus.DRAFT) {
             throw new RuntimeException("Chỉ hóa đơn DRAFT mới có thể chỉnh sửa");
         }
         Contract contract = invoice.getContract();
-
 
         String customerName = "N/A";
         if (contract.getCustomer() != null) {
@@ -161,6 +218,43 @@ public class InvoiceController {
         model.addAttribute("customerAddress", customerAddress);
         model.addAttribute("invoiceCode", invoice.getInvoiceCode());
         model.addAttribute("invoiceForm", invoiceService.prepareEditRequest(id));
+
+        // --- TỰ ĐỘNG TÍNH TOÁN TIẾN ĐỘ CHO GIAO DIỆN CHỈNH SỬA ---
+        BigDecimal totalContractAmount = contract.getFinalAmount();
+        BigDecimal paidPreviously = BigDecimal.ZERO;
+        BigDecimal remainingAmount = totalContractAmount;
+        int currentNo = 1;
+        int totalInstallments = 1;
+        double percent = 100.0;
+        BigDecimal installmentAmount = totalContractAmount;
+
+        if (invoice.getPaymentSchedule() != null) {
+            PaymentSchedule currentSchedule = invoice.getPaymentSchedule();
+            currentNo = currentSchedule.getInstallmentNo();
+            installmentAmount = currentSchedule.getAmount();
+            List<PaymentSchedule> allSchedules = contract.getPaymentSchedules();
+            totalInstallments = allSchedules.size();
+
+            for (PaymentSchedule s : allSchedules) {
+                if (s.getInstallmentNo() < currentNo) {
+                    paidPreviously = paidPreviously.add(s.getAmount());
+                }
+            }
+            if (totalContractAmount.compareTo(BigDecimal.ZERO) > 0) {
+                percent = (installmentAmount.doubleValue() / totalContractAmount.doubleValue()) * 100;
+            }
+            remainingAmount = totalContractAmount.subtract(paidPreviously).subtract(installmentAmount);
+        } else {
+            remainingAmount = BigDecimal.ZERO;
+        }
+
+        model.addAttribute("currentNo", currentNo);
+        model.addAttribute("totalInstallments", totalInstallments);
+        model.addAttribute("percent", Math.round(percent));
+        model.addAttribute("installmentAmount", installmentAmount);
+        model.addAttribute("paidPreviously", paidPreviously);
+        model.addAttribute("remainingAmount", remainingAmount);
+
         return "Invoice/invoice-form";
     }
 
@@ -183,8 +277,50 @@ public class InvoiceController {
     }
 
     @GetMapping("/detail/{id}")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String detail(@PathVariable Long id, Model model) {
-        model.addAttribute("invoice", invoiceService.getInvoiceById(id));
+        Invoice invoice = invoiceService.getInvoiceById(id);
+        model.addAttribute("invoice", invoice);
+
+        // 1. Tính toán các thông tin tiến độ thanh toán cho Đợt
+        BigDecimal totalContractAmount = invoice.getContract().getFinalAmount();
+        BigDecimal paidPreviously = BigDecimal.ZERO;
+        BigDecimal remainingAmount = totalContractAmount;
+        int currentNo = 1;
+        int totalInstallments = 1;
+        double percent = 100.0;
+
+        if (invoice.getPaymentSchedule() != null) {
+            PaymentSchedule currentSchedule = invoice.getPaymentSchedule();
+            currentNo = currentSchedule.getInstallmentNo();
+            List<PaymentSchedule> allSchedules = invoice.getContract().getPaymentSchedules();
+            totalInstallments = allSchedules.size();
+
+            // Cộng dồn tổng số tiền của các đợt đóng trước đợt hiện tại
+            for (PaymentSchedule s : allSchedules) {
+                if (s.getInstallmentNo() < currentNo) {
+                    paidPreviously = paidPreviously.add(s.getAmount());
+                }
+            }
+
+            // Tính tỷ lệ % của đợt này so với tổng giá trị hợp đồng
+            if (totalContractAmount.compareTo(BigDecimal.ZERO) > 0) {
+                percent = (currentSchedule.getAmount().doubleValue() / totalContractAmount.doubleValue()) * 100;
+            }
+            // Số tiền còn lại sau đợt này
+            remainingAmount = totalContractAmount.subtract(paidPreviously).subtract(currentSchedule.getAmount());
+        } else {
+            // Nếu không chọn đợt (Thanh toán 1 lần toàn bộ)
+            remainingAmount = BigDecimal.ZERO;
+        }
+
+        // 2. Đẩy các thông số tính toán này sang giao diện HTML hiển thị
+        model.addAttribute("currentNo", currentNo);
+        model.addAttribute("totalInstallments", totalInstallments);
+        model.addAttribute("percent", Math.round(percent));
+        model.addAttribute("paidPreviously", paidPreviously);
+        model.addAttribute("remainingAmount", remainingAmount);
+
         return "Invoice/detail";
     }
 
@@ -198,6 +334,53 @@ public class InvoiceController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/invoices";
+    }
+    @GetMapping("/print/{id}")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
+    public String print(@PathVariable Long id, Model model) {
+        Invoice invoice = invoiceService.getInvoiceById(id);
+        model.addAttribute("invoice", invoice);
+
+        // Tính toán thông tin tiến độ đóng tiền cho bản in PDF
+        BigDecimal totalContractAmount = invoice.getContract().getFinalAmount();
+        BigDecimal paidPreviously = BigDecimal.ZERO;
+        BigDecimal remainingAmount = totalContractAmount;
+        int currentNo = 1;
+        int totalInstallments = 1;
+        double percent = 100.0;
+
+        if (invoice.getPaymentSchedule() != null) {
+            PaymentSchedule currentSchedule = invoice.getPaymentSchedule();
+            currentNo = currentSchedule.getInstallmentNo();
+            List<PaymentSchedule> allSchedules = invoice.getContract().getPaymentSchedules();
+            totalInstallments = allSchedules.size();
+
+            for (PaymentSchedule s : allSchedules) {
+                if (s.getInstallmentNo() < currentNo) {
+                    paidPreviously = paidPreviously.add(s.getAmount());
+                }
+            }
+
+            if (totalContractAmount.compareTo(BigDecimal.ZERO) > 0) {
+                percent = (currentSchedule.getAmount().doubleValue() / totalContractAmount.doubleValue()) * 100;
+            }
+            remainingAmount = totalContractAmount.subtract(paidPreviously).subtract(currentSchedule.getAmount());
+        } else {
+            remainingAmount = BigDecimal.ZERO;
+        }
+
+        model.addAttribute("currentNo", currentNo);
+        model.addAttribute("totalInstallments", totalInstallments);
+        model.addAttribute("percent", Math.round(percent));
+        model.addAttribute("installmentAmount", invoice.getTotalAmount());
+        model.addAttribute("paidPreviously", paidPreviously);
+        model.addAttribute("remainingAmount", remainingAmount);
+
+        // Lấy tên người duyệt báo giá hoặc mặc định để làm chữ ký
+        String approverName = invoice.getContract().getQuotation() != null ? invoice.getContract().getQuotation().getApprovedBy() : "admin";
+        model.addAttribute("approverName", approverName != null ? approverName : "admin");
+
+        return "Invoice/print";
     }
 
 

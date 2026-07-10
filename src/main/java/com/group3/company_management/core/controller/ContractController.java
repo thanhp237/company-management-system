@@ -24,13 +24,14 @@ import java.util.ArrayList;
 @Controller
 @RequestMapping("/contracts")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
+
 public class ContractController {
 
     private final ContractService contractService;
     private final CustomerAccountService customerAccountService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
     public String listContracts(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Contract.ContractStatus status,
@@ -68,6 +69,7 @@ public class ContractController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
     public String detailContract(
             @PathVariable Long id,
             Model model,
@@ -228,6 +230,47 @@ public class ContractController {
         return "redirect:/contracts";
     }
 
+
+    @GetMapping("/export-pdf/{id}")
+    @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
+    public String printPreview(@PathVariable Long id, Model model) {
+        ContractResponse contract = contractService.getContractDetail(id);
+
+        String buyerCompanyName = contract.getBuyerCompanyName();
+        if (buyerCompanyName == null || buyerCompanyName.trim().isEmpty()) {
+            buyerCompanyName = contract.getCustomerName();
+        }
+
+        String buyerPhone = contract.getBuyerPhone();
+        if (buyerPhone == null || buyerPhone.trim().isEmpty()) {
+            buyerPhone = contract.getCustomerPhone();
+        }
+
+        String buyerAddress = contract.getBuyerAddress();
+        if (buyerAddress == null || buyerAddress.trim().isEmpty()) {
+            buyerAddress = contract.getCustomerAddress();
+        }
+        String buyerRepresentativeName = contract.getBuyerRepresentativeName();
+        if (buyerRepresentativeName == null || buyerRepresentativeName.trim().isEmpty()) {
+            buyerRepresentativeName = contract.getCustomerName();
+        }
+        String buyerRepresentativeTitle = contract.getBuyerRepresentativeTitle();
+        if (buyerRepresentativeTitle == null || buyerRepresentativeTitle.trim().isEmpty()) {
+            buyerRepresentativeTitle = "";
+        }
+        String buyerTaxCode = contract.getBuyerTaxCode();
+
+        model.addAttribute("contract", contract);
+        model.addAttribute("buyerCompanyName", buyerCompanyName);
+        model.addAttribute("buyerTaxCode", buyerTaxCode);
+        model.addAttribute("buyerAddress", buyerAddress);
+        model.addAttribute("buyerPhone", buyerPhone);
+        model.addAttribute("buyerRepresentativeName", buyerRepresentativeName);
+        model.addAttribute("buyerRepresentativeTitle", buyerRepresentativeTitle);
+        model.addAttribute("backUrl", "/contracts/" + id);
+
+        return "contracts/print";
+    }
     private boolean hasRole(Authentication authentication, String role) {
         if (authentication == null) {
             return false;

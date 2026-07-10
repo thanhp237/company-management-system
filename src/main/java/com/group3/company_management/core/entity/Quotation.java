@@ -39,7 +39,8 @@ public class Quotation {
     private BigDecimal finalAmount;
 
     private String status;
-
+    @Column(name = "approved_by", length = 100)
+    private String approvedBy;
     @Column(columnDefinition = "TEXT")
     private String note;
 
@@ -47,7 +48,8 @@ public class Quotation {
 
     @Column(name = "opportunity_id")
     private Long opportunityId;
-
+    @Column(name = "valid_until")
+    private java.time.LocalDate validUntil;
     @Column(name = "employee_id")
     private Long employeeId;
 

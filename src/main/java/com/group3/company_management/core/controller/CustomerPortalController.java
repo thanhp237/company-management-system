@@ -182,6 +182,57 @@ public class CustomerPortalController {
         log.info("✅ Customer payments page accessed: {}", customer.getEmail());
         return "customer/payments";
     }
+    // Endpoint xuất PDF dành riêng cho Khách hàng
+    @GetMapping("/contracts/{contractId}/export-pdf")
+    public String customerPrintPreview(
+            @PathVariable Long contractId,
+            Model model,
+            Authentication authentication) {
+
+        Customer customer = getAuthenticatedCustomer(authentication);
+        ContractResponse contract = contractService.getCustomerContractDetail(contractId, customer.getId());
+
+        // Fallbacks thông tin khách hàng nếu chưa lưu nháp hợp đồng
+        String buyerCompanyName = contract.getBuyerCompanyName();
+        if (buyerCompanyName == null || buyerCompanyName.trim().isEmpty()) {
+            buyerCompanyName = contract.getCustomerName();
+        }
+
+        String buyerPhone = contract.getBuyerPhone();
+        if (buyerPhone == null || buyerPhone.trim().isEmpty()) {
+            buyerPhone = contract.getCustomerPhone();
+        }
+
+        String buyerAddress = contract.getBuyerAddress();
+        if (buyerAddress == null || buyerAddress.trim().isEmpty()) {
+            buyerAddress = contract.getCustomerAddress();
+        }
+
+        String buyerRepresentativeName = contract.getBuyerRepresentativeName();
+        if (buyerRepresentativeName == null || buyerRepresentativeName.trim().isEmpty()) {
+            buyerRepresentativeName = contract.getCustomerName();
+        }
+
+        String buyerRepresentativeTitle = contract.getBuyerRepresentativeTitle();
+        if (buyerRepresentativeTitle == null || buyerRepresentativeTitle.trim().isEmpty()) {
+            buyerRepresentativeTitle = "";
+        }
+
+        String buyerTaxCode = contract.getBuyerTaxCode();
+
+        model.addAttribute("contract", contract);
+        model.addAttribute("buyerCompanyName", buyerCompanyName);
+        model.addAttribute("buyerTaxCode", buyerTaxCode);
+        model.addAttribute("buyerAddress", buyerAddress);
+        model.addAttribute("buyerPhone", buyerPhone);
+        model.addAttribute("buyerRepresentativeName", buyerRepresentativeName);
+        model.addAttribute("buyerRepresentativeTitle", buyerRepresentativeTitle);
+
+        // Đường dẫn quay lại dành cho Khách hàng
+        model.addAttribute("backUrl", "/customer/portal/contracts/" + contractId);
+
+        return "contracts/print";
+    }
     
     // ============= Helper Methods =============
     
