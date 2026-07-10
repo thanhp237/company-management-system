@@ -624,6 +624,7 @@ public class ContractServiceImpl implements ContractService {
             item.setProductId(product.getId());
             item.setProductCode(product.getProductCode());
             item.setProductName(product.getName());
+            item.setImageUrl(product.getImageUrl());
         } else {
             item.setProductName(detail.getServiceName());
         }

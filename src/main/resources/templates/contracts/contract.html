@@ -226,8 +226,20 @@
                             <tbody>
                             <tr th:each="item : ${contract.items}">
                                 <td>
-                                    <strong th:text="${item.productName}">Sản phẩm</strong>
-                                    <small th:text="${item.productCode}">P001</small>
+                                    <div style="display:flex;align-items:center;gap:12px;">
+                                        <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                                             th:src="${item.imageUrl}"
+                                             alt="Ảnh sản phẩm"
+                                             style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">
+                                        <span th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
+                                              style="width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;">
+                                            <i class="fas fa-box"></i>
+                                        </span>
+                                        <div>
+                                            <strong th:text="${item.productName}">Sản phẩm</strong>
+                                            <small style="display:block;" th:text="${item.productCode}">P001</small>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td th:text="${item.description != null ? item.description : 'Chưa có'}">Mô tả</td>
                                 <td th:text="${item.quantity}">1</td>

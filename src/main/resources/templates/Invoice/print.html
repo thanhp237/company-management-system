@@ -322,7 +322,13 @@
         <tr th:each="item, stat : ${invoice.contract.quotation != null ? invoice.contract.quotation.details : null}">
             <td class="center" th:text="${stat.index + 1}">1</td>
             <td>
-                <strong th:text="${item.serviceName}">Sản phẩm</strong><br>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <img th:if="${item.product != null and item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
+                         th:src="${item.product.imageUrl}"
+                         alt="Ảnh sản phẩm"
+                         style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #dddddd;">
+                    <strong th:text="${item.serviceName}">Sản phẩm</strong>
+                </div>
                 <small style="color: #666666;" th:if="${item.description != null}" th:text="${item.description}"></small>
             </td>
             <td class="center" th:text="${item.quantity}">1</td>

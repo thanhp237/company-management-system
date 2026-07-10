@@ -189,9 +189,14 @@
                             <td>
                                 <div class="d-flex align-items-center gap-3">
                                     <!-- Hiển thị ảnh sản phẩm lấy tương ứng 1-1 từ products list -->
-                                    <img th:src="${products[stat.index].imageUrl != null && !products[stat.index].imageUrl.isEmpty() ? products[stat.index].imageUrl : '/images/default-product.png'}"
+                                    <img th:if="${products[stat.index].imageUrl != null && !products[stat.index].imageUrl.isEmpty()}"
+                                         th:src="${products[stat.index].imageUrl}"
                                          alt="Product Image"
                                          style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid #e5e7eb;">
+                                    <span th:if="${products[stat.index].imageUrl == null || products[stat.index].imageUrl.isEmpty()}"
+                                          style="width: 40px; height: 40px; border-radius: 6px; border: 1px solid #e5e7eb; background: #f3f4f6; display: inline-flex; align-items: center; justify-content: center; color: #9ca3af;">
+                                        <i class="fa-solid fa-box"></i>
+                                    </span>
                                     <div>
                                         <strong th:text="${products[stat.index].name}">Product</strong>
                                         <div class="text-muted small" th:text="${products[stat.index].productCode}">P001</div>

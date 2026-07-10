@@ -157,7 +157,19 @@
                     <!-- Lặp qua invoice.contract.quotation.details -->
                     <tr th:each="item, stat : ${invoice.contract.quotation != null ? invoice.contract.quotation.details : null}">
                         <td style="text-align: center;" th:text="${stat.index + 1}">1</td>
-                        <td><strong th:text="${item.serviceName}">Sản phẩm</strong></td>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <img th:if="${item.product != null and item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
+                                     th:src="${item.product.imageUrl}"
+                                     alt="Ảnh sản phẩm"
+                                     style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">
+                                <span th:if="${item.product == null or item.product.imageUrl == null or #strings.isEmpty(item.product.imageUrl)}"
+                                      style="width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;">
+                                    <i class="fa-solid fa-box"></i>
+                                </span>
+                                <strong th:text="${item.serviceName}">Sản phẩm</strong>
+                            </div>
+                        </td>
                         <td class="text-muted" th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'N/A'}">Mô tả chi tiết</td>
                         <td th:text="${item.quantity}">1</td>
                         <td style="text-align: right;" th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">10,000 đ</td>
