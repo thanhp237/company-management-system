@@ -96,14 +96,13 @@ public class DashboardController {
     }
 
     @GetMapping("/director")
-    @PreAuthorize("hasAnyRole('DIRECTOR','CEO')")
+    @PreAuthorize("hasRole('DIRECTOR')")
     public String directorDashboard(Authentication authentication, Model model) {
-        String role = "ROLE_CEO".equals(authority(authentication)) ? "CEO" : "DIRECTOR";
-        return employeeDashboard(authentication, model, role, "CEO".equals(role) ? "Bảng điều khiển CEO" : "Bảng điều khiển giám đốc");
+        return employeeDashboard(authentication, model, "DIRECTOR", "Bảng điều khiển giám đốc");
     }
 
     @GetMapping("/employee")
-    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER','ADMINOFFICER','SALES','MARKETING','SALES_MANAGER','MANAGER','ACCOUNTANT','DIRECTOR','CEO')")
+    @PreAuthorize("hasAnyRole('ADMIN','ADMIN_OFFICER','ADMINOFFICER','SALES','MARKETING','SALES_MANAGER','MANAGER','ACCOUNTANT','DIRECTOR')")
     public String employeeDashboard(Authentication authentication, Model model) {
         return employeeDashboard(authentication, model, normalizeEmployeeRole(authentication), "Bảng điều khiển nhân viên");
     }
@@ -212,7 +211,7 @@ public class DashboardController {
                     card("Đã ký", number(contractRepository.countByStatus(Contract.ContractStatus.SIGNED)), "Cơ sở ghi nhận doanh thu", "fa-file-invoice", "info"),
                     card("Hoa hồng", "Chưa có", "Phân hệ hoa hồng chưa có dữ liệu", "fa-hand-holding-dollar", "danger")
             );
-            case "DIRECTOR", "CEO" -> List.of(
+            case "DIRECTOR" -> List.of(
                     card("Doanh thu", money(contractRepository.sumFinalAmountByStatus(Contract.ContractStatus.SIGNED)), "Hiệu suất kinh doanh từ hợp đồng đã ký", "fa-chart-pie", "success"),
                     card("Hợp đồng", number(contractRepository.count()), "Tổng hợp toàn hệ thống", "fa-file-contract", "info"),
                     card("Thương vụ thắng", number(opportunityRepository.countByStage("WON")), "Cơ hội thắng", "fa-ranking-star", "warning"),
@@ -277,10 +276,10 @@ public class DashboardController {
                             disabledAction("Báo cáo tài chính", "Xuất Excel/PDF báo cáo tài chính", "fa-file-export")
                     ))
             );
-            case "DIRECTOR", "CEO" -> List.of(
+            case "DIRECTOR" -> List.of(
                     group("Phân tích điều hành", "Theo dõi KPI, doanh thu và hiệu suất doanh nghiệp.", List.of(
                             action("Revenue Summary", "/dashboard/director", "Báo cáo doanh thu, đã thu và còn phải thu", "fa-chart-pie"),
-                            action("Executive Dashboard", "/dashboard/director", "KPI overview cho CEO/Director", "fa-ranking-star"),
+                            action("Executive Dashboard", "/dashboard/director", "KPI overview cho Director", "fa-ranking-star"),
                             disabledAction("Trung tâm xuất báo cáo", "Tải báo cáo Excel/PDF", "fa-file-export")
                     ))
             );
@@ -319,7 +318,7 @@ public class DashboardController {
                     insight("Phạm vi tài chính", "Kế toán theo dõi hóa đơn, thanh toán, công nợ và hoa hồng."),
                     insight("Module đang kết nối", "Các màn invoice/payment/report sẽ mở khi phân hệ tài chính hoàn tất.")
             );
-            case "DIRECTOR", "CEO" -> List.of(
+            case "DIRECTOR" -> List.of(
                     insight("Góc nhìn điều hành", "Giám đốc tập trung vào KPI doanh thu, hợp đồng và hiệu suất tổng thể."),
                     insight("Bảng điều khiển chỉ đọc", "Không trực tiếp thao tác dữ liệu vận hành hằng ngày.")
             );
@@ -337,7 +336,7 @@ public class DashboardController {
             case "SALES_MANAGER" -> "Giám sát quy trình bán hàng, phân bổ khách hàng tiềm năng và KPI của đội kinh doanh.";
             case "ADMIN_OFFICER" -> "Rà soát pháp lý, bổ sung điều khoản và xử lý hợp đồng chờ thẩm định.";
             case "ACCOUNTANT" -> "Theo dõi hóa đơn, thanh toán, công nợ và hoa hồng.";
-            case "DIRECTOR", "CEO" -> "Tổng hợp KPI chiến lược và hiệu suất kinh doanh toàn công ty.";
+            case "DIRECTOR" -> "Tổng hợp KPI chiến lược và hiệu suất kinh doanh toàn công ty.";
             default -> "Không gian làm việc theo quyền hạn hiện tại.";
         };
     }
@@ -351,13 +350,12 @@ public class DashboardController {
             case "ADMIN_OFFICER" -> "Hành chính hợp đồng";
             case "ACCOUNTANT" -> "Kế toán";
             case "DIRECTOR" -> "Giám đốc";
-            case "CEO" -> "CEO";
             default -> role;
         };
     }
 
     private boolean isExecutiveRole(String role) {
-        return "DIRECTOR".equals(role) || "CEO".equals(role);
+        return "DIRECTOR".equals(role);
     }
 
     private List<Map<String, String>> revenueSummaryRows() {
@@ -465,7 +463,7 @@ public class DashboardController {
             case "ROLE_ACCOUNTANT" -> "/dashboard/accountant";
             case "ROLE_ADMIN_OFFICER", "ROLE_ADMINOFFICER" -> "/dashboard/admin-officer";
             case "ROLE_SALES_MANAGER", "ROLE_MANAGER" -> "/dashboard/sales-manager";
-            case "ROLE_DIRECTOR", "ROLE_CEO" -> "/dashboard/director";
+            case "ROLE_DIRECTOR" -> "/dashboard/director";
             case "ROLE_CUSTOMER" -> "/dashboard/customer";
             default -> "/login";
         };

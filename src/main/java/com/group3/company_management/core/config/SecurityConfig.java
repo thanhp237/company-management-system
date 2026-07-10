@@ -149,13 +149,13 @@ public class SecurityConfig {
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER")
 
                                                 .requestMatchers("/dashboard/director/**")
-                                                .hasAnyRole("DIRECTOR", "CEO")
+                                                .hasRole("DIRECTOR")
 
                                                 .requestMatchers("/dashboard/customer/**")
                                                 .hasRole("CUSTOMER")
 
                                                 .requestMatchers("/dashboard/employee/**")
-                                                .hasAnyRole("ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "SALES", "MARKETING", "SALES_MANAGER", "MANAGER", "ACCOUNTANT", "DIRECTOR", "CEO")
+                                                .hasAnyRole("ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "SALES", "MARKETING", "SALES_MANAGER", "MANAGER", "ACCOUNTANT", "DIRECTOR")
 
                                                 .requestMatchers("/dashboard/**")
                                                 .authenticated()

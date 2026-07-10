@@ -201,7 +201,6 @@ public class UserServiceImpl implements UserService {
             case "ADMIN" -> "ADM";
             case "ADMIN_OFFICER" -> "AOF";
             case "ACCOUNTANT" -> "ACC";
-            case "CEO" -> "CEO";
             case "DIRECTOR" -> "DIR";
             case "MANAGER" -> "MGR";
             case "MARKETING" -> "MKT";
@@ -215,7 +214,7 @@ public class UserServiceImpl implements UserService {
 
     private void validateEmployeeRole(String roleCode) {
         switch (roleCode) {
-            case "ADMIN", "ADMIN_OFFICER", "ACCOUNTANT", "CEO", "DIRECTOR",
+            case "ADMIN", "ADMIN_OFFICER", "ACCOUNTANT", "DIRECTOR",
                     "MANAGER", "MARKETING", "SALES", "SALES_MANAGER" -> {
             }
             default -> throw new IllegalArgumentException("Mã vai trò không được hỗ trợ: " + roleCode);
