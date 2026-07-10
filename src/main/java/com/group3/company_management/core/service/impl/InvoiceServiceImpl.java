@@ -390,8 +390,13 @@ public class InvoiceServiceImpl implements InvoiceService {
             totalAmount = totalAmount.add(subtotal);
         }
 
-        invoice.setTotalAmount(totalAmount);
-        invoice.setOutstandingAmount(totalAmount);
+        // Nếu hóa đơn có đợt thanh toán thì lấy tiền của đợt, ngược lại mới lấy tổng sản phẩm
+        BigDecimal finalInvoiceAmount = (invoice.getPaymentSchedule() != null)
+                ? invoice.getPaymentSchedule().getAmount()
+                : totalAmount;
+
+        invoice.setTotalAmount(finalInvoiceAmount);
+        invoice.setOutstandingAmount(finalInvoiceAmount);
 
         return invoiceRepository.save(invoice);
     }

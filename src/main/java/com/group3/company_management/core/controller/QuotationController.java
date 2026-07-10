@@ -126,6 +126,20 @@ public class QuotationController {
 
         return "redirect:/quotation/detail/" + id;
     }
+    @GetMapping("/export-pdf/{id}")
+    public String exportPdf(@PathVariable Long id, Model model, Authentication authentication) {
+        QuotationResponse quotation = quotationService.getQuotationDetail(id);
+        model.addAttribute("quotation", quotation);
+
+        // Lấy tên người dùng đang đăng nhập để hiển thị dưới chữ ký
+        String approverName = "Ban Giám Đốc";
+        if (authentication != null) {
+            approverName = authentication.getName(); // Trả về tên tài khoản duyệt
+        }
+        model.addAttribute("approverName", approverName);
+
+        return "quotation/print";
+    }
 
 
 

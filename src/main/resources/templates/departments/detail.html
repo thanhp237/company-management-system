@@ -116,8 +116,10 @@
                     <p>Xem thông tin phòng ban hoặc chuyển sang màn hình chỉnh sửa khi cần cập nhật dữ liệu.</p>
 
                     <div class="user-form-actions">
+
                         <a class="btn btn-primary user-submit-primary"
-                           th:href="@{/departments/edit(id=${department.id})}">
+                           th:href="@{/departments/edit(id=${department.id})}"
+                           sec:authorize="hasAnyRole('ADMIN', 'ADMIN_OFFICER')">
                             <i class="fas fa-pen"></i>
                             <span>Sửa phòng ban</span>
                         </a>

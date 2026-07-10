@@ -26,18 +26,22 @@
             <i class="fas fa-arrow-left"></i>
             <span>Quay lại</span>
         </a>
+        <!-- Khối bọc nút in và nhãn trạng thái hợp đồng -->
+        <div class="d-flex align-items-center gap-2">
+            <!-- Thêm thẻ nút in hợp đồng mới này -->
+            <!-- Nút in hợp đồng mới (Chỉ hiển thị khi đã ký - SIGNED) -->
+            <!-- Nút in hợp đồng mới (Đã đổi sang màu xanh lá trùng màu web) -->
+            <a th:if="${contract.status == 'SIGNED'}"
+               th:href="@{/contracts/export-pdf/{id}(id=${contract.id})}"
+               class="btn"
+               style="border-color: #007a3d; color: #007a3d; font-weight: 600; background-color: transparent;"
+               target="_blank"
+               onmouseover="this.style.backgroundColor='#eaffef'"
+               onmouseout="this.style.backgroundColor='transparent'">
+                <i class="fas fa-file-pdf me-2"></i>In hợp đồng / Xuất PDF
+            </a>
 
-        <div class="contract-detail-header">
-            <div>
-                <p class="management-eyebrow">Chi tiết hợp đồng</p>
-                <h1 th:text="${contract.contractCode}">CON-001</h1>
-                <p>
-                    <span th:text="${contract.customerName != null ? contract.customerName : 'Chưa có khách hàng'}">Khách hàng</span>
-                    <span> • </span>
-                    <span th:text="${contract.createdAt != null ? 'Ngày tạo: ' + #temporals.format(contract.createdAt, 'dd/MM/yyyy') : 'Chưa có ngày tạo'}">Ngày tạo</span>
-                </p>
-            </div>
-
+            <!-- Nhãn hiển thị trạng thái cũ giữ nguyên -->
             <span class="contract-status detail"
                   th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
                   th:text="${contract.status == 'DRAFT' ? 'Bản nháp' : (contract.status == 'PENDING_ADMIN_OFFICER' ? 'Chờ hành chính hợp đồng' : (contract.status == 'ADMIN_REVIEWED' ? 'Đã duyệt điều khoản' : (contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'REVISION_REQUESTED' ? 'Khách yêu cầu chỉnh sửa' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status))))))}">Bản nháp</span>

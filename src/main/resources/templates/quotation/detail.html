@@ -182,12 +182,14 @@
                             <tbody>
                             <tr th:each="item : ${quotation.details}">
                                 <td>
+
                                     <strong th:text="${item.productName != null ? item.productName : 'Chưa có'}">
                                         Sản phẩm
                                     </strong>
                                     <small th:text="${item.productCode != null ? item.productCode : 'Chưa có'}">
                                         P001
                                     </small>
+
                                 </td>
 
                                 <td th:text="${item.description != null ? item.description : 'Chưa có'}">
@@ -252,7 +254,7 @@
                         </button>
                     </form>
 
-                    <a th:href="@{/quotation/export-pdf/{id}(id=${quotation.id})}">
+                    <a th:href="@{/quotation/export-pdf/{id}(id=${quotation.id})}" target="_blank">
                         <i class="fas fa-file-pdf"></i>
                         Xuất PDF
                     </a>
@@ -279,13 +281,6 @@
                             <dt>Giảm giá</dt>
                             <dd th:text="${quotation.discountAmount != null ? #numbers.formatDecimal(quotation.discountAmount, 0, 'COMMA', 0, 'POINT') : '0'}">
                                 0
-                            </dd>
-                        </div>
-
-                        <div>
-                            <dt>Voucher</dt>
-                            <dd th:text="${quotation.voucherCode != null ? quotation.voucherCode + ' (' + quotation.voucherDiscountPercent + '%)' : 'Không áp dụng'}">
-                                Không áp dụng
                             </dd>
                         </div>
 

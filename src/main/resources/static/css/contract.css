@@ -663,6 +663,237 @@
     color: #007a3d;
     font-size: 18px;
 }
+/* ==========================================
+   CSS DÀNH CHO XUẤT FILE IN / PDF (A4)
+   ========================================== */
+
+/* Thiết lập khổ giấy A4 khi in */
+@page {
+    size: A4;
+    margin: 0; /* Ẩn toàn bộ Header/Footer mặc định của trình duyệt */
+}
+
+/* Định dạng chung cho trang in hợp đồng (Áp dụng cho thẻ body có class print-body) */
+body.print-body {
+    background-color: #f3f4f6; /* Nền xám nhạt khi xem preview trên trình duyệt */
+    margin: 0;
+    padding: 40px 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Container chứa nội dung hợp đồng mô phỏng tờ giấy A4 */
+body.print-body .print-container {
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin: 0 auto;
+    padding: 20mm 15mm 20mm 20mm; /* Lề chuẩn hành chính: Trên 20, Dưới 20, Trái 20, Phải 15 */
+    width: 210mm;
+    min-height: 297mm;
+    box-sizing: border-box;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 14pt;
+    line-height: 1.5;
+    color: #000000;
+}
+
+/* Tiêu ngữ quốc gia */
+body.print-body .national-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+body.print-body .national-title {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 13pt;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+body.print-body .national-subtitle {
+    font-weight: bold;
+    font-size: 14pt;
+    margin: 5px 0 0 0;
+}
+body.print-body .national-line {
+    width: 150px;
+    height: 1px;
+    background-color: #000;
+    margin: 8px auto 0 auto;
+}
+
+/* Mã số hợp đồng */
+body.print-body .contract-code-title {
+    text-align: center;
+    font-size: 13pt;
+    margin: 20px 0;
+}
+
+/* Tên hợp đồng */
+body.print-body .contract-main-title {
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 16pt;
+    margin: 30px 0 20px 0;
+}
+
+/* Căn cứ pháp lý */
+body.print-body .contract-bases {
+    margin-bottom: 20px;
+    font-style: italic;
+    font-size: 13pt;
+    padding-left: 20px;
+}
+body.print-body .contract-bases p {
+    margin: 5px 0;
+    text-indent: -15px;
+    padding-left: 15px;
+}
+
+/* Thông tin ngày tháng năm */
+body.print-body .datetime-place {
+    margin-bottom: 20px;
+}
+
+/* Tiêu đề bên A, bên B */
+body.print-body .party-title {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 15px 0 10px 0;
+    text-decoration: underline;
+}
+
+/* Dòng thông tin có dấu chấm chấm */
+body.print-body .info-row {
+    margin: 6px 0;
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+body.print-body .info-label {
+    white-space: nowrap;
+}
+body.print-body .info-value {
+    flex-grow: 1;
+    border-bottom: 1px dotted #000;
+    padding-left: 8px;
+    min-height: 22px;
+    display: inline-block;
+}
+
+/* Bảng hàng hóa dịch vụ */
+body.print-body .item-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13pt;
+}
+body.print-body .item-table th,
+body.print-body .item-table td {
+    border: 1px solid #000;
+    padding: 8px 10px;
+    text-align: left;
+}
+body.print-body .item-table th {
+    font-weight: bold;
+    text-align: center;
+    background-color: #f2f2f2;
+}
+body.print-body .text-center {
+    text-align: center !important;
+}
+body.print-body .text-right {
+    text-align: right !important;
+}
+
+/* Ký tên ở cuối trang */
+body.print-body .signatures-container {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    page-break-inside: avoid;
+}
+body.print-body .signature-box {
+    width: 45%;
+    text-align: center;
+}
+body.print-body .signature-box .title {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 80px;
+}
+body.print-body .signature-box .name {
+    font-weight: bold;
+}
+
+/* Nút thao tác in ở giao diện HTML */
+body.print-body .no-print-bar {
+    background-color: #f3f4f6;
+    padding: 15px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    font-family: sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+}
+body.print-body .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+body.print-body .btn-primary {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+}
+body.print-body .btn-primary:hover {
+    background-color: #1d4ed8;
+}
+body.print-body .btn-secondary {
+    background-color: #6b7280;
+    color: white;
+    border: none;
+}
+body.print-body .btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+/* ==========================================
+   CSS KHI THỰC HIỆN IN (PRINT ACTION)
+   ========================================== */
+@media print {
+    /* Ẩn hoàn toàn thanh công cụ in trên web */
+    body.print-body .no-print-bar {
+        display: none !important;
+    }
+
+    /* Thiết lập lại body để in full khổ giấy A4 */
+    body.print-body {
+        background-color: #ffffff !important;
+        margin: 0 !important;
+        padding: 20mm 15mm 20mm 20mm !important; /* Lề trang in thực tế */
+    }
+
+    body.print-body .print-container {
+        margin: 0 !important;
+        padding: 0 !important; /* Bỏ padding ngoài để khớp với lề body */
+        width: 100% !important;
+        box-shadow: none !important;
+        min-height: auto !important;
+    }
+}
 
 @media (max-width: 1100px) {
     .contract-stat-grid {

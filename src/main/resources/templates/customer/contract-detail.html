@@ -16,10 +16,9 @@
 
         .customer-contract-page {
             min-height: calc(100vh - 72px);
-            padding: 28px;
+            padding: 80px 28px 28px 28px;
             background: #f5f8fb;
         }
-
         .customer-contract-shell {
             width: min(1060px, 100%);
             margin: 0 auto;
@@ -118,10 +117,26 @@
 
 <main class="customer-contract-page customer-app-content">
     <div class="customer-contract-shell">
-        <a class="customer-link-button mb-3" th:href="@{/customer/portal/contracts}">
-            <i class="fas fa-arrow-left"></i>
-            Quay lại
-        </a>
+
+        <!-- Khối bọc nút Quay lại (bên trái) và nút Tải hợp đồng (bên phải) -->
+        <!-- Nút Quay lại và Tải PDF dạng khối đơn giản chuẩn Bootstrap -->
+        <div class="mb-3">
+            <!-- Nút Quay lại bên trái -->
+            <a class="customer-link-button" th:href="@{/customer/portal/contracts}" style="background: #e8f3ff; color: #1c69b3; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                <i class="fas fa-arrow-left"></i>
+                Quay lại
+            </a>
+
+            <!-- Nút tải PDF bên phải (Dùng màu xanh lá cây mặc định của Bootstrap btn-outline-success) -->
+            <a th:if="${contract.status == 'SIGNED'}"
+               th:href="@{/customer/portal/contracts/{id}/export-pdf(id=${contract.id})}"
+               class="btn btn-outline-success ms-2"
+               style="border-color: #007a3d; color: #007a3d; font-weight: 600; min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; border-radius: 8px;"
+               target="_blank">
+                <i class="fas fa-file-pdf"></i>
+                Tải hợp đồng (PDF)
+            </a>
+        </div>
 
         <div th:if="${param.signed != null}" class="alert alert-success">
             Hợp đồng đã được ký thành công.

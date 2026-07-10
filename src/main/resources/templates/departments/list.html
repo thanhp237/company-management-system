@@ -32,7 +32,10 @@
                 </p>
             </div>
 
-            <a class="management-primary-action" th:href="@{/departments/edit}">
+            <!-- Phân quyền nút Thêm mới: Chỉ hiện cho ADMIN và ADMIN_OFFICER -->
+            <a class="management-primary-action"
+               th:href="@{/departments/edit}"
+               sec:authorize="hasAnyRole('ADMIN', 'ADMIN_OFFICER')">
                 <i class="fas fa-plus"></i>
                 Thêm phòng ban
             </a>
@@ -118,7 +121,8 @@
                         </td>
 
                         <td>
-                            <form th:action="@{/departments/active}" method="post" class="status-form">
+                            <!-- Phân quyền chọn trạng thái: ADMIN/ADMIN_OFFICER được chỉnh sửa qua select dropdown -->
+                            <form th:action="@{/departments/active}" method="post" class="status-form" sec:authorize="hasAnyRole('ADMIN', 'ADMIN_OFFICER')">
                                 <input type="hidden" name="id" th:value="${department.id}">
 
                                 <select name="status"
@@ -134,22 +138,35 @@
                                     </option>
                                 </select>
                             </form>
+
+                            <!-- Các vai trò khác: Chỉ xem trạng thái dưới dạng văn bản tĩnh -->
+                            <span sec:authorize="!hasAnyRole('ADMIN', 'ADMIN_OFFICER')"
+                                  class="status-select"
+                                  th:classappend="${department.status == 'ACTIVE'} ? ' active' : ' inactive'"
+                                  th:text="${department.status == 'ACTIVE' ? 'Hoạt động' : 'Tạm khóa'}">
+                                Hoạt động
+                            </span>
                         </td>
 
                         <td>
                             <div class="row-actions">
+                                <!-- Nút Xem chi tiết: Tất cả mọi người có quyền xem danh sách đều được dùng -->
                                 <a th:href="@{/departments/detail(id=${department.id})}"
                                    title="Chi tiết phòng ban">
                                     <i class="fas fa-eye"></i>
                                 </a>
 
+                                <!-- Nút Sửa: Chỉ hiện cho ADMIN và ADMIN_OFFICER -->
                                 <a th:href="@{/departments/edit(id=${department.id})}"
+                                   sec:authorize="hasAnyRole('ADMIN', 'ADMIN_OFFICER')"
                                    title="Sửa phòng ban">
                                     <i class="fas fa-pen"></i>
                                 </a>
 
+                                <!-- Nút Xóa: Chỉ hiện cho ADMIN và ADMIN_OFFICER -->
                                 <a class="danger"
                                    th:href="@{/departments/delete(id=${department.id})}"
+                                   sec:authorize="hasAnyRole('ADMIN', 'ADMIN_OFFICER')"
                                    title="Xóa phòng ban"
                                    onclick="return confirm('Xác nhận xóa phòng ban này?')">
                                     <i class="fas fa-trash-can"></i>
