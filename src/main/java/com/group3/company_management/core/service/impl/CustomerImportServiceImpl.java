@@ -90,15 +90,16 @@ public class CustomerImportServiceImpl implements CustomerImportService {
                 }
 
                 if (!phone.isBlank() && leadRepository.existsByPhone(phone)) {
-                    continue;
+                    throw new RuntimeException("Số điện thoại đã tồn tại trong hệ thống");
                 }
 
+
                 if (!email.isBlank() && leadRepository.existsByEmail(email)) {
-                    continue;
+                    throw new RuntimeException("Email đã tồn tại trong hệ thống");
                 }
 
                 if (!taxCode.isBlank() && leadRepository.existsByTaxCode(taxCode)) {
-                    continue;
+                    throw new RuntimeException("Tax đã tồn tại trong hệ thống");
                 }
 
                 Customer customer = new Customer();
