@@ -52,7 +52,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
                 case "ROLE_ACCOUNTANT" -> "/dashboard/accountant";
                 case "ROLE_ADMIN_OFFICER", "ROLE_ADMINOFFICER" -> "/dashboard/admin-officer";
                 case "ROLE_SALES_MANAGER", "ROLE_MANAGER" -> "/dashboard/sales-manager";
-                case "ROLE_DIRECTOR" -> "/dashboard/director";
+                case "ROLE_DIRECTOR", "ROLE_CEO" -> "/dashboard/director";
                 case "ROLE_CUSTOMER" -> "/dashboard/customer";
                 default -> "/dashboard";
             };

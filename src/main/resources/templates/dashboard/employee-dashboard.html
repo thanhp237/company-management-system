@@ -249,9 +249,100 @@
             line-height: 1.45;
         }
 
+        .executive-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .executive-card {
+            border: 1px solid #dfe7e2;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 18px 42px rgba(31, 45, 57, 0.08);
+            overflow: hidden;
+        }
+
+        .executive-card-header {
+            padding: 18px;
+            border-bottom: 1px solid #edf1ee;
+            background: #f7faf8;
+        }
+
+        .executive-card-header h2 {
+            margin: 0;
+            color: #101923;
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .executive-card-header p {
+            margin: 4px 0 0;
+            color: #657386;
+            font-size: 13px;
+        }
+
+        .executive-metric-list {
+            display: grid;
+            gap: 12px;
+            padding: 18px;
+        }
+
+        .executive-metric {
+            display: grid;
+            grid-template-columns: 42px minmax(0, 1fr);
+            gap: 12px;
+            padding: 12px;
+            border: 1px solid #edf1ee;
+            border-radius: 8px;
+            background: #fbfdfb;
+        }
+
+        .executive-metric-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            background: #e5f8ec;
+            color: #007a3d;
+        }
+
+        .executive-metric-icon.info { background: #e8f3ff; color: #1c69b3; }
+        .executive-metric-icon.warning { background: #fff1d6; color: #b36300; }
+        .executive-metric-icon.danger { background: #ffe9e7; color: #c1322a; }
+
+        .executive-metric strong {
+            display: block;
+            color: #101923;
+            font-size: 20px;
+            font-weight: 900;
+            line-height: 1.1;
+        }
+
+        .executive-metric span {
+            display: block;
+            margin-top: 3px;
+            color: #405366;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .executive-metric small {
+            display: block;
+            margin-top: 5px;
+            color: #657386;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
         @media (max-width: 1024px) {
             .dashboard-kpi-grid,
-            .dashboard-body-grid {
+            .dashboard-body-grid,
+            .executive-grid {
                 grid-template-columns: 1fr 1fr;
             }
 
@@ -267,7 +358,8 @@
 
             .dashboard-kpi-grid,
             .dashboard-body-grid,
-            .dashboard-action-grid {
+            .dashboard-action-grid,
+            .executive-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -305,6 +397,46 @@
                 <strong th:text="${card.value}">0</strong>
                 <span class="dashboard-kpi-label" th:text="${card.label}">Chỉ số</span>
                 <small th:text="${card.caption}">Ghi chú</small>
+            </article>
+        </section>
+
+        <section class="executive-grid" th:if="${executiveDashboard}">
+            <article class="executive-card">
+                <div class="executive-card-header">
+                    <h2>Revenue Summary</h2>
+                    <p>Báo cáo doanh thu, đã thu và công nợ từ hợp đồng/invoice.</p>
+                </div>
+                <div class="executive-metric-list">
+                    <div class="executive-metric" th:each="metric : ${revenueSummaryRows}">
+                        <span class="executive-metric-icon" th:classappend="${metric.tone}">
+                            <i class="fas" th:classappend="${metric.icon}"></i>
+                        </span>
+                        <div>
+                            <strong th:text="${metric.value}">0 VND</strong>
+                            <span th:text="${metric.label}">Revenue</span>
+                            <small th:text="${metric.caption}">Caption</small>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="executive-card">
+                <div class="executive-card-header">
+                    <h2>Executive Dashboard</h2>
+                    <p>KPI overview cho CEO/Director theo hợp đồng, pipeline và khách hàng.</p>
+                </div>
+                <div class="executive-metric-list">
+                    <div class="executive-metric" th:each="metric : ${executiveKpiRows}">
+                        <span class="executive-metric-icon" th:classappend="${metric.tone}">
+                            <i class="fas" th:classappend="${metric.icon}"></i>
+                        </span>
+                        <div>
+                            <strong th:text="${metric.value}">0</strong>
+                            <span th:text="${metric.label}">KPI</span>
+                            <small th:text="${metric.caption}">Caption</small>
+                        </div>
+                    </div>
+                </div>
             </article>
         </section>
 
