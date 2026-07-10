@@ -303,11 +303,13 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
             width: 42px;
             height: 42px;
             border-radius: 8px;
             background: #e5f8ec;
             color: #007a3d;
+            font-size: 16px;
         }
 
         .executive-metric-icon.info { background: #e8f3ff; color: #1c69b3; }
@@ -322,7 +324,7 @@
             line-height: 1.1;
         }
 
-        .executive-metric span {
+        .executive-metric div > span {
             display: block;
             margin-top: 3px;
             color: #405366;
