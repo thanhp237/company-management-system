@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 public class InvoiceItemFormRow {
     private Long quotationDetailId;
     private String serviceName;
+    private String imageUrl;
     private String description;
     private Integer contractQuantity;
     private Integer invoicedQuantity;

@@ -15,6 +15,8 @@ public class ContractItemResponse {
 
     private String productName;
 
+    private String imageUrl;
+
     private String description;
 
     private Integer quantity;
