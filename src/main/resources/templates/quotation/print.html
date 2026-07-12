@@ -218,20 +218,20 @@
 
 <div class="print-container">
 
-    <!-- Đầu trang: Logo & Thông tin công ty bên bán -->
     <table class="header-table">
         <tr>
-            <td style="width: 50%;">
-                <div class="company-logo">CompanyMS</div>
-                <div style="font-size: 11pt; margin-top: 5px; font-weight: bold;">CÔNG TY TNHH CÔNG NGHỆ COMPANYMS</div>
+            <td>
+                <div class="company-logo">CONG TY MANAGEMENT SYSTEM</div>
+                <div style="font-size: 11pt; color: #555555; margin-top: 5px;">Mã số thuế: 0102030405</div>
             </td>
-            <td class="company-info" style="width: 50%;">
-                <div><strong>Địa chỉ:</strong> Số 123 Đường Cầu Giấy, Hà Nội</div>
-                <div><strong>Điện thoại:</strong> 024.1234.5678 - <strong>Email:</strong> contact@companyms.com</div>
-                <div><strong>Mã số thuế:</strong> 0101234567</div>
+            <td class="company-info">
+                <strong>Địa chỉ:</strong> Số 1 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội<br>
+                <strong>Hotline:</strong> 1900 8888 | <strong>Email:</strong> contact@companyms.vn
             </td>
         </tr>
     </table>
+
+    <hr style="border: 0; border-top: 1.5px solid #000000; margin-bottom: 25px;">
 
     <!-- Tiêu đề báo giá -->
     <div class="title-section">
@@ -264,7 +264,7 @@
         </div>
 
         <div style="margin-top: 15px;">
-            Công ty TNHH Công nghệ CompanyMS xin trân trọng gửi tới Quý khách hàng bảng báo giá dịch vụ/sản phẩm chi tiết như sau:
+            Công ty Management System xin trân trọng gửi tới Quý khách hàng bảng báo giá dịch vụ/sản phẩm chi tiết như sau:
         </div>
     </div>
 
@@ -351,7 +351,7 @@
                 tháng <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'MM') : '……'}"></span>
                 năm <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'yyyy') : '2024'}"></span>
             </div>
-            <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">CÔNG TY TNHH CÔNG NGHỆ COMPANYMS</div>
+            <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 5px;"> Công ty Management System </div>
             <div style="font-style: italic; color: #6b7280; font-size: 11pt; margin-bottom: 60px;">(Ký, đóng dấu)</div>
 
             <!-- Hiển thị tên người phê duyệt thực tế nếu có trong DTO, nếu không thì hiển thị Ban Giám Đốc -->

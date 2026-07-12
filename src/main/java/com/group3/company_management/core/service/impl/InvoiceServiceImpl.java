@@ -390,7 +390,6 @@ public class InvoiceServiceImpl implements InvoiceService {
             totalAmount = totalAmount.add(subtotal);
         }
 
-        // Nếu hóa đơn có đợt thanh toán thì lấy tiền của đợt, ngược lại mới lấy tổng sản phẩm
         BigDecimal finalInvoiceAmount = (invoice.getPaymentSchedule() != null)
                 ? invoice.getPaymentSchedule().getAmount()
                 : totalAmount;

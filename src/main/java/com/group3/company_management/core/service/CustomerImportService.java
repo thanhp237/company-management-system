@@ -4,6 +4,8 @@ import com.group3.company_management.core.dto.LeadDTO;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Role;
 import com.group3.company_management.core.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -16,4 +18,9 @@ public interface CustomerImportService {
     public void saveCustomer(Customer customer);
     public User findUser(Long id);
     void assignCustomersToSale(List<Long> customerIds, Long saleId);
+    Page<Customer> allCustomer(String status, Pageable pageable);
+
+    long countTotalCustomers();
+    long countUnassignedCustomers();
+    long countAssignedCustomers();
 }

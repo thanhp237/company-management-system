@@ -19,7 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 @Service
 public class CustomerImportServiceImpl implements CustomerImportService {
     private LeadRepository leadRepository;
@@ -133,6 +134,34 @@ public class CustomerImportServiceImpl implements CustomerImportService {
     @Override
     public List<Customer> allCustomer() {
         return leadRepository.findAll(Sort.by("id").ascending());
+    }
+
+    // === CHÈN THÊM HÀM NÀY ===
+    @Override
+    public Page<Customer> allCustomer(String status, Pageable pageable) {
+
+        if ("unassigned".equalsIgnoreCase(status)) {
+            return leadRepository.findByAssignedSalesIdIsNull(pageable);
+        } else if ("assigned".equalsIgnoreCase(status)) {
+            return leadRepository.findByAssignedSalesIdIsNotNull(pageable);
+        }
+        return leadRepository.findAll(pageable);
+    }
+
+    // === CHÈN THÊM 3 HÀM THỐNG KÊ NÀY ===
+    @Override
+    public long countTotalCustomers() {
+        return leadRepository.count();
+    }
+
+    @Override
+    public long countUnassignedCustomers() {
+        return leadRepository.countByAssignedSalesIdIsNull();
+    }
+
+    @Override
+    public long countAssignedCustomers() {
+        return leadRepository.countByAssignedSalesIdIsNotNull();
     }
     @Override
     public List<User> findSale(String roleName) {

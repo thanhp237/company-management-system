@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/invoices")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
-@Transactional(readOnly = true)
+
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
@@ -281,8 +281,6 @@ public class InvoiceController {
     public String detail(@PathVariable Long id, Model model) {
         Invoice invoice = invoiceService.getInvoiceById(id);
         model.addAttribute("invoice", invoice);
-
-        // 1. Tính toán các thông tin tiến độ thanh toán cho Đợt
         BigDecimal totalContractAmount = invoice.getContract().getFinalAmount();
         BigDecimal paidPreviously = BigDecimal.ZERO;
         BigDecimal remainingAmount = totalContractAmount;
@@ -295,22 +293,16 @@ public class InvoiceController {
             currentNo = currentSchedule.getInstallmentNo();
             List<PaymentSchedule> allSchedules = invoice.getContract().getPaymentSchedules();
             totalInstallments = allSchedules.size();
-
-            // Cộng dồn tổng số tiền của các đợt đóng trước đợt hiện tại
             for (PaymentSchedule s : allSchedules) {
                 if (s.getInstallmentNo() < currentNo) {
                     paidPreviously = paidPreviously.add(s.getAmount());
                 }
             }
-
-            // Tính tỷ lệ % của đợt này so với tổng giá trị hợp đồng
             if (totalContractAmount.compareTo(BigDecimal.ZERO) > 0) {
                 percent = (currentSchedule.getAmount().doubleValue() / totalContractAmount.doubleValue()) * 100;
             }
-            // Số tiền còn lại sau đợt này
             remainingAmount = totalContractAmount.subtract(paidPreviously).subtract(currentSchedule.getAmount());
         } else {
-            // Nếu không chọn đợt (Thanh toán 1 lần toàn bộ)
             remainingAmount = BigDecimal.ZERO;
         }
 
