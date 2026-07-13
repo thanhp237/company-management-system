@@ -53,6 +53,7 @@ if (
         path.startsWith("/users") ||
         path.startsWith("/products") ||
         path.startsWith("/departments") ||
+        path.startsWith("/business-rules") ||
         path.startsWith("/css/") ||
         path.startsWith("/js/") ||
         path.startsWith("/images/") ||

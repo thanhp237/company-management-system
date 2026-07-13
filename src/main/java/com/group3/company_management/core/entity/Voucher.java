@@ -1,5 +1,4 @@
 package com.group3.company_management.core.entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,13 +16,13 @@ public class Voucher {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "voucher_code")
+    @Column(name = "voucher_code", nullable = false, unique = true, length = 50)
     private String voucherCode;
 
-    @Column(name = "discount_percent")
+    @Column(name = "discount_percent", nullable = false, precision = 5, scale = 2)
     private BigDecimal discountPercent;
 
-    @Column(name = "max_discount_amount")
+    @Column(name = "max_discount_amount", precision = 15, scale = 2)
     private BigDecimal maxDiscountAmount;
 
     @Column(name = "expired_at")
@@ -31,4 +30,17 @@ public class Voucher {
 
     @Column(name = "is_active")
     private Boolean active;
+
+    @PrePersist
+    public void prePersist() {
+        if (active == null) {
+            active = true;
+        }
+        if (discountPercent == null) {
+            discountPercent = BigDecimal.ZERO;
+        }
+        if (maxDiscountAmount == null) {
+            maxDiscountAmount = BigDecimal.ZERO;
+        }
+    }
 }

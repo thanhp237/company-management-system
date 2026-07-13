@@ -284,7 +284,13 @@
         <tr th:each="item, stat : ${quotation.details}">
             <td class="text-center" th:text="${stat.count}">1</td>
             <td>
-                <strong th:text="${item.productName}">SmartDoor</strong>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                         th:src="${item.imageUrl}"
+                         alt="Ảnh sản phẩm"
+                         style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #dddddd;">
+                    <strong th:text="${item.productName}">SmartDoor</strong>
+                </div>
                 <div style="font-size: 10pt; color: #000000;" th:if="${item.description != null}" th:text="${item.description}">Mô tả</div>
             </td>
             <td class="text-center">Chiếc</td>

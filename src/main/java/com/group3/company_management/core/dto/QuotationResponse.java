@@ -31,6 +31,14 @@ public class QuotationResponse {
 
     private BigDecimal finalAmount;
 
+    private Long voucherId;
+
+    private String voucherCode;
+
+    private BigDecimal voucherDiscountPercent;
+
+    private BigDecimal voucherMaxDiscountAmount;
+
     private String status;
 
     private String note;
@@ -39,5 +47,4 @@ public class QuotationResponse {
     private String approvedBy;
     private List<QuotationDetailResponse> details;
     private Long opportunityId;
-
 }

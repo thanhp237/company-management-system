@@ -26,7 +26,7 @@
             <div>
                 <p class="management-eyebrow">Admin / Cấu hình nghiệp vụ</p>
                 <h1>Cấu hình quy tắc nghiệp vụ</h1>
-                <p class="management-subtitle">Thiết lập cách tự động phân bổ khách hàng tiềm năng, hoa hồng, voucher và ngưỡng phê duyệt.</p>
+                <p class="management-subtitle">Thiết lập tỷ lệ hoa hồng và voucher áp dụng trong báo giá.</p>
             </div>
             <form class="management-actions" method="post" th:action="@{/business-rules/save}" id="businessRuleForm">
                 <a class="customer-secondary-button" th:href="@{/dashboard}">
@@ -44,43 +44,13 @@
             <i class="fas fa-check-circle"></i>
             <span th:text="${successMessage}">Đã lưu cấu hình.</span>
         </div>
+        <div th:if="${errorMessage}" class="management-alert danger">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
 
-        <div class="rule-layout">
-            <section class="customer-panel rule-card large">
-                <div class="customer-panel-header">
-                    <div>
-                        <h2><i class="fas fa-user-plus"></i> Phân bổ khách hàng tiềm năng</h2>
-                        <p>Quy tắc tự động gán khách hàng tiềm năng cho nhân viên.</p>
-                    </div>
-                    <span class="customer-pill active">Đang hoạt động</span>
-                </div>
-                <div class="customer-panel-body">
-                    <div class="rule-choice-grid">
-                        <label class="rule-choice active">
-                            <input form="businessRuleForm" type="radio" name="leadAssignmentMode" value="ROUND_ROBIN" checked>
-                            <span>Round Robin</span>
-                            <small>Chia đều tuần hoàn cho tất cả nhân viên kinh doanh.</small>
-                        </label>
-                        <label class="rule-choice">
-                            <input form="businessRuleForm" type="radio" name="leadAssignmentMode" value="MANUAL">
-                            <span>Thủ công</span>
-                            <small>Quản lý tự phân phối từng khách hàng tiềm năng.</small>
-                        </label>
-                    </div>
-                    <div class="rule-toggle-row">
-                        <div>
-                            <span>Ưu tiên nhân viên kinh doanh xuất sắc</span>
-                            <p>Nhân viên có tỷ lệ chốt cao được nhận khách hàng tiềm năng nóng trước 15 phút.</p>
-                        </div>
-                        <label class="rule-switch">
-                            <input type="checkbox" checked>
-                            <span></span>
-                        </label>
-                    </div>
-                </div>
-            </section>
-
-            <section class="customer-panel rule-card">
+        <div class="rule-layout business-rules-layout">
+            <section class="customer-panel rule-card business-rule-commission">
                 <div class="customer-panel-header">
                     <div>
                         <h2><i class="fas fa-percent"></i> Tỷ lệ hoa hồng</h2>
@@ -90,59 +60,117 @@
                 <div class="customer-panel-body">
                     <label class="rule-field">
                         <span>Tỷ lệ cơ bản (%)</span>
-                        <input form="businessRuleForm" type="number" name="commissionRate" min="0" max="100" th:value="${commissionRate}">
+                        <input form="businessRuleForm" type="number" name="commissionRate" min="0" max="100" th:value="${commissionRate}" required>
                     </label>
-                    <div class="rule-meter"><span style="width: 62%"></span></div>
-                    <small class="rule-note">Thay đổi áp dụng cho hợp đồng được ký sau ngày cấu hình.</small>
+                    <div class="rule-meter">
+                        <span th:style="${'width: ' + commissionRate + '%'}"></span>
+                    </div>
+                    <small class="rule-note" th:text="${'Tỷ lệ hiện tại: ' + commissionRate + '%. Thay đổi được lưu lại khi bấm Lưu cấu hình.'}">
+                        Tỷ lệ hiện tại: 5%.
+                    </small>
                 </div>
             </section>
 
-            <section class="customer-panel rule-card">
+            <section class="customer-panel rule-card large business-rule-voucher">
                 <div class="customer-panel-header">
                     <div>
-                        <h2><i class="fas fa-ticket"></i> Quy tắc Voucher</h2>
-                        <p>Điều kiện tối thiểu để áp voucher vào báo giá.</p>
-                    </div>
-                </div>
-                <div class="customer-panel-body rule-two-col">
-                    <label class="rule-field">
-                        <span>Giá trị tối thiểu</span>
-                        <input form="businessRuleForm" type="number" name="voucherMinValue" th:value="${voucherMinValue}">
-                    </label>
-                    <label class="rule-field">
-                        <span>Thời hạn (ngày)</span>
-                        <input form="businessRuleForm" type="number" name="voucherDuration" th:value="${voucherDuration}">
-                    </label>
-                    <div class="rule-tags">
-                        <span>Khách hàng mới</span>
-                        <span>VIP</span>
-                        <button type="button">+ Thêm nhóm</button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="customer-panel rule-card">
-                <div class="customer-panel-header">
-                    <div>
-                        <h2><i class="fas fa-clipboard-check"></i> Ngưỡng phê duyệt</h2>
-                        <p>Các điều kiện cần quản lý duyệt trước khi gửi khách.</p>
+                        <h2><i class="fas fa-ticket"></i> Cấu hình Voucher</h2>
+                        <p>Tạo và quản lý voucher để nhân viên kinh doanh áp dụng vào báo giá.</p>
                     </div>
                 </div>
                 <div class="customer-panel-body">
-                    <a class="approval-rule" href="#">
-                        <span><i class="fas fa-shield-halved"></i> Hợp đồng &gt; 100M VNĐ</span>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a class="approval-rule" href="#">
-                        <span><i class="fas fa-tags"></i> Chiết khấu &gt; 15%</span>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <button class="approval-add" type="button">
-                        <i class="fas fa-plus"></i>
-                        <span>Thêm điều kiện phê duyệt mới</span>
-                    </button>
+                    <form class="rule-two-col" method="post" th:action="@{/business-rules/vouchers}">
+                        <label class="rule-field">
+                            <span>Mã voucher</span>
+                            <input type="text" name="voucherCode" placeholder="VD: VIP10" required>
+                        </label>
+                        <label class="rule-field">
+                            <span>Phần trăm giảm (%)</span>
+                            <input type="number" name="discountPercent" min="0.01" max="100" step="0.01" placeholder="10" required>
+                        </label>
+                        <label class="rule-field">
+                            <span>Giảm tối đa</span>
+                            <input type="number" name="maxDiscountAmount" min="0" step="1000" placeholder="2000000">
+                        </label>
+                        <label class="rule-field">
+                            <span>Hết hạn lúc</span>
+                            <input type="datetime-local" name="expiredAt">
+                        </label>
+                        <label class="rule-choice active">
+                            <input type="checkbox" name="active" value="true" checked>
+                            <span>Kích hoạt ngay</span>
+                            <small>Voucher active và chưa hết hạn sẽ xuất hiện ở màn hình tạo báo giá.</small>
+                        </label>
+                        <div class="rule-tags">
+                            <button type="submit">+ Tạo voucher</button>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive mt-4 voucher-table-wrap">
+                        <table class="table table-sm align-middle voucher-config-table">
+                            <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Giảm (%)</th>
+                                <th>Giảm tối đa</th>
+                                <th>Hết hạn</th>
+                                <th>Trạng thái</th>
+                                <th>Cập nhật nhanh</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="v : ${vouchers}">
+                                <td>
+                                    <form th:id="${'voucherEditForm' + v.id}" method="post" th:action="@{/business-rules/vouchers}"></form>
+                                    <input type="hidden" name="id" th:value="${v.id}" th:attr="form=${'voucherEditForm' + v.id}">
+                                    <input class="form-control form-control-sm" type="text" name="voucherCode"
+                                           th:value="${v.voucherCode}" th:attr="form=${'voucherEditForm' + v.id}" required>
+                                </td>
+                                <td>
+                                    <input class="form-control form-control-sm" type="number" name="discountPercent"
+                                           min="0.01" max="100" step="0.01" th:value="${v.discountPercent}"
+                                           th:attr="form=${'voucherEditForm' + v.id}" required>
+                                </td>
+                                <td>
+                                    <input class="form-control form-control-sm" type="number" name="maxDiscountAmount"
+                                           min="0" step="1000" th:value="${v.maxDiscountAmount}"
+                                           th:attr="form=${'voucherEditForm' + v.id}">
+                                </td>
+                                <td>
+                                    <input class="form-control form-control-sm" type="datetime-local" name="expiredAt"
+                                           th:value="${v.expiredAt != null ? #temporals.format(v.expiredAt, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                           th:attr="form=${'voucherEditForm' + v.id}">
+                                </td>
+                                <td>
+                                    <label class="d-inline-flex align-items-center gap-2">
+                                        <input type="checkbox" name="active" value="true" th:checked="${v.active}"
+                                               th:attr="form=${'voucherEditForm' + v.id}">
+                                        <span th:text="${v.active ? 'Đang bật' : 'Đang tắt'}">Đang bật</span>
+                                    </label>
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-primary btn-sm" type="submit"
+                                            th:attr="form=${'voucherEditForm' + v.id}">Lưu</button>
+                                </td>
+                                <td>
+                                    <form method="post" th:action="@{/business-rules/vouchers/{id}/toggle(id=${v.id})}">
+                                        <button class="btn btn-outline-secondary btn-sm" type="submit"
+                                                th:text="${v.active ? 'Tắt' : 'Bật'}">Tắt</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${vouchers == null || #lists.isEmpty(vouchers)}">
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    Chưa có voucher nào. Tạo voucher đầu tiên để Sales dùng khi lập báo giá.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
+
         </div>
 
         <section class="customer-panel">
@@ -154,8 +182,7 @@
                 <a class="customer-secondary-button" href="#">Xem tất cả</a>
             </div>
             <div class="customer-panel-body rule-history">
-                <div><time>10:45 AM</time><span>Admin_Huy đã thay đổi ngưỡng phê duyệt CEO từ 50M lên 100M.</span></div>
-                <div><time>09:12 AM</time><span>Hệ thống tự động cập nhật tỷ lệ hoa hồng cho quý 4.</span></div>
+                <div><time>--</time><span>Chưa có nhật ký thay đổi thực tế cho cấu hình này.</span></div>
             </div>
         </section>
     </div>

@@ -20,7 +20,6 @@ public class RoleServiceImpl implements RoleService {
 
     private static final Set<String> SYSTEM_ROLES = Set.of(
             "ADMIN",
-            "CEO",
             "DIRECTOR",
             "SALES",
             "SALES_MANAGER",

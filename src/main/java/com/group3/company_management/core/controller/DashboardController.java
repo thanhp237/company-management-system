@@ -3,12 +3,14 @@ package com.group3.company_management.core.controller;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Employee;
+import com.group3.company_management.core.entity.Invoice;
 import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.repository.AppointmentRepository;
 import com.group3.company_management.core.repository.ContractRepository;
 import com.group3.company_management.core.repository.CustomerRepository;
 import com.group3.company_management.core.repository.DepartmentRepository;
 import com.group3.company_management.core.repository.EmployeeRepository;
+import com.group3.company_management.core.repository.InvoiceRepository;
 import com.group3.company_management.core.repository.NotificationRepository;
 import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.repository.ProductRepository;
@@ -50,6 +52,7 @@ public class DashboardController {
     private final NotificationRepository notificationRepository;
     private final QuotationRepository quotationRepository;
     private final EmployeeRepository employeeRepository;
+    private final InvoiceRepository invoiceRepository;
 
     @GetMapping
     public String redirectDashboard(Authentication authentication) {
@@ -155,6 +158,12 @@ public class DashboardController {
         model.addAttribute("kpiCards", kpiCards(role, authentication));
         model.addAttribute("actionGroups", actionGroups(role));
         model.addAttribute("insightItems", insightItems(role));
+        boolean executiveDashboard = isExecutiveRole(role);
+        model.addAttribute("executiveDashboard", executiveDashboard);
+        if (executiveDashboard) {
+            model.addAttribute("revenueSummaryRows", revenueSummaryRows());
+            model.addAttribute("executiveKpiRows", executiveKpiRows());
+        }
 
         return "dashboard/employee-dashboard";
     }
@@ -269,8 +278,8 @@ public class DashboardController {
             );
             case "DIRECTOR" -> List.of(
                     group("Phân tích điều hành", "Theo dõi KPI, doanh thu và hiệu suất doanh nghiệp.", List.of(
-                            disabledAction("Bảng điều hành giám đốc", "Biểu đồ doanh thu và biên lợi nhuận", "fa-chart-pie"),
-                            disabledAction("Bảng KPI kinh doanh", "Xếp hạng nhân viên kinh doanh và tỷ lệ chuyển đổi", "fa-ranking-star"),
+                            action("Revenue Summary", "/dashboard/director", "Báo cáo doanh thu, đã thu và còn phải thu", "fa-chart-pie"),
+                            action("Executive Dashboard", "/dashboard/director", "KPI overview cho Director", "fa-ranking-star"),
                             disabledAction("Trung tâm xuất báo cáo", "Tải báo cáo Excel/PDF", "fa-file-export")
                     ))
             );
@@ -343,6 +352,45 @@ public class DashboardController {
             case "DIRECTOR" -> "Giám đốc";
             default -> role;
         };
+    }
+
+    private boolean isExecutiveRole(String role) {
+        return "DIRECTOR".equals(role);
+    }
+
+    private List<Map<String, String>> revenueSummaryRows() {
+        long paidInvoices = invoiceRepository.countByStatus(Invoice.InvoiceStatus.PAID);
+        long partiallyPaidInvoices = invoiceRepository.countByStatus(Invoice.InvoiceStatus.PARTIALLY_PAID);
+        long issuedInvoices = invoiceRepository.countByStatus(Invoice.InvoiceStatus.ISSUED);
+        long unpaidInvoices = issuedInvoices + partiallyPaidInvoices;
+
+        return List.of(
+                metric("Doanh thu hợp đồng đã ký", money(contractRepository.sumFinalAmountByStatus(Contract.ContractStatus.SIGNED)), "Tổng final amount của hợp đồng SIGNED", "fa-file-signature", "success"),
+                metric("Invoice đã phát hành", money(invoiceRepository.sumTotalAmountByStatus(Invoice.InvoiceStatus.ISSUED)
+                        .add(invoiceRepository.sumTotalAmountByStatus(Invoice.InvoiceStatus.PARTIALLY_PAID))
+                        .add(invoiceRepository.sumTotalAmountByStatus(Invoice.InvoiceStatus.PAID))), "Tổng giá trị invoice đã gửi/đã thanh toán", "fa-file-invoice-dollar", "info"),
+                metric("Đã thu", money(invoiceRepository.sumPaidAmount()), number(paidInvoices) + " invoice đã PAID", "fa-sack-dollar", "success"),
+                metric("Còn phải thu", money(invoiceRepository.sumOutstandingAmount()), number(unpaidInvoices) + " invoice chưa tất toán", "fa-money-bill-transfer", "warning")
+        );
+    }
+
+    private List<Map<String, String>> executiveKpiRows() {
+        long won = opportunityRepository.countByStage("WON");
+        long lost = opportunityRepository.countByStage("LOST");
+        long totalWonLost = won + lost;
+
+        return List.of(
+                metric("Tổng hợp đồng", number(contractRepository.count()), "Toàn bộ hợp đồng trong hệ thống", "fa-file-contract", "info"),
+                metric("Hợp đồng đã ký", number(contractRepository.countByStatus(Contract.ContractStatus.SIGNED)), "Cơ sở doanh thu đã chốt", "fa-circle-check", "success"),
+                metric("Chờ khách ký", number(contractRepository.countByStatus(Contract.ContractStatus.SENT_TO_CUSTOMER)), "Hợp đồng đã gửi khách hàng", "fa-paper-plane", "warning"),
+                metric("Tỷ lệ thắng", percent(won, totalWonLost), number(won) + " WON / " + number(totalWonLost) + " WON+LOST", "fa-ranking-star", "success"),
+                metric("Khách hàng active", number(customerRepository.countByCustomerStatusIgnoreCase("ACTIVE")), "Hồ sơ khách hàng đang hoạt động", "fa-user-check", "info"),
+                metric("Sản phẩm", number(productRepository.count()), "Danh mục sản phẩm/dịch vụ", "fa-boxes-stacked", "warning")
+        );
+    }
+
+    private Map<String, String> metric(String label, String value, String caption, String icon, String tone) {
+        return Map.of("label", label, "value", value, "caption", caption, "icon", icon, "tone", tone);
     }
 
     private Map<String, Object> group(String title, String description, List<Map<String, String>> actions) {
@@ -430,6 +478,13 @@ public class DashboardController {
             return "SALES_MANAGER";
         }
         return role;
+    }
+
+    private String percent(long numerator, long denominator) {
+        if (denominator <= 0) {
+            return "0%";
+        }
+        return String.format("%.1f%%", (numerator * 100.0) / denominator);
     }
 
     private String authority(Authentication authentication) {
