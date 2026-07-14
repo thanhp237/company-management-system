@@ -10,6 +10,7 @@ import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.service.ContractService;
 import com.group3.company_management.core.service.CustomerService;
+import com.group3.company_management.core.service.NotificationService;
 import com.group3.company_management.core.repository.InvoiceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class CustomerPortalController {
     private final CustomerService customerService;
     private final ContractService contractService;
     private final InvoiceRepository invoiceRepository;
+    private final NotificationService notificationService;
     
     /**
      * GET /customer/portal
@@ -181,6 +183,18 @@ public class CustomerPortalController {
         
         log.info("✅ Customer payments page accessed: {}", customer.getEmail());
         return "customer/payments";
+    }
+
+    @GetMapping("/notifications")
+    public String showCustomerNotifications(Model model, Authentication authentication) {
+        Customer customer = getAuthenticatedCustomer(authentication);
+        
+        model.addAttribute("title", "Thông báo của tôi");
+        model.addAttribute("customer", customer);
+        model.addAttribute("notifications", notificationService.getNotificationsByCustomerId(customer.getId()));
+        
+        log.info("✅ Customer notifications page accessed: {}", customer.getEmail());
+        return "customer/notifications";
     }
     // Endpoint xuất PDF dành riêng cho Khách hàng
     @GetMapping("/contracts/{contractId}/export-pdf")

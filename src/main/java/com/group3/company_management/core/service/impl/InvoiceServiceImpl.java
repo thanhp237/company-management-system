@@ -15,6 +15,9 @@ import com.group3.company_management.core.repository.InvoiceRepository;
 import com.group3.company_management.core.repository.QuotationDetailRepository;
 import com.group3.company_management.core.repository.PaymentScheduleRepository;
 import com.group3.company_management.core.service.InvoiceService;
+import com.group3.company_management.core.service.EmailService;
+import com.group3.company_management.core.service.NotificationService;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +35,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
@@ -40,6 +44,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final QuotationDetailRepository quotationDetailRepository;
     private final PaymentScheduleRepository paymentScheduleRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Override
     public Invoice createInvoice(Long contractId, CreateInvoiceRequest request) {
@@ -126,7 +132,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setTotalAmount(schedule.getAmount());
         invoice.setOutstandingAmount(schedule.getAmount());
 
-        return invoiceRepository.save(invoice);
+        Invoice saved = invoiceRepository.save(invoice);
+        if (Invoice.InvoiceStatus.ISSUED.equals(saved.getStatus())) {
+            sendInvoiceIssuedNotification(saved);
+        }
+        return saved;
     }
 
     @Override
@@ -141,7 +151,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setStatus(Invoice.InvoiceStatus.ISSUED);
         invoice.setIssuedAt(LocalDateTime.now());
         invoice.setUpdatedBy(getCurrentEmployeeId());
-        return invoiceRepository.save(invoice);
+        Invoice saved = invoiceRepository.save(invoice);
+        sendInvoiceIssuedNotification(saved);
+        return saved;
     }
 
     @Override
@@ -392,7 +404,6 @@ public class InvoiceServiceImpl implements InvoiceService {
             totalAmount = totalAmount.add(subtotal);
         }
 
-        // Nếu hóa đơn có đợt thanh toán thì lấy tiền của đợt, ngược lại mới lấy tổng sản phẩm
         BigDecimal finalInvoiceAmount = (invoice.getPaymentSchedule() != null)
                 ? invoice.getPaymentSchedule().getAmount()
                 : totalAmount;
@@ -400,7 +411,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setTotalAmount(finalInvoiceAmount);
         invoice.setOutstandingAmount(finalInvoiceAmount);
 
-        return invoiceRepository.save(invoice);
+        Invoice saved = invoiceRepository.save(invoice);
+        if (Invoice.InvoiceStatus.ISSUED.equals(saved.getStatus())) {
+            sendInvoiceIssuedNotification(saved);
+        }
+        return saved;
     }
 
     @Override
@@ -460,5 +475,40 @@ public class InvoiceServiceImpl implements InvoiceService {
         return employeeRepository.findByUser_Username(authentication.getName())
                 .map(Employee::getId)
                 .orElseThrow(() -> new RuntimeException("Tài khoản hiện tại chưa liên kết với nhân viên, không thể tạo hóa đơn."));
+    }
+
+    private void sendInvoiceIssuedNotification(Invoice invoice) {
+        try {
+            if (invoice.getContract() != null && invoice.getContract().getCustomer() != null) {
+                Long customerId = invoice.getContract().getCustomer().getId();
+                notificationService.createCustomerNotification(
+                    customerId,
+                    "Hóa đơn mới phát hành - " + invoice.getInvoiceCode(),
+                    "Hóa đơn mới số " + invoice.getInvoiceCode() + " cần thanh toán số tiền " + String.format("%,.0f", invoice.getTotalAmount()) + " VNĐ. Hạn thanh toán: " + invoice.getDueDate()
+                );
+
+                String customerEmail = invoice.getContract().getCustomer().getEmail();
+                if (customerEmail != null && !customerEmail.isBlank()) {
+                    String subject = "[CompanyMS] Thông báo phát hành hóa đơn mới - " + invoice.getInvoiceCode();
+                    String content = String.format("""
+                            Kính gửi Quý khách hàng,
+                            
+                            Hóa đơn mới mã số %s đã được phát hành cho hợp đồng %s.
+                            Số tiền thanh toán: %,.0f VNĐ.
+                            Hạn thanh toán: %s.
+                            
+                            Vui lòng đăng nhập vào Cổng khách hàng để thực hiện thanh toán.
+                            
+                            Trân trọng,
+                            Hệ thống quản trị CompanyMS.
+                            """, invoice.getInvoiceCode(), invoice.getContract().getContractCode(),
+                            invoice.getTotalAmount(), invoice.getDueDate());
+                    emailService.sendCustomEmail(customerEmail, subject, content);
+                    log.info("✉️ Đã gửi email phát hành hóa đơn {} tới {}", invoice.getInvoiceCode(), customerEmail);
+                }
+            }
+        } catch (Exception e) {
+            log.error("❌ Lỗi gửi email phát hành hóa đơn: {}", e.getMessage());
+        }
     }
 }

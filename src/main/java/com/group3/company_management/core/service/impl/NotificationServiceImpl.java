@@ -62,4 +62,26 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
         notificationRepository.save(noti);
     }
+
+    @Override
+    public List<Notification> getNotificationsByCustomerId(Long customerId) {
+        return notificationRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+    }
+
+    @Override
+    public long getUnreadCountByCustomerId(Long customerId) {
+        return notificationRepository.countByCustomerIdAndIsReadFalse(customerId);
+    }
+
+    @Override
+    @Transactional
+    public void createCustomerNotification(Long customerId, String title, String message) {
+        Notification noti = Notification.builder()
+                .customerId(customerId)
+                .title(title)
+                .message(message)
+                .isRead(false)
+                .build();
+        notificationRepository.save(noti);
+    }
 }

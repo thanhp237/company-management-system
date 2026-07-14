@@ -37,8 +37,7 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
     @Query("""
             SELECT o FROM Opportunity o
             WHERE (:stage IS NULL OR :stage = '' OR o.stage = :stage)
-            AND (:assignedUsername IS NULL OR :assignedUsername = ''
-                OR LOWER(o.assignedTo.username) = LOWER(:assignedUsername))
+            AND (:usernames IS NULL OR o.assignedTo.username IN :usernames)
             AND (:keyword IS NULL OR :keyword = ''
                 OR LOWER(o.opportunityCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
                 OR LOWER(o.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
@@ -49,7 +48,7 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
     Page<Opportunity> searchPipeline(
             @Param("keyword") String keyword,
             @Param("stage") String stage,
-            @Param("assignedUsername") String assignedUsername,
+            @Param("usernames") List<String> usernames,
             Pageable pageable
     );
 
@@ -65,6 +64,8 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
     long countByAssignedToUsername(String username);
 
     long countByStageAndAssignedToUsername(String stage, String username);
+
+    long countByStageAndAssignedToUsernameIn(String stage, List<String> usernames);
     @Query("SELECT o FROM Opportunity o WHERE o.customer.id = :customerId")
     List<Opportunity>  findFirstOpportunityByCustomerId(@Param("customerId") Long customerId);
 

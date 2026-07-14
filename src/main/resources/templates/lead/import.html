@@ -55,17 +55,17 @@
         <section class="customer-stat-grid">
             <article class="customer-stat-card success">
                 <span>Tổng khách hàng tiềm năng</span>
-                <strong th:text="${customer != null ? customer.size() : 0}">0</strong>
+                <strong th:text="${totalCustomers != null ? totalCustomers : 0}">0</strong>
                 <small>Trong danh sách hiện tại</small>
             </article>
             <article class="customer-stat-card warning">
                 <span>Chưa phân bổ</span>
-                <strong th:text="${customer != null ? customer.?[assignedSalesId == null].size() : 0}">0</strong>
+                <strong th:text="${unassignedCustomers != null ? unassignedCustomers : 0}">0</strong>
                 <small>Cần chọn nhân viên kinh doanh phụ trách</small>
             </article>
             <article class="customer-stat-card info">
                 <span>Đã phân bổ</span>
-                <strong th:text="${customer != null ? customer.?[assignedSalesId != null].size() : 0}">0</strong>
+                <strong th:text="${assignedCustomers != null ? assignedCustomers : 0}">0</strong>
                 <small>Đã có nhân viên kinh doanh phụ trách</small>
             </article>
             <article class="customer-stat-card neutral" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">
@@ -87,7 +87,7 @@
                 </a>
             </div>
             <div class="customer-panel-body">
-                <form class="customer-upload-form" th:action="@{/customer/import}" method="post" enctype="multipart/form-data">
+                <form class="customer-upload-form" th:action="@{/customer/import(page=${currentPage}, size=${size}, status=${currentStatus}, sort=${currentSort})}" method="post" enctype="multipart/form-data">
                     <label>
                         <span>File Excel</span>
                         <input type="file" name="file" accept=".xlsx,.xls" required>
@@ -100,7 +100,37 @@
             </div>
         </section>
 
-        <form th:action="@{/customer/check}" method="post">
+        <!-- Bộ lọc và sắp xếp (Sử dụng Flexbox chống méo) -->
+        <form th:action="@{/customer}" method="get" id="filterForm">
+            <input type="hidden" name="size" th:value="${size}">
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 16px; padding: 14px; border: 1px solid #dfe7e2; border-radius: 8px; background: #fff;">
+                <label style="flex: 0 1 240px; display: flex; flex-direction: column; gap: 8px;">
+                    <span style="color: #536271; font-size: 11px; font-weight: 900; text-transform: uppercase;">Trạng thái phân bổ</span>
+                    <select name="status" onchange="document.getElementById('filterForm').submit()" style="width: 100%; min-height: 42px; border: 1px solid #d8e1dc; border-radius: 8px; background: #f8faf8; color: #17202b; font-size: 14px; padding: 0 12px; outline: none;">
+                        <option value="all" th:selected="${currentStatus == 'all'}">Tất cả</option>
+                        <option value="unassigned" th:selected="${currentStatus == 'unassigned'}">Chưa phân bổ</option>
+                        <option value="assigned" th:selected="${currentStatus == 'assigned'}">Đã phân bổ</option>
+                    </select>
+                </label>
+
+                <label style="flex: 0 1 240px; display: flex; flex-direction: column; gap: 8px;">
+                    <span style="color: #536271; font-size: 11px; font-weight: 900; text-transform: uppercase;">Sắp xếp thời gian</span>
+                    <select name="sort" onchange="document.getElementById('filterForm').submit()" style="width: 100%; min-height: 42px; border: 1px solid #d8e1dc; border-radius: 8px; background: #f8faf8; color: #17202b; font-size: 14px; padding: 0 12px; outline: none;">
+                        <option value="newest" th:selected="${currentSort == 'newest'}">Mới nhất (Tạo sau)</option>
+                        <option value="oldest" th:selected="${currentSort == 'oldest'}">Cũ nhất (Tạo trước)</option>
+                    </select>
+                </label>
+
+                <div style="display: flex; align-items: center; height: 42px;" th:if="${currentStatus != 'all' or currentSort != 'newest'}">
+                    <a th:href="@{/customer(size=${size})}" class="customer-secondary-button" style="text-decoration: none;">
+                        <i class="fas fa-undo"></i>
+                        <span>Xóa bộ lọc</span>
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <form th:action="@{/customer/check(page=${currentPage}, size=${size}, status=${currentStatus}, sort=${currentSort})}" method="post">
             <section class="customer-panel">
                 <div class="customer-panel-header">
                     <div>
@@ -176,6 +206,42 @@
                         </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination Component -->
+                <div class="customer-pagination" th:if="${customerPage != null}">
+                    <div class="pagination-info">
+                        Hiển thị từ <span th:text="${customerPage.totalElements > 0 ? currentPage * size + 1 : 0}">1</span> đến
+                        <span th:text="${(currentPage + 1) * size < customerPage.totalElements ? (currentPage + 1) * size : customerPage.totalElements}">10</span>
+                        trong tổng số <span th:text="${customerPage.totalElements}">100</span> khách hàng tiềm năng
+                    </div>
+                    <ul class="pagination-list" th:if="${customerPage.totalPages > 1}">
+                        <!-- Nút Trang trước -->
+                        <li th:classappend="${customerPage.first} ? 'disabled'">
+                            <a th:if="${customerPage.first}" href="#" aria-label="Previous">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                            <a th:if="${!customerPage.first}" th:href="@{/customer(page=${currentPage - 1}, size=${size}, status=${currentStatus}, sort=${currentSort})}" aria-label="Previous">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        <!-- Số Trang -->
+                        <li th:each="i : ${#numbers.sequence(0, customerPage.totalPages - 1)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a th:href="@{/customer(page=${i}, size=${size}, status=${currentStatus}, sort=${currentSort})}" th:text="${i + 1}">1</a>
+                        </li>
+
+                        <!-- Nút Trang sau -->
+                        <li th:classappend="${customerPage.last} ? 'disabled'">
+                            <a th:if="${customerPage.last}" href="#" aria-label="Next">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a th:if="${!customerPage.last}" th:href="@{/customer(page=${currentPage + 1}, size=${size}, status=${currentStatus}, sort=${currentSort})}" aria-label="Next">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
 
                 <div class="customer-assign-form" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">

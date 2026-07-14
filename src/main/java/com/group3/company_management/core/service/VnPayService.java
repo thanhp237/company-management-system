@@ -3,6 +3,7 @@ package com.group3.company_management.core.service;
 import com.group3.company_management.core.entity.*;
 import com.group3.company_management.core.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,10 +16,12 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@Service @RequiredArgsConstructor
+@Service @RequiredArgsConstructor @Slf4j
 public class VnPayService {
     private final InvoiceRepository invoiceRepository;
     private final PaymentTransactionRepository transactionRepository;
+    private final EmailService emailService;
+    private final NotificationService notificationService;
     @Value("${vnpay.tmn-code:}") private String tmnCode;
     @Value("${vnpay.hash-secret:}") private String hashSecret;
     @Value("${vnpay.payment-url}") private String paymentUrl;
@@ -59,7 +62,13 @@ public class VnPayService {
         boolean ok="00".equals(p.get("vnp_ResponseCode")) && "00".equals(p.get("vnp_TransactionStatus"));
         tx.setStatus(ok?PaymentTransaction.Status.SUCCESS:PaymentTransaction.Status.FAILED);
         tx.setResponseCode(p.get("vnp_ResponseCode")); tx.setVnpTransactionNo(p.get("vnp_TransactionNo")); tx.setCompletedAt(LocalDateTime.now());
-        if(ok){ Invoice inv=tx.getInvoice(); inv.setPaidAmount(inv.getTotalAmount()); inv.setOutstandingAmount(BigDecimal.ZERO); inv.setStatus(Invoice.InvoiceStatus.PAID); }
+        if(ok){
+            Invoice inv=tx.getInvoice();
+            inv.setPaidAmount(inv.getTotalAmount());
+            inv.setOutstandingAmount(BigDecimal.ZERO);
+            inv.setStatus(Invoice.InvoiceStatus.PAID);
+            sendInvoicePaidNotification(inv);
+        }
         return Map.of("RspCode","00","Message","Confirm Success");
     }
     @Transactional
@@ -73,10 +82,63 @@ public class VnPayService {
         boolean ok="00".equals(p.get("vnp_ResponseCode")) && "00".equals(p.getOrDefault("vnp_TransactionStatus", p.get("vnp_ResponseCode")));
         tx.setStatus(ok?PaymentTransaction.Status.SUCCESS:PaymentTransaction.Status.FAILED);
         tx.setResponseCode(p.get("vnp_ResponseCode")); tx.setVnpTransactionNo(p.get("vnp_TransactionNo")); tx.setCompletedAt(LocalDateTime.now());
-        if(ok){ Invoice inv=tx.getInvoice(); inv.setPaidAmount(inv.getTotalAmount()); inv.setOutstandingAmount(BigDecimal.ZERO); inv.setStatus(Invoice.InvoiceStatus.PAID); }
+        if(ok){
+            Invoice inv=tx.getInvoice();
+            inv.setPaidAmount(inv.getTotalAmount());
+            inv.setOutstandingAmount(BigDecimal.ZERO);
+            inv.setStatus(Invoice.InvoiceStatus.PAID);
+            sendInvoicePaidNotification(inv);
+        }
         return ok;
     }
     private String query(Map<String,String> p){ return p.entrySet().stream().filter(e->e.getValue()!=null&&!e.getValue().isBlank()).map(e->enc(e.getKey())+"="+enc(e.getValue())).reduce((a,b)->a+"&"+b).orElse(""); }
     private String enc(String s){ return URLEncoder.encode(s,StandardCharsets.UTF_8); }
     private String hmac(String data){ try{ Mac m=Mac.getInstance("HmacSHA512");m.init(new SecretKeySpec(hashSecret.getBytes(StandardCharsets.UTF_8),"HmacSHA512"));return HexFormat.of().formatHex(m.doFinal(data.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException(e);} }
+
+    private void sendInvoicePaidNotification(Invoice inv) {
+        try {
+            // Also send customer notification in portal
+            if (inv.getContract() != null && inv.getContract().getCustomer() != null) {
+                notificationService.createCustomerNotification(
+                    inv.getContract().getCustomer().getId(),
+                    "Thanh toán hóa đơn thành công - " + inv.getInvoiceCode(),
+                    "Hóa đơn số " + inv.getInvoiceCode() + " đã được thanh toán thành công số tiền " + String.format("%,.0f", inv.getTotalAmount()) + " VNĐ."
+                );
+            }
+
+            // 1. Send email to customer
+            if (inv.getContract() != null && inv.getContract().getCustomer() != null) {
+                String customerEmail = inv.getContract().getCustomer().getEmail();
+                if (customerEmail != null && !customerEmail.isBlank()) {
+                    String subject = "[CompanyMS] Xác nhận thanh toán hóa đơn thành công - " + inv.getInvoiceCode();
+                    String content = String.format("""
+                            Kính gửi Quý khách hàng,
+                            
+                            Chúng tôi xác nhận đã nhận được thanh toán cho hóa đơn %s thuộc hợp đồng %s.
+                            Số tiền đã thanh toán: %,.0f VNĐ.
+                            Trạng thái hóa đơn: ĐÃ THANH TOÁN.
+                            
+                            Cảm ơn Quý khách đã sử dụng dịch vụ của chúng tôi!
+                            
+                            Trân trọng,
+                            Hệ thống quản trị CompanyMS.
+                            """, inv.getInvoiceCode(), inv.getContract().getContractCode(), inv.getTotalAmount());
+                    emailService.sendCustomEmail(customerEmail, subject, content);
+                    log.info("✉️ Đã gửi email xác nhận thanh toán hóa đơn {} tới {}", inv.getInvoiceCode(), customerEmail);
+                }
+            }
+
+            // 2. System notification for Salesperson (Sale) in charge
+            if (inv.getContract() != null && inv.getContract().getSale() != null) {
+                notificationService.createNotification(
+                        inv.getContract().getSale().getAccountId(),
+                        "Hóa đơn đã được thanh toán",
+                        "Hóa đơn " + inv.getInvoiceCode() + " thuộc hợp đồng " + inv.getContract().getContractCode() + " đã được khách hàng thanh toán thành công số tiền " + String.format("%,.0f", inv.getTotalAmount()) + " VNĐ."
+                );
+                log.info("🔔 Đã bắn thông báo thanh toán hóa đơn cho Sale (ID: {})", inv.getContract().getSale().getId());
+            }
+        } catch (Exception e) {
+            log.error("❌ Lỗi gửi email hoặc bắn thông báo thanh toán hóa đơn: {}", e.getMessage());
+        }
+    }
 }

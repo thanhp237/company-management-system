@@ -109,20 +109,22 @@
 
                     <label class="user-field">
                         <span>Vai trò <strong>*</strong></span>
-                        <select th:field="*{roleId}" required>
+                        <select name="roleId" id="roleId" required>
                             <option value="">Chọn vai trò</option>
                             <option th:each="role : ${roles}"
                                     th:value="${role.id}"
+                                    th:selected="${userForm.roleId != null and userForm.roleId.equals(role.id)}"
                                     th:text="${role.roleName}">Administrator</option>
                         </select>
                     </label>
-
+ 
                     <label class="user-field">
                         <span>Phòng ban</span>
-                        <select th:field="*{departmentId}">
-                            <option value="">Chưa phân phòng ban</option>
+                        <select name="departmentId" id="departmentId">
+                            <option th:value="${null}" th:selected="${userForm.departmentId == null}">Chưa phân phòng ban</option>
                             <option th:each="department : ${departments}"
                                     th:value="${department.id}"
+                                    th:selected="${userForm.departmentId != null and userForm.departmentId.equals(department.id)}"
                                     th:text="${department.name + ' (' + department.code + ')'}">Phòng Kinh doanh</option>
                         </select>
                     </label>

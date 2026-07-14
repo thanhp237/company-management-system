@@ -20,6 +20,9 @@ public class Notification {
     @Column(name = "account_id")
     private Long accountId; // ID tài khoản nhận thông báo (liên kết với system_accounts)
 
+    @Column(name = "customer_id")
+    private Long customerId; // ID khách hàng nhận thông báo (liên kết với customers)
+
     @Column(nullable = false, length = 255)
     private String title;
 

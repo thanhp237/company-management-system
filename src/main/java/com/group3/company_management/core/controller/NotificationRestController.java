@@ -18,6 +18,9 @@ public class NotificationRestController {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private com.group3.company_management.core.repository.CustomerRepository customerRepository;
+
     // Lấy nhanh số lượng chưa đọc + 5 thông báo mới nhất cho chiếc chuông trên Navbar
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Object>> getNotificationSummary(Principal principal) {
@@ -32,6 +35,27 @@ public class NotificationRestController {
         response.put("unreadCount", unreadCount);
         response.put("notifications", top5);
         return ResponseEntity.ok(response);
+    }
+
+    // Customer summary endpoint
+    @GetMapping("/customer/summary")
+    public ResponseEntity<Map<String, Object>> getCustomerNotificationSummary(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String email = principal.getName();
+        return customerRepository.findByEmailAndNotDeleted(email)
+                .map(customer -> {
+                    List<Notification> allNoti = notificationService.getNotificationsByCustomerId(customer.getId());
+                    long unreadCount = notificationService.getUnreadCountByCustomerId(customer.getId());
+                    List<Notification> top5 = allNoti.stream().limit(5).toList();
+
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("unreadCount", unreadCount);
+                    response.put("notifications", top5);
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.ok(Map.of("unreadCount", 0, "notifications", List.of())));
     }
 
     // Đánh dấu thông báo là đã đọc khi click vào

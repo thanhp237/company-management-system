@@ -20,7 +20,12 @@ import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.repository.VoucherRepository;
 import com.group3.company_management.core.repository.PaymentScheduleRepository;
 import com.group3.company_management.core.repository.InvoiceRepository;
+import com.group3.company_management.core.repository.UserRepository;
+import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.service.ContractService;
+import com.group3.company_management.core.service.EmailService;
+import com.group3.company_management.core.service.NotificationService;
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +49,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.ArrayList;
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ContractServiceImpl implements ContractService {
 
     private static final Set<String> CONTRACT_READY_QUOTATION_STATUSES = Set.of("APPROVED", "ACCEPTED");
@@ -58,6 +64,9 @@ public class ContractServiceImpl implements ContractService {
     private final VoucherRepository voucherRepository;
     private final PaymentScheduleRepository paymentScheduleRepository;
     private final InvoiceRepository invoiceRepository;
+    private final EmailService emailService;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -316,6 +325,14 @@ public class ContractServiceImpl implements ContractService {
         contract.setAssignedEmployee(sale);
         contract.setStatus(Contract.ContractStatus.SENT_TO_CUSTOMER);
         contractRepository.save(contract);
+
+        if (contract.getCustomer() != null) {
+            notificationService.createCustomerNotification(
+                contract.getCustomer().getId(),
+                "Hợp đồng mới cần ký",
+                "Hợp đồng " + contract.getContractCode() + " đã được gửi đến bạn. Vui lòng xem và thực hiện ký hợp đồng."
+            );
+        }
     }
 
     @Override
@@ -331,6 +348,9 @@ public class ContractServiceImpl implements ContractService {
         contract.setStatus(Contract.ContractStatus.SIGNED);
         contract.setSignedAt(LocalDateTime.now());
         contractRepository.save(contract);
+
+        // Gửi email và thông báo hệ thống
+        sendContractSignedNotifications(contract);
     }
 
     @Override
@@ -345,6 +365,9 @@ public class ContractServiceImpl implements ContractService {
         contract.setStatus(Contract.ContractStatus.REVISION_REQUESTED);
         contract.setAssignedEmployee(contract.getAdminOfficer());
         contractRepository.save(contract);
+
+        // Bắn thông báo hệ thống cho Sales và Admin Officer
+        sendContractRevisionRequestedNotifications(contract, reason.trim());
     }
 
     @Override
@@ -387,8 +410,32 @@ public class ContractServiceImpl implements ContractService {
         Specification<Contract> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (canViewAllContracts(employee)) {
-                // Managers and admins can review the full contract workspace.
+            String roleCode = roleCode(employee);
+            if ("ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode)) {
+                // Global access: no restriction
+            } else if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+                // Department manager: see department employees' contracts
+                Long deptId = employee.getUser() != null ? employee.getUser().getDepartmentId() : null;
+                if (deptId != null) {
+                    List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+                    List<Long> deptEmployeeIds = deptUsers.stream()
+                            .filter(u -> u.getEmployee() != null)
+                            .map(u -> u.getEmployee().getId())
+                            .toList();
+                    if (!deptEmployeeIds.isEmpty()) {
+                        predicates.add(cb.or(
+                            root.get("sale").get("id").in(deptEmployeeIds),
+                            root.get("adminOfficer").get("id").in(deptEmployeeIds)
+                        ));
+                    } else {
+                        predicates.add(cb.equal(root.get("id"), -1L));
+                    }
+                } else {
+                    predicates.add(cb.or(
+                        cb.equal(root.get("sale").get("id"), employee.getId()),
+                        cb.equal(root.get("adminOfficer").get("id"), employee.getId())
+                    ));
+                }
             } else if (canReviewContract(employee)) {
                 predicates.add(cb.equal(root.get("adminOfficer").get("id"), employee.getId()));
             } else {
@@ -426,7 +473,8 @@ public class ContractServiceImpl implements ContractService {
 
         Long employeeId = employee.getId();
 
-        if (canViewAllContracts(employee)) {
+        String roleCode = roleCode(employee);
+        if ("ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode)) {
             return ContractStatisticsResponse.builder()
                     .total(contractRepository.count())
                     .draft(contractRepository.countByStatus(Contract.ContractStatus.DRAFT))
@@ -436,6 +484,29 @@ public class ContractServiceImpl implements ContractService {
                     .signed(contractRepository.countByStatus(Contract.ContractStatus.SIGNED))
                     .cancelled(contractRepository.countByStatus(Contract.ContractStatus.CANCELLED))
                     .build();
+        }
+
+        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+            Long deptId = employee.getUser() != null ? employee.getUser().getDepartmentId() : null;
+            if (deptId != null) {
+                List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+                List<Long> deptEmployeeIds = deptUsers.stream()
+                        .filter(u -> u.getEmployee() != null)
+                        .map(u -> u.getEmployee().getId())
+                        .toList();
+                if (deptEmployeeIds.isEmpty()) {
+                    return ContractStatisticsResponse.builder().build();
+                }
+                return ContractStatisticsResponse.builder()
+                        .total(contractRepository.countBySaleIdIn(deptEmployeeIds))
+                        .draft(contractRepository.countBySaleIdInAndStatus(deptEmployeeIds, Contract.ContractStatus.DRAFT))
+                        .pending(contractRepository.countBySaleIdInAndStatus(deptEmployeeIds, Contract.ContractStatus.PENDING_ADMIN_OFFICER))
+                        .reviewed(contractRepository.countBySaleIdInAndStatus(deptEmployeeIds, Contract.ContractStatus.ADMIN_REVIEWED))
+                        .sent(contractRepository.countBySaleIdInAndStatus(deptEmployeeIds, Contract.ContractStatus.SENT_TO_CUSTOMER))
+                        .signed(contractRepository.countBySaleIdInAndStatus(deptEmployeeIds, Contract.ContractStatus.SIGNED))
+                        .cancelled(contractRepository.countBySaleIdInAndStatus(deptEmployeeIds, Contract.ContractStatus.CANCELLED))
+                        .build();
+            }
         }
 
         if (canReviewContract(employee)) {
@@ -667,6 +738,84 @@ public class ContractServiceImpl implements ContractService {
         return value != null && !value.isBlank();
     }
 
+    private void sendContractSignedNotifications(Contract contract) {
+        try {
+            // 1. Send email to customer
+            if (contract.getCustomer() != null && contract.getCustomer().getEmail() != null) {
+                String customerEmail = contract.getCustomer().getEmail();
+                String subject = "[CompanyMS] Ký kết hợp đồng thành công - " + contract.getContractCode();
+                String content = String.format("""
+                        Kính gửi Quý khách hàng,
+                        
+                        Hợp đồng số %s của Quý khách đã được ký kết trực tuyến thành công vào lúc %s.
+                        Hợp đồng hiện đã có hiệu lực chính thức. Quý khách có thể xem và tải bản hợp đồng chi tiết trong cổng thông tin khách hàng bất kỳ lúc nào.
+                        
+                        Trân trọng cảm ơn,
+                        Hệ thống quản trị CompanyMS.
+                        """, contract.getContractCode(), LocalDateTime.now().toString());
+                emailService.sendCustomEmail(customerEmail, subject, content);
+                log.info("✉️ Đã gửi email chúc mừng ký hợp đồng {} tới {}", contract.getContractCode(), customerEmail);
+            }
+
+            // Also send customer notification in portal
+            if (contract.getCustomer() != null) {
+                notificationService.createCustomerNotification(
+                    contract.getCustomer().getId(),
+                    "Ký hợp đồng thành công",
+                    "Hợp đồng số " + contract.getContractCode() + " của bạn đã được ký kết thành công."
+                );
+            }
+
+            // 2. System notification for Sales (Sale in charge)
+            if (contract.getSale() != null) {
+                notificationService.createNotification(
+                        contract.getSale().getAccountId(),
+                        "Hợp đồng đã ký kết",
+                        "Khách hàng đã ký hợp đồng " + contract.getContractCode() + " thành công."
+                );
+                log.info("🔔 Đã bắn thông báo ký hợp đồng cho Sale (ID: {})", contract.getSale().getId());
+            }
+
+            // 3. System notification for Admin Officer
+            if (contract.getAdminOfficer() != null) {
+                notificationService.createNotification(
+                        contract.getAdminOfficer().getAccountId(),
+                        "Hợp đồng đã ký kết",
+                        "Khách hàng đã ký hợp đồng " + contract.getContractCode() + " thành công."
+                );
+                log.info("🔔 Đã bắn thông báo ký hợp đồng cho Admin Officer (ID: {})", contract.getAdminOfficer().getId());
+            }
+        } catch (Exception e) {
+            log.error("❌ Lỗi gửi email hoặc bắn thông báo ký hợp đồng: {}", e.getMessage());
+        }
+    }
+
+    private void sendContractRevisionRequestedNotifications(Contract contract, String reason) {
+        try {
+            // 1. System notification for Sales (Sale in charge)
+            if (contract.getSale() != null) {
+                notificationService.createNotification(
+                        contract.getSale().getAccountId(),
+                        "Yêu cầu chỉnh sửa hợp đồng",
+                        "Khách hàng yêu cầu chỉnh sửa hợp đồng " + contract.getContractCode() + ". Nội dung: " + reason
+                );
+                log.info("🔔 Đã bắn thông báo yêu cầu chỉnh sửa cho Sale (ID: {})", contract.getSale().getId());
+            }
+
+            // 2. System notification for Admin Officer
+            if (contract.getAdminOfficer() != null) {
+                notificationService.createNotification(
+                        contract.getAdminOfficer().getAccountId(),
+                        "Yêu cầu chỉnh sửa hợp đồng",
+                        "Khách hàng yêu cầu chỉnh sửa hợp đồng " + contract.getContractCode() + ". Nội dung: " + reason
+                );
+                log.info("🔔 Đã bắn thông báo yêu cầu chỉnh sửa cho Admin Officer (ID: {})", contract.getAdminOfficer().getId());
+            }
+        } catch (Exception e) {
+            log.error("❌ Lỗi gửi thông báo yêu cầu chỉnh sửa hợp đồng: {}", e.getMessage());
+        }
+    }
+
     private String normalize(String value) {
         if (value == null) {
             return null;
@@ -737,8 +886,16 @@ public class ContractServiceImpl implements ContractService {
     }
 
     private void validateSalesStepAccess(Contract contract, Employee employee) {
-        if (canViewAllContracts(employee)) {
+        String roleCode = roleCode(employee);
+        if ("ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode)) {
             return;
+        }
+        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+            Long deptId = employee.getUser() != null ? employee.getUser().getDepartmentId() : null;
+            if (deptId != null && contract.getSale() != null && contract.getSale().getUser() != null
+                    && deptId.equals(contract.getSale().getUser().getDepartmentId())) {
+                return;
+            }
         }
         if (contract.getSale() == null || employee == null || !employee.getId().equals(contract.getSale().getId())) {
             throw new RuntimeException("Bạn không có quyền cập nhật hợp đồng này");
