@@ -34,6 +34,7 @@ public class QuotationController {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final OpportunityRepository opportunityRepository;
+    private final com.group3.company_management.core.repository.UserRepository userRepository;
     @GetMapping("/create/{customerId}")
     public String createPage(@PathVariable Long customerId,
                              @RequestParam(required = false) Long opportunityId,
@@ -131,12 +132,26 @@ public class QuotationController {
         QuotationResponse quotation = quotationService.getQuotationDetail(id);
         model.addAttribute("quotation", quotation);
 
-        // Lấy tên người dùng đang đăng nhập để hiển thị dưới chữ ký
         String approverName = "Ban Giám Đốc";
-        if (authentication != null) {
-            approverName = authentication.getName(); // Trả về tên tài khoản duyệt
+        
+        // 1. Lấy Tên đầy đủ của người duyệt báo giá thực tế
+        if (quotation.getApprovedBy() != null) {
+            var approvedUserOpt = userRepository.findByUsername(quotation.getApprovedBy());
+            if (approvedUserOpt.isPresent()) {
+                approverName = approvedUserOpt.get().getFullName();
+            } else {
+                approverName = quotation.getApprovedBy();
+            }
+        } else if (authentication != null) {
+            // 2. Lấy người duyệt hiện thời (nếu chưa duyệt hoặc in nháp)
+            var currentUserOpt = userRepository.findByUsername(authentication.getName());
+            if (currentUserOpt.isPresent()) {
+                approverName = currentUserOpt.get().getFullName();
+            } else {
+                approverName = authentication.getName();
+            }
         }
-        model.addAttribute("approverName", approverName);
+        model.addAttribute("approverName", approverName != null ? approverName : "Ban Giám Đốc");
 
         return "quotation/print";
     }

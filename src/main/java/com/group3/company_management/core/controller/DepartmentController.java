@@ -64,16 +64,13 @@ public class DepartmentController {
         }
         model.addAttribute("department", department);
         if(id == null){
-
             model.addAttribute(
                     "listEmployee",
                     userRepository.findAvailableEmployees(
                             List.of("SALES","ACCOUNTANT","MARKETING")
                     )
             );
-
         }else{
-
             model.addAttribute(
                     "listEmployee",
                     userRepository.findAvailableEmployeesForEdit(
@@ -81,7 +78,6 @@ public class DepartmentController {
                             List.of("SALES","ACCOUNTANT","MARKETING")
                     )
             );
-
         }
         model.addAttribute(("listManager"), userService.getUsersByRoles(List.of("ADMIN","ADMIN_OFFICER","SALES_MANAGER")));
         return "departments/form";
@@ -97,13 +93,13 @@ public class DepartmentController {
         } catch (RuntimeException e) {
             model.addAttribute("err", e.getMessage());
             model.addAttribute("department", departmentRequest);
-            model.addAttribute("listEmployee",
-                    userRepository.findAvailableEmployees(
-                            List.of(
-                                    "SALES",
-                                    "ACCOUNTANT",
-                                    "MARKETING"
-                            )));
+            if (departmentRequest.getId() == null) {
+                model.addAttribute("listEmployee",
+                        userRepository.findAvailableEmployees(List.of("SALES", "ACCOUNTANT", "MARKETING")));
+            } else {
+                model.addAttribute("listEmployee",
+                        userRepository.findAvailableEmployeesForEdit(departmentRequest.getId(), List.of("SALES", "ACCOUNTANT", "MARKETING")));
+            }
 
             model.addAttribute("listManager", userService.getUsersByRoles(List.of("ADMIN","ADMIN_OFFICER","SALES_MANAGER")));
             return "departments/form";

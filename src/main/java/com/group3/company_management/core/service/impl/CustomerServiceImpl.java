@@ -6,13 +6,21 @@ import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.dto.CustomerResponse;
 import com.group3.company_management.customer.dto.CustomerPortalResponse;
 import com.group3.company_management.core.entity.Customer;
+import com.group3.company_management.core.entity.User;
+import com.group3.company_management.core.entity.Employee;
 import com.group3.company_management.core.repository.CustomerRepository;
+import com.group3.company_management.core.repository.UserRepository;
+import com.group3.company_management.core.repository.EmployeeRepository;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Optional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +33,8 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
     
     private final CustomerRepository customerRepository;
-    // TODO: Will need ContractService and QuoteService for portal
+    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
     
     // ========== MANAGEMENT METHODS (Existing) ==========
     
@@ -33,30 +42,21 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional(readOnly = true)
     public List<CustomerResponse> getAllCustomers() {
         log.info("Fetching all customers");
-        return customerRepository.findAllByOrderByCreatedAtDesc()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return getFilteredCustomers(null);
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<CustomerResponse> getActiveCustomers() {
         log.info("Fetching active customers");
-        return customerRepository.findByCustomerStatusOrderByCreatedAtDesc("ACTIVE")
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return getFilteredCustomers("ACTIVE");
     }
     
     @Override
     @Transactional(readOnly = true)
     public List<CustomerResponse> getCustomersByStatus(String status) {
         log.info("Fetching customers by status: {}", status);
-        return customerRepository.findByCustomerStatusOrderByCreatedAtDesc(status)
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return getFilteredCustomers(status);
     }
     
     @Override
@@ -209,9 +209,73 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepository.findCustomerById(id);
     }
     @Override
-  public  void saveCustomer(Customer customer){
+    public  void saveCustomer(Customer customer){
         customerRepository.save(customer);
     }
 
+    private List<CustomerResponse> getFilteredCustomers(String status) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return List.of();
+        }
+        String username = auth.getName();
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return List.of();
+        }
+        User currentUser = userOpt.get();
 
+        // 1. ADMIN & DIRECTOR see all
+        if (currentUser.isAdmin() || "DIRECTOR".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
+            List<Customer> customers = (status != null && !status.trim().isEmpty())
+                    ? customerRepository.findByCustomerStatusOrderByCreatedAtDesc(status)
+                    : customerRepository.findAllByOrderByCreatedAtDesc();
+            return customers.stream().map(this::mapToResponse).toList();
+        }
+
+        // Find the employee representation
+        Optional<Employee> empOpt = employeeRepository.findByUser_Username(username);
+        if (empOpt.isEmpty()) {
+            return List.of();
+        }
+        Employee employee = empOpt.get();
+
+        // 2. Trưởng phòng (MANAGER / SALES_MANAGER) sees department members' customers + unassigned customers
+        if (currentUser.isManager() || "SALES_MANAGER".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
+            Long deptId = currentUser.getDepartmentId();
+            if (deptId != null) {
+                List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+                List<Long> employeeIds = new ArrayList<>();
+                for (User u : deptUsers) {
+                    if (u.getEmployee() != null) {
+                        employeeIds.add(u.getEmployee().getId());
+                    }
+                }
+                
+                List<Customer> customers;
+                if (employeeIds.isEmpty()) {
+                    customers = (status != null && !status.trim().isEmpty())
+                            ? customerRepository.findByCustomerStatusAndAssignedSalesIdIsNullOrderByCreatedAtDesc(status)
+                            : customerRepository.findByAssignedSalesIdIsNullOrderByCreatedAtDesc();
+                } else {
+                    if (status != null && !status.trim().isEmpty()) {
+                        customers = new ArrayList<>(customerRepository.findByCustomerStatusAndAssignedSalesIdInOrderByCreatedAtDesc(status, employeeIds));
+                        customers.addAll(customerRepository.findByCustomerStatusAndAssignedSalesIdIsNullOrderByCreatedAtDesc(status));
+                    } else {
+                        customers = new ArrayList<>(customerRepository.findByAssignedSalesIdInOrderByCreatedAtDesc(employeeIds));
+                        customers.addAll(customerRepository.findByAssignedSalesIdIsNullOrderByCreatedAtDesc());
+                    }
+                }
+                // Sort by createdAt desc
+                customers.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
+                return customers.stream().map(this::mapToResponse).toList();
+            }
+        }
+
+        // 3. Normal Sales rep sees only their assigned customers
+        List<Customer> customers = (status != null && !status.trim().isEmpty())
+                ? customerRepository.findByCustomerStatusAndAssignedSalesIdOrderByCreatedAtDesc(status, employee.getId())
+                : customerRepository.findByAssignedSalesIdOrderByCreatedAtDesc(employee.getId());
+        return customers.stream().map(this::mapToResponse).toList();
+    }
 }

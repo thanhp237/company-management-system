@@ -145,10 +145,18 @@ public String listUsers(
     private void prepareUserFormModel(Model model, UserRequest request, boolean isEdit) {
         model.addAttribute("userForm", request);
         model.addAttribute("roles", userService.getAllRoles());
-        model.addAttribute("departments", departmentService.getAllDepartments()
-                .stream()
-                .filter(department -> "ACTIVE".equalsIgnoreCase(department.getStatus()))
-                .toList());
+        
+        List<com.group3.company_management.core.entity.Department> allDepts = departmentService.getAllDepartments();
+        if (isEdit && request.getDepartmentId() != null) {
+            // Đảm bảo phòng ban hiện tại của nhân viên được sửa vẫn hiển thị kể cả khi nó đang tạm khóa/không hoạt động
+            model.addAttribute("departments", allDepts.stream()
+                    .filter(d -> "ACTIVE".equalsIgnoreCase(d.getStatus()) || request.getDepartmentId().equals(d.getId()))
+                    .toList());
+        } else {
+            model.addAttribute("departments", allDepts.stream()
+                    .filter(d -> "ACTIVE".equalsIgnoreCase(d.getStatus()))
+                    .toList());
+        }
         model.addAttribute("isEdit", isEdit);
     }
 }

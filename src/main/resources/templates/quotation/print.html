@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Báo giá - CompanyMS</title>
+    <!-- Thêm font chữ ký Dancing Script -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
     <style>
         /* Thiết lập khổ giấy A4 khi in */
         @page {
@@ -197,6 +199,16 @@
                 min-height: auto !important;
             }
         }
+
+        .signature-handwritten {
+            font-family: 'Dancing Script', cursive;
+            font-size: 24pt;
+            color: #000000;
+            margin: 15px 0;
+            display: inline-block;
+            transform: rotate(-3deg);
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -358,10 +370,11 @@
                 năm <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'yyyy') : '2024'}"></span>
             </div>
             <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 5px;"> Công ty Management System </div>
-            <div style="font-style: italic; color: #6b7280; font-size: 11pt; margin-bottom: 60px;">(Ký, đóng dấu)</div>
+            <div style="font-style: italic; color: #6b7280; font-size: 11pt; margin-bottom: 5px;">(Ký, đóng dấu)</div>
 
-            <!-- Hiển thị tên người phê duyệt thực tế nếu có trong DTO, nếu không thì hiển thị Ban Giám Đốc -->
-            <div style="font-weight: bold;" th:text="${quotation.approvedBy != null ? quotation.approvedBy : (approverName != null && approverName != '' ? approverName : 'admin')}">Ban Giám Đốc</div>
+            <!-- Chữ ký viết tay và Tên đầy đủ người duyệt thực tế -->
+            <div class="signature-handwritten" th:text="${approverName}">Ban Giám Đốc</div>
+            <div style="font-weight: bold;" th:text="${approverName}">Ban Giám Đốc</div>
         </div>
     </div>
 

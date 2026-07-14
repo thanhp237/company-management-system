@@ -37,6 +37,14 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
      */
     List<Customer> findByCustomerStatusOrderByCreatedAtDesc(String status);
 
+    List<Customer> findByAssignedSalesIdInOrderByCreatedAtDesc(List<Long> assignedSalesIds);
+    List<Customer> findByCustomerStatusAndAssignedSalesIdInOrderByCreatedAtDesc(String status, List<Long> assignedSalesIds);
+    List<Customer> findByAssignedSalesIdIsNullOrderByCreatedAtDesc();
+    List<Customer> findByCustomerStatusAndAssignedSalesIdIsNullOrderByCreatedAtDesc(String status);
+
+    List<Customer> findByAssignedSalesIdOrderByCreatedAtDesc(Long assignedSalesId);
+    List<Customer> findByCustomerStatusAndAssignedSalesIdOrderByCreatedAtDesc(String status, Long assignedSalesId);
+
     long countByCustomerStatusIgnoreCase(String status);
 
     long countByAssignedSalesId(Long assignedSalesId);

@@ -25,6 +25,7 @@ public class InvoiceController {
 
     private final InvoiceService invoiceService;
     private final ContractRepository contractRepository;
+    private final com.group3.company_management.core.repository.UserRepository userRepository;
 
 
     @GetMapping
@@ -368,9 +369,31 @@ public class InvoiceController {
         model.addAttribute("paidPreviously", paidPreviously);
         model.addAttribute("remainingAmount", remainingAmount);
 
-        // Lấy tên người duyệt báo giá hoặc mặc định để làm chữ ký
-        String approverName = invoice.getContract().getQuotation() != null ? invoice.getContract().getQuotation().getApprovedBy() : "admin";
-        model.addAttribute("approverName", approverName != null ? approverName : "admin");
+        // Lấy tên kế toán phụ trách (ưu tiên người tạo hóa đơn, tiếp theo là Kế toán/Hành chính phụ trách hợp đồng)
+        String accountantName = null;
+        if (invoice.getCreatedBy() != null) {
+            var creatorOpt = userRepository.findById(invoice.getCreatedBy());
+            if (creatorOpt.isPresent()) {
+                accountantName = creatorOpt.get().getFullName();
+            }
+        }
+        if ((accountantName == null || accountantName.isBlank()) 
+                && invoice.getContract() != null && invoice.getContract().getAdminOfficer() != null) {
+            com.group3.company_management.core.entity.Employee adminOfficer = invoice.getContract().getAdminOfficer();
+            if (adminOfficer.getUser() != null) {
+                accountantName = adminOfficer.getUser().getFullName();
+            }
+        }
+        if (accountantName == null || accountantName.isBlank()) {
+            String approver = invoice.getContract().getQuotation() != null ? invoice.getContract().getQuotation().getApprovedBy() : "admin";
+            if (approver != null) {
+                var approverUserOpt = userRepository.findByUsername(approver);
+                accountantName = approverUserOpt.map(com.group3.company_management.core.entity.User::getFullName).orElse(approver);
+            } else {
+                accountantName = "Người phụ trách";
+            }
+        }
+        model.addAttribute("approverName", accountantName);
 
         return "Invoice/print";
     }

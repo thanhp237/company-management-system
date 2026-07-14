@@ -218,7 +218,10 @@
                     <ul class="pagination-list" th:if="${customerPage.totalPages > 1}">
                         <!-- Nút Trang trước -->
                         <li th:classappend="${customerPage.first} ? 'disabled'">
-                            <a th:href="@{/customer(page=${currentPage - 1}, size=${size}, status=${currentStatus}, sort=${currentSort})}" aria-label="Previous">
+                            <a th:if="${customerPage.first}" href="#" aria-label="Previous">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                            <a th:if="${!customerPage.first}" th:href="@{/customer(page=${currentPage - 1}, size=${size}, status=${currentStatus}, sort=${currentSort})}" aria-label="Previous">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         </li>
@@ -231,7 +234,10 @@
 
                         <!-- Nút Trang sau -->
                         <li th:classappend="${customerPage.last} ? 'disabled'">
-                            <a th:href="@{/customer(page=${currentPage + 1}, size=${size}, status=${currentStatus}, sort=${currentSort})}" aria-label="Next">
+                            <a th:if="${customerPage.last}" href="#" aria-label="Next">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a th:if="${!customerPage.last}" th:href="@{/customer(page=${currentPage + 1}, size=${size}, status=${currentStatus}, sort=${currentSort})}" aria-label="Next">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>

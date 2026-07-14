@@ -42,7 +42,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 .map(this::toResponse);
     }
     @Override
-   public DepartmentRequest getDepartmentById(Long id){
+    public DepartmentRequest getDepartmentById(Long id){
         Department department=  departmentRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() ->  new RuntimeException("Department not found"));
         DepartmentRequest departmentRequest = new DepartmentRequest();
         departmentRequest.setId(department.getId());
@@ -54,6 +54,12 @@ public class DepartmentServiceImpl implements DepartmentService {
         departmentRequest.setMaxMembers(department.getMaxMembers());
         departmentRequest.setManagerName(userRepository.getNameUserById(departmentRequest.getManagerId()));
         departmentRequest.setEmployees(userService.getUsersByRoles(List.of("SALES","ACCOUNTANT","MARKETING")));
+        
+        // Lấy danh sách ID nhân viên hiện tại của phòng ban để hiển thị checked
+        List<User> currentUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(department.getId());
+        List<Long> currentEmployeeIds = currentUsers.stream().map(User::getId).collect(Collectors.toList());
+        departmentRequest.setEmployeeIds(currentEmployeeIds);
+
         return  departmentRequest;
     }
 
@@ -139,6 +145,14 @@ public class DepartmentServiceImpl implements DepartmentService {
             }
 
             userRepository.saveAll(users);
+        }
+
+        // Đảm bảo Quản lý của phòng ban luôn có departmentId khớp với phòng ban này
+        if (savedDepartment.getManagerId() != null) {
+            userRepository.findById(savedDepartment.getManagerId()).ifPresent(managerUser -> {
+                managerUser.setDepartmentId(savedDepartment.getId());
+                userRepository.save(managerUser);
+            });
         }
     }
 

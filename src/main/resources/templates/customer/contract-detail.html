@@ -141,6 +141,9 @@
         <div th:if="${param.signed != null}" class="alert alert-success">
             Hợp đồng đã được ký thành công.
         </div>
+        <div th:if="${param.revisionRequested != null}" class="alert alert-success">
+            Yêu cầu chỉnh sửa hợp đồng đã được gửi thành công.
+        </div>
         <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
             Có lỗi xảy ra.
         </div>

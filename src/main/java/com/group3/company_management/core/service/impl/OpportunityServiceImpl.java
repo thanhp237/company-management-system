@@ -75,12 +75,12 @@ public class OpportunityServiceImpl implements OpportunityService {
         String normalizedKeyword = normalizeKeyword(keyword);
         String normalizedStage = normalizeStageFilter(stage);
         User currentUser = findCurrentUser(username);
-        String assignedUsername = canViewAll(currentUser) ? null : username;
+        List<String> usernames = getAccessibleUsernames(currentUser);
 
         return opportunityRepository.searchPipeline(
                 normalizedKeyword,
                 normalizedStage,
-                assignedUsername,
+                usernames,
                 pageable
         );
     }
@@ -98,11 +98,15 @@ public class OpportunityServiceImpl implements OpportunityService {
     @Transactional(readOnly = true)
     public Map<String, Long> getStageCounts(String username) {
         User currentUser = findCurrentUser(username);
+        List<String> usernames = getAccessibleUsernames(currentUser);
         Map<String, Long> counts = new LinkedHashMap<>();
         for (String stage : STAGES) {
-            long count = canViewAll(currentUser)
-                    ? opportunityRepository.countByStage(stage)
-                    : opportunityRepository.countByStageAndAssignedToUsername(stage, username);
+            long count;
+            if (usernames == null) {
+                count = opportunityRepository.countByStage(stage);
+            } else {
+                count = opportunityRepository.countByStageAndAssignedToUsernameIn(stage, usernames);
+            }
             counts.put(stage, count);
         }
         return counts;
@@ -295,13 +299,33 @@ public class OpportunityServiceImpl implements OpportunityService {
     }
 
     private void validateAccess(Opportunity opportunity, User user) {
-        if (canViewAll(user)) {
+        List<String> usernames = getAccessibleUsernames(user);
+        if (usernames == null) {
             return;
         }
         if (opportunity.getAssignedTo() == null ||
-                !user.getUsername().equals(opportunity.getAssignedTo().getUsername())) {
+                !usernames.contains(opportunity.getAssignedTo().getUsername())) {
             throw new IllegalArgumentException("Bạn không có quyền truy cập cơ hội này");
         }
+    }
+
+    private List<String> getAccessibleUsernames(User currentUser) {
+        // 1. ADMIN & DIRECTOR see all
+        if (currentUser.isAdmin() || "DIRECTOR".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
+            return null; // null triggers full view in search query
+        }
+
+        // 2. Trưởng phòng (MANAGER / SALES_MANAGER) sees department members
+        if (currentUser.isManager() || "SALES_MANAGER".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
+            Long deptId = currentUser.getDepartmentId();
+            if (deptId != null) {
+                List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+                return deptUsers.stream().map(User::getUsername).toList();
+            }
+        }
+
+        // 3. Normal Sales rep sees only their own
+        return List.of(currentUser.getUsername());
     }
     private int calculateBudgetScore(Opportunity opportunity) {
         if (opportunity.getExpectedAmount() == null) {
