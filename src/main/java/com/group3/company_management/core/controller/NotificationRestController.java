@@ -28,12 +28,12 @@ public class NotificationRestController {
         List<Notification> allNoti = notificationService.getNotificationsByUsername(username);
         long unreadCount = notificationService.getUnreadCount(username);
         
-        // Chỉ lấy tối đa 5 cái mới nhất để hiển thị nhanh ở dropdown chuông
-        List<Notification> top5 = allNoti.stream().limit(5).toList();
+        // Chỉ lấy tối đa 10 cái mới nhất để hiển thị nhanh ở dropdown chuông
+        List<Notification> top10 = allNoti.stream().limit(10).toList();
 
         Map<String, Object> response = new HashMap<>();
         response.put("unreadCount", unreadCount);
-        response.put("notifications", top5);
+        response.put("notifications", top10);
         return ResponseEntity.ok(response);
     }
 
@@ -48,11 +48,11 @@ public class NotificationRestController {
                 .map(customer -> {
                     List<Notification> allNoti = notificationService.getNotificationsByCustomerId(customer.getId());
                     long unreadCount = notificationService.getUnreadCountByCustomerId(customer.getId());
-                    List<Notification> top5 = allNoti.stream().limit(5).toList();
+                    List<Notification> top10 = allNoti.stream().limit(10).toList();
 
                     Map<String, Object> response = new HashMap<>();
                     response.put("unreadCount", unreadCount);
-                    response.put("notifications", top5);
+                    response.put("notifications", top10);
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.ok(Map.of("unreadCount", 0, "notifications", List.of())));

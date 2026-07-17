@@ -9,6 +9,7 @@ import com.group3.company_management.core.entity.CustomerActivity;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.repository.OpportunityRepository;
+import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.service.CustomerActivityService;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,16 +30,17 @@ import java.util.List;
 @Slf4j
 @PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')")
 public class CustomerController {
-
+    private final QuotationRepository quotationRepository;
     private final CustomerService customerService;
     private final CustomerActivityService activityService;
     private final OpportunityRepository opportunityRepository;
 
     @Autowired
-    public CustomerController(CustomerService customerService, CustomerActivityService activityService, OpportunityRepository opportunityRepository) {
+    public CustomerController(CustomerService customerService,QuotationRepository quotationRepository, CustomerActivityService activityService, OpportunityRepository opportunityRepository) {
         this.customerService = customerService;
         this.activityService = activityService;
         this.opportunityRepository = opportunityRepository;
+        this.quotationRepository=quotationRepository;
     }
 
     /**
@@ -88,6 +90,7 @@ public class CustomerController {
                 .findFirst()
                 .orElse(null);
         model.addAttribute("customer", customer);
+        model.addAttribute("existsQuotation", quotationRepository.existsByCustomerId(id));
         model.addAttribute("activities", activities);
         model.addAttribute("activityCount", activities.size());
         model.addAttribute("latestOpportunity", latestOpportunity);

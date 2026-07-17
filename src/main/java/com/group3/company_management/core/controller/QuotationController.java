@@ -5,10 +5,7 @@ import com.group3.company_management.core.dto.QuotationRequest;
 import com.group3.company_management.core.dto.QuotationResponse;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Product;
-import com.group3.company_management.core.repository.CustomerRepository;
-import com.group3.company_management.core.repository.OpportunityRepository;
-import com.group3.company_management.core.repository.ProductRepository;
-import com.group3.company_management.core.repository.VoucherRepository;
+import com.group3.company_management.core.repository.*;
 import com.group3.company_management.core.service.QuotationService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,7 +31,7 @@ public class QuotationController {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final OpportunityRepository opportunityRepository;
-    private final com.group3.company_management.core.repository.UserRepository userRepository;
+    private final UserRepository userRepository;
     @GetMapping("/create/{customerId}")
     public String createPage(@PathVariable Long customerId,
                              @RequestParam(required = false) Long opportunityId,

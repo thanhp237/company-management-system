@@ -59,7 +59,7 @@
                     <a sec:authorize="hasRole('MARKETING')"
                        href="/customer"
                        data-nav-match="/customer">Nhập khách hàng tiềm năng</a>
-                    <a sec:authorize="hasAnyRole('MANAGER','SALES_MANAGER','ADMIN')"
+                    <a sec:authorize="hasRole('ADMIN')"
                        href="/customer"
                        data-nav-match="/customer">Nhập dữ liệu & phân bổ</a>
                     <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
@@ -94,7 +94,7 @@
             </div>
 
             <a class="sidebar-link"
-               sec:authorize="hasAnyRole('MANAGER','SALES_MANAGER','ADMIN')"
+               sec:authorize="hasRole('ADMIN')"
                href="/products"
                data-nav-match="/products">
                 <i class="fas fa-box"></i>

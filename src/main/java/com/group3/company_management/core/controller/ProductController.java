@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
-@PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'ADMIN')")
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {

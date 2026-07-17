@@ -20,7 +20,6 @@ public class QuotationRequest {
     private String status;
     private String quotationCode;
     private BigDecimal discountAmount;
-
     private Long employeeId;
     private List<QuotationDetailRequest> details;
 }

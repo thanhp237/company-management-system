@@ -28,19 +28,7 @@ public class ChangePasswordController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/login-success")
-    public String loginSuccess(Authentication authentication) {
 
-        User user = userRepository
-                .findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
-
-        if (Boolean.TRUE.equals(user.getFirstLogin())) {
-            return "redirect:/first-change-password";
-        }
-
-        return "redirect:/dashboard";
-    }
     @GetMapping("/first-change-password")
     public String showFirstChangePasswordForm(Model model) {
         model.addAttribute("changePassword", new ChangePasswordDTO());
@@ -85,7 +73,7 @@ public class ChangePasswordController {
 
             changePasswordService.changePasswordInSettings(username, dto);
 
-            return "redirect:/dashboard/settings";
+            return "redirect:/dashboard";
 
         } catch (RuntimeException e) {
             model.addAttribute("error", e.getMessage());

@@ -5,13 +5,28 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Handle login/logout pages and redirects
  */
 @Controller
 public class LoginController {
+
     
+    /**
+     * GET /
+     * Redirect root to dashboard or login
+     */
+    @GetMapping("/auth")
+    public String redirectRoot(Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            return "redirect:/dashboard";
+        }
+        return "redirect:/login";
+    }
+
     /**
      * GET /login
      * Display login page
@@ -41,27 +56,12 @@ public class LoginController {
         
         return "auth/login"; // customuserdetailsservice will get the username and password from the form and authenticate before redirecting to LoginController
     }
-    
-    /**
-     * GET /
-     * Redirect root to dashboard or login
-     */
-    @GetMapping("/auth")
-    public String redirectRoot(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
-            return "redirect:/dashboard";
-        }
-        return "redirect:/login";
-    }
-    
-    /**
-     * GET /forgot-password
-     * Display forgot password page (placeholder)
-     * Combined with future implementation of password reset/change functionality
-     */
+
     @GetMapping("/forgot-password")
     public String showForgotPasswordPage(Model model) {
         model.addAttribute("title", "Quên mật khẩu");
         return "auth/forgot-password";
     }
+    
+
 }

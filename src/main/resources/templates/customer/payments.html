@@ -48,6 +48,12 @@
                             <button class="btn btn-primary" type="submit">Thanh toán VNPAY</button>
                         </form>
                     </td>
+                    <td>
+                        <a th:href="@{/invoices/detail/{id}(id=${invoice.id})}"
+                           style="text-decoration: none; color: #2563eb; font-weight: 700;">
+                           Detail
+                        </a>
+                    </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(invoices)}"><td colspan="6">Chưa có hóa đơn.</td></tr>
                 </tbody>

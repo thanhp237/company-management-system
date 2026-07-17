@@ -15,4 +15,5 @@ public interface QuotationRepository extends JpaRepository<Quotation, Long> {
     long countByStatusIgnoreCase(String status);
 
     long countByEmployeeIdAndStatusIgnoreCase(Long employeeId, String status);
+    Boolean existsByCustomerId(Long id);
 }

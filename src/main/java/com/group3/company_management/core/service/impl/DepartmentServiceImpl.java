@@ -33,14 +33,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         this.userService = userService;
     }
 
-    @Override
 
-    public Page<DepartmentResponse> getAllDerpartment(Pageable pageable) {
-
-
-        return departmentRepository.findAll(pageable)
-                .map(this::toResponse);
-    }
     @Override
     public DepartmentRequest getDepartmentById(Long id){
         Department department=  departmentRepository.findByIdAndIsDeletedFalse(id).orElseThrow(() ->  new RuntimeException("Department not found"));
@@ -53,10 +46,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         departmentRequest.setStatus(department.getStatus());
         departmentRequest.setMaxMembers(department.getMaxMembers());
         departmentRequest.setManagerName(userRepository.getNameUserById(departmentRequest.getManagerId()));
-        departmentRequest.setEmployees(userService.getUsersByRoles(List.of("SALES","ACCOUNTANT","MARKETING")));
-        
-        // Lấy danh sách ID nhân viên hiện tại của phòng ban để hiển thị checked
         List<User> currentUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(department.getId());
+        departmentRequest.setEmployees(currentUsers);
         List<Long> currentEmployeeIds = currentUsers.stream().map(User::getId).collect(Collectors.toList());
         departmentRequest.setEmployeeIds(currentEmployeeIds);
 
@@ -82,8 +73,8 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (departmentRequest.getMaxMembers() == null || departmentRequest.getMaxMembers() <= 0) {
             throw new RuntimeException("Số lượng tối đa phải lớn hơn 0");
         }
-        if (departmentRequest.getEmployees() != null
-                && departmentRequest.getEmployees().size() > departmentRequest.getMaxMembers()) {
+        if (departmentRequest.getEmployeeIds() != null
+                && departmentRequest.getEmployeeIds().size() > departmentRequest.getMaxMembers()) {
 
             throw new RuntimeException("Số nhân viên được chọn vượt quá số lượng tối đa.");
         }
@@ -147,7 +138,6 @@ public class DepartmentServiceImpl implements DepartmentService {
             userRepository.saveAll(users);
         }
 
-        // Đảm bảo Quản lý của phòng ban luôn có departmentId khớp với phòng ban này
         if (savedDepartment.getManagerId() != null) {
             userRepository.findById(savedDepartment.getManagerId()).ifPresent(managerUser -> {
                 managerUser.setDepartmentId(savedDepartment.getId());
@@ -159,10 +149,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional
     public void deleteDepartment(Long id, String username) {
-
-
-
-
 
             Department department = departmentRepository
                     .findByIdAndIsDeletedFalse(id)
@@ -212,11 +198,6 @@ public class DepartmentServiceImpl implements DepartmentService {
         int soEmployee = userRepository.countByDepartmentIdAndIsDeletedFalse(department.getId());
         DepartmentResponse response=DepartmentResponse.fromEntity(department,name,soEmployee);
         return response;
-    }
-    private String nameDepartment(Long id){
-
-        return userRepository.getNameUserById(id);
-
     }
 
 

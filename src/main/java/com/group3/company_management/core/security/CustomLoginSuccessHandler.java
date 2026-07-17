@@ -32,7 +32,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
 
-        // FIRST LOGIN CHECK (giữ nguyên logic cũ)
+
         if (Boolean.TRUE.equals(user.getFirstLogin())) {
             response.sendRedirect("/first-change-password");
             return;

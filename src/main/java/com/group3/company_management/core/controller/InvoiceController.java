@@ -19,7 +19,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/invoices")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
+@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN','CUSTOMER')")
 
 public class InvoiceController {
 
@@ -278,9 +278,19 @@ public class InvoiceController {
     }
 
     @GetMapping("/detail/{id}")
-    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
-    public String detail(@PathVariable Long id, Model model) {
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN','CUSTOMER')")
+    public String detail(@PathVariable Long id, Model model, org.springframework.security.core.Authentication authentication) {
         Invoice invoice = invoiceService.getInvoiceById(id);
+        
+        if (authentication != null && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"))) {
+            com.group3.company_management.core.entity.Customer customer = (com.group3.company_management.core.entity.Customer) authentication.getPrincipal();
+            if (invoice.getContract().getCustomer() == null || !customer.getId().equals(invoice.getContract().getCustomer().getId())) {
+                throw new RuntimeException("Bạn không có quyền xem hóa đơn này.");
+            }
+            if (invoice.getStatus() == Invoice.InvoiceStatus.DRAFT) {
+                throw new RuntimeException("Hóa đơn chưa sẵn sàng (Bản nháp).");
+            }
+        }
         model.addAttribute("invoice", invoice);
         BigDecimal totalContractAmount = invoice.getContract().getFinalAmount();
         BigDecimal paidPreviously = BigDecimal.ZERO;
@@ -329,7 +339,7 @@ public class InvoiceController {
         return "redirect:/invoices";
     }
     @GetMapping("/print/{id}")
-    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN', 'CUSTOMER')")
     public String print(@PathVariable Long id, Model model) {
         Invoice invoice = invoiceService.getInvoiceById(id);
         model.addAttribute("invoice", invoice);

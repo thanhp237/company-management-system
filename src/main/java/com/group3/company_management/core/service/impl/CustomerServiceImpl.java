@@ -240,34 +240,31 @@ public class CustomerServiceImpl implements CustomerService {
         }
         Employee employee = empOpt.get();
 
-        // 2. Trưởng phòng (MANAGER / SALES_MANAGER) sees department members' customers + unassigned customers
+        // 2. Trưởng phòng (MANAGER / SALES_MANAGER) sees department members' customers (excluding manager role and unassigned)
         if (currentUser.isManager() || "SALES_MANAGER".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
             Long deptId = currentUser.getDepartmentId();
             if (deptId != null) {
                 List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
                 List<Long> employeeIds = new ArrayList<>();
                 for (User u : deptUsers) {
-                    if (u.getEmployee() != null) {
+                    if (u.getEmployee() != null && 
+                        !"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
+                        !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
+                        !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode())) {
                         employeeIds.add(u.getEmployee().getId());
                     }
                 }
                 
                 List<Customer> customers;
                 if (employeeIds.isEmpty()) {
-                    customers = (status != null && !status.trim().isEmpty())
-                            ? customerRepository.findByCustomerStatusAndAssignedSalesIdIsNullOrderByCreatedAtDesc(status)
-                            : customerRepository.findByAssignedSalesIdIsNullOrderByCreatedAtDesc();
+                    customers = List.of();
                 } else {
                     if (status != null && !status.trim().isEmpty()) {
-                        customers = new ArrayList<>(customerRepository.findByCustomerStatusAndAssignedSalesIdInOrderByCreatedAtDesc(status, employeeIds));
-                        customers.addAll(customerRepository.findByCustomerStatusAndAssignedSalesIdIsNullOrderByCreatedAtDesc(status));
+                        customers = customerRepository.findByCustomerStatusAndAssignedSalesIdInOrderByCreatedAtDesc(status, employeeIds);
                     } else {
-                        customers = new ArrayList<>(customerRepository.findByAssignedSalesIdInOrderByCreatedAtDesc(employeeIds));
-                        customers.addAll(customerRepository.findByAssignedSalesIdIsNullOrderByCreatedAtDesc());
+                        customers = customerRepository.findByAssignedSalesIdInOrderByCreatedAtDesc(employeeIds);
                     }
                 }
-                // Sort by createdAt desc
-                customers.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
                 return customers.stream().map(this::mapToResponse).toList();
             }
         }

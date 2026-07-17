@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 @Service
 public interface DepartmentService {
-       public Page<DepartmentResponse> getAllDerpartment(Pageable pageable);
+
         DepartmentRequest getDepartmentById(Long id);
        void saveDepartment(DepartmentRequest departmentRequest,String name);
     void deleteDepartment(Long id, String username);

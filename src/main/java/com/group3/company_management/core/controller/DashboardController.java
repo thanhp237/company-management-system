@@ -59,6 +59,11 @@ public class DashboardController {
         return "redirect:" + dashboardUrl(authentication);
     }
 
+    @GetMapping("/settings")
+    public String settings() {
+        return "dashboard/settings";
+    }
+
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public String adminDashboard(Authentication authentication, Model model) {
@@ -193,12 +198,43 @@ public class DashboardController {
                     card("Hợp đồng", number(employeeId == null ? 0 : contractRepository.countBySaleId(employeeId)), "Hợp đồng phụ trách", "fa-file-contract", "warning"),
                     card("Lịch hẹn", number(appointmentRepository.countByEmployeeUsername(username)), "Cuộc hẹn cần theo dõi", "fa-calendar-check", "danger")
             );
-            case "SALES_MANAGER" -> List.of(
-                    card("Quy trình nhóm", number(opportunityRepository.count()), "Cơ hội toàn đội", "fa-chart-column", "success"),
-                    card("Thương vụ thắng", number(opportunityRepository.countByStage("WON")), "Cơ hội đã thắng", "fa-trophy", "info"),
-                    card("Hợp đồng", number(contractRepository.count()), "Tiến độ ký kết", "fa-file-signature", "warning"),
-                    card("Chờ thẩm định", number(contractRepository.countByStatus(Contract.ContractStatus.PENDING_ADMIN_OFFICER)), "Hợp đồng chờ thẩm định", "fa-hourglass-half", "danger")
-            );
+            case "SALES_MANAGER" -> {
+                if (user.getDepartmentId() != null) {
+                    List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(user.getDepartmentId());
+                    List<String> deptUsernames = deptUsers.stream()
+                            .filter(u -> !"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
+                                         !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
+                                         !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode()))
+                            .map(User::getUsername)
+                            .toList();
+                    List<Long> deptEmployeeIds = deptUsers.stream()
+                            .filter(u -> !"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
+                                         !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
+                                         !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode()))
+                            .map(u -> u.getEmployee() != null ? u.getEmployee().getId() : null)
+                            .filter(java.util.Objects::nonNull)
+                            .toList();
+
+                    long oppCount = deptUsernames.isEmpty() ? 0 : opportunityRepository.countByAssignedToUsernameIn(deptUsernames);
+                    long wonCount = deptUsernames.isEmpty() ? 0 : opportunityRepository.countByStageAndAssignedToUsernameIn("WON", deptUsernames);
+                    long contractCountVal = deptEmployeeIds.isEmpty() ? 0 : contractRepository.countBySaleIdIn(deptEmployeeIds);
+                    long pendingContracts = deptEmployeeIds.isEmpty() ? 0 : contractRepository.countBySaleIdInAndStatus(deptEmployeeIds, Contract.ContractStatus.PENDING_ADMIN_OFFICER);
+
+                    yield List.of(
+                            card("Quy trình nhóm", number(oppCount), "Cơ hội của nhân viên trong phòng ban", "fa-chart-column", "success"),
+                            card("Thương vụ thắng", number(wonCount), "Cơ hội đã thắng", "fa-trophy", "info"),
+                            card("Hợp đồng", number(contractCountVal), "Tiến độ ký kết", "fa-file-signature", "warning"),
+                            card("Chờ thẩm định", number(pendingContracts), "Hợp đồng chờ thẩm định", "fa-hourglass-half", "danger")
+                    );
+                } else {
+                    yield List.of(
+                            card("Quy trình nhóm", "0", "Cơ hội của nhân viên trong phòng ban", "fa-chart-column", "success"),
+                            card("Thương vụ thắng", "0", "Cơ hội đã thắng", "fa-trophy", "info"),
+                            card("Hợp đồng", "0", "Tiến độ ký kết", "fa-file-signature", "warning"),
+                            card("Chờ thẩm định", "0", "Hợp đồng chờ thẩm định", "fa-hourglass-half", "danger")
+                    );
+                }
+            }
             case "ADMIN_OFFICER" -> List.of(
                     card("Chờ thẩm định", number(contractRepository.countByStatus(Contract.ContractStatus.PENDING_ADMIN_OFFICER)), "Hợp đồng chờ xử lý", "fa-clipboard-check", "warning"),
                     card("Đã rà soát", number(employeeId == null ? 0 : contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.ADMIN_REVIEWED)), "Hồ sơ đã xử lý bởi bạn", "fa-scale-balanced", "success"),

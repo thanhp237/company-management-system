@@ -40,6 +40,29 @@ public class AppointmentServiceImpl implements AppointmentService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
         
+        if (user.isManager() || "SALES_MANAGER".equalsIgnoreCase(user.getRole().getRoleCode())) {
+            Long deptId = user.getDepartmentId();
+            if (deptId != null) {
+                List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+                List<Long> deptUserIds = new java.util.ArrayList<>();
+                for (User u : deptUsers) {
+                    if (!"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
+                        !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
+                        !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode())) {
+                        deptUserIds.add(u.getId());
+                    }
+                }
+                if (deptUserIds.isEmpty()) {
+                    return List.of();
+                }
+                return appointmentRepository.findByEmployeeIdInOrderByAppointmentTimeAsc(deptUserIds)
+                        .stream()
+                        .map(AppointmentResponse::fromEntity)
+                        .toList();
+            }
+            return List.of();
+        }
+
         return appointmentRepository.findByEmployeeIdOrderByAppointmentTimeAsc(user.getId())
                 .stream()
                 .map(AppointmentResponse::fromEntity)

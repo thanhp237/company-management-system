@@ -179,7 +179,12 @@ public class CustomerPortalController {
         
         model.addAttribute("title", "Lịch sử thanh toán");
         model.addAttribute("customer", customer);
-        model.addAttribute("invoices", invoiceRepository.findByContractCustomerIdOrderByCreatedAtDesc(customer.getId()));
+        
+        java.util.List<com.group3.company_management.core.entity.Invoice> invoices = invoiceRepository.findByContractCustomerIdOrderByCreatedAtDesc(customer.getId())
+                .stream()
+                .filter(inv -> inv.getStatus() != com.group3.company_management.core.entity.Invoice.InvoiceStatus.DRAFT)
+                .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("invoices", invoices);
         
         log.info("✅ Customer payments page accessed: {}", customer.getEmail());
         return "customer/payments";
