@@ -7,17 +7,23 @@ import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.dto.CustomerResponse;
 import com.group3.company_management.core.entity.CustomerActivity;
 import com.group3.company_management.core.entity.Customer;
+import com.group3.company_management.core.entity.Contract;
+import com.group3.company_management.core.entity.Invoice;
 import com.group3.company_management.core.entity.Opportunity;
+import com.group3.company_management.core.repository.ContractRepository;
+import com.group3.company_management.core.repository.InvoiceRepository;
 import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.service.CustomerActivityService;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -27,18 +33,26 @@ import java.util.List;
 @Controller
 @RequestMapping("/customers")
 @Slf4j
-@PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')")
+@PreAuthorize("hasAnyRole('MARKETING', 'SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN', 'ADMIN_OFFICER', 'ADMINOFFICER', 'ACCOUNTANT', 'DIRECTOR')")
 public class CustomerController {
 
     private final CustomerService customerService;
     private final CustomerActivityService activityService;
     private final OpportunityRepository opportunityRepository;
+    private final ContractRepository contractRepository;
+    private final InvoiceRepository invoiceRepository;
 
     @Autowired
-    public CustomerController(CustomerService customerService, CustomerActivityService activityService, OpportunityRepository opportunityRepository) {
+    public CustomerController(CustomerService customerService,
+                              CustomerActivityService activityService,
+                              OpportunityRepository opportunityRepository,
+                              ContractRepository contractRepository,
+                              InvoiceRepository invoiceRepository) {
         this.customerService = customerService;
         this.activityService = activityService;
         this.opportunityRepository = opportunityRepository;
+        this.contractRepository = contractRepository;
+        this.invoiceRepository = invoiceRepository;
     }
 
     /**
@@ -47,7 +61,9 @@ public class CustomerController {
      * Same pattern as UserController.listUsers()
      */
     @GetMapping
-    public String listCustomers(@RequestParam(required = false) String status, Model model) {
+    public String listCustomers(@RequestParam(required = false) String status,
+                                Authentication authentication,
+                                Model model) {
         log.info("Listing customers with status filter: {}", status);
         
         // Get customers based on status filter
@@ -60,6 +76,7 @@ public class CustomerController {
         }
         
         model.addAttribute("customers", customers);
+        addPermissionFlags(model, authentication);
         return "customers/list";
     }
 
@@ -69,6 +86,7 @@ public class CustomerController {
      * Same pattern as UserController.showAddForm()
      */
     @GetMapping("/add")
+    @PreAuthorize("hasAnyRole('MARKETING', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String showAddForm(@RequestParam(required = false) Long id, Model model) {
         log.info("Showing add/edit form for customer ID: {}", id);
         
@@ -78,11 +96,15 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public String detailCustomer(@PathVariable Long id, Model model) {
+    public String detailCustomer(@PathVariable Long id,
+                                 Authentication authentication,
+                                 Model model) {
         log.info("Showing detail for customer ID: {}", id);
 
         CustomerResponse customer = customerService.getCustomerById(id);
         List<CustomerActivity> activities = activityService.getActivitiesByCustomerId(id);
+        List<Contract> contracts = contractRepository.findByCustomerIdOrderByCreatedAtDesc(id);
+        List<Invoice> invoices = invoiceRepository.findByContractCustomerIdOrderByCreatedAtDesc(id);
         Opportunity latestOpportunity = opportunityRepository.findByCustomerIdOrderByUpdatedAtDesc(id)
                 .stream()
                 .findFirst()
@@ -90,8 +112,28 @@ public class CustomerController {
         model.addAttribute("customer", customer);
         model.addAttribute("activities", activities);
         model.addAttribute("activityCount", activities.size());
+        model.addAttribute("contracts", contracts);
+        model.addAttribute("invoices", invoices);
+        model.addAttribute("contractCount", contracts.size());
+        model.addAttribute("signedContractCount", contracts.stream().filter(contract -> Contract.ContractStatus.SIGNED.equals(contract.getStatus())).count());
+        model.addAttribute("invoiceCount", invoices.size());
+        model.addAttribute("draftInvoiceCount", invoices.stream().filter(invoice -> Invoice.InvoiceStatus.DRAFT.equals(invoice.getStatus())).count());
+        model.addAttribute("issuedInvoiceCount", invoices.stream().filter(invoice -> Invoice.InvoiceStatus.ISSUED.equals(invoice.getStatus())).count());
+        model.addAttribute("paidInvoiceCount", invoices.stream().filter(invoice -> Invoice.InvoiceStatus.PAID.equals(invoice.getStatus())).count());
+        model.addAttribute("totalInvoiceAmount", sumInvoices(invoices, null));
+        model.addAttribute("issuedInvoiceAmount", sumInvoices(invoices, Invoice.InvoiceStatus.ISSUED));
+        model.addAttribute("paidInvoiceAmount", invoices.stream()
+                .map(invoice -> value(invoice.getPaidAmount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
+        model.addAttribute("outstandingInvoiceAmount", invoices.stream()
+                .map(invoice -> value(invoice.getOutstandingAmount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add));
         model.addAttribute("latestOpportunity", latestOpportunity);
-        model.addAttribute("canAddInteraction", latestOpportunity == null || !isClosedStage(latestOpportunity.getStage()));
+        addPermissionFlags(model, authentication);
+        model.addAttribute("reportTitle", reportTitle(authentication));
+        model.addAttribute("reportSubtitle", reportSubtitle(authentication));
+        model.addAttribute("canAddInteraction", canUseInteraction(authentication)
+                && (latestOpportunity == null || !isClosedStage(latestOpportunity.getStage())));
         return "customers/detail";
     }
 
@@ -101,6 +143,7 @@ public class CustomerController {
      * Same pattern as UserController.deleteUser()
      */
     @GetMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('MARKETING', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String deleteCustomer(@PathVariable Long id) {
         log.info("Deleting customer with ID: {}", id);
         
@@ -119,6 +162,7 @@ public class CustomerController {
      * Same pattern as UserController.saveUser()
      */
     @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('MARKETING', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String saveCustomer(@ModelAttribute("customerForm") CustomerRequest request, Model model) {
         log.info("Saving new customer: {}", request.getFullName());
         
@@ -139,6 +183,7 @@ public class CustomerController {
      * Same pattern as UserController.updateUser()
      */
     @PostMapping("/update")
+    @PreAuthorize("hasAnyRole('MARKETING', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String updateCustomer(@ModelAttribute("customerForm") CustomerRequest request, Model model) {
         log.info("Updating customer with ID: {}", request.getId());
         
@@ -159,6 +204,7 @@ public class CustomerController {
      * Same pattern as UserController.updateStatus()
      */
     @PostMapping("/update-status")
+    @PreAuthorize("hasAnyRole('MARKETING', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String updateCustomerStatus(@ModelAttribute CustomerRequest request) {
         log.info("Updating customer status - ID: {}, Status: {}", request.getId(), request.getCustomerStatus());
         
@@ -194,6 +240,76 @@ public class CustomerController {
         }
         String normalized = stage.trim().toUpperCase();
         return "WON".equals(normalized) || "LOST".equals(normalized);
+    }
+
+    private void addPermissionFlags(Model model, Authentication authentication) {
+        model.addAttribute("canManageCustomer", hasAnyRole(authentication, "MARKETING", "SALES_MANAGER", "MANAGER", "ADMIN"));
+        model.addAttribute("canCreateQuotation", hasAnyRole(authentication, "SALES", "SALES_MANAGER", "MANAGER", "ADMIN"));
+        model.addAttribute("canUseInteraction", canUseInteraction(authentication));
+        model.addAttribute("canViewFinanceReport", hasAnyRole(authentication, "ACCOUNTANT", "ADMIN", "DIRECTOR", "MANAGER", "SALES_MANAGER"));
+        model.addAttribute("canViewContractReport", hasAnyRole(authentication, "ADMIN_OFFICER", "ADMINOFFICER", "ADMIN", "ACCOUNTANT", "DIRECTOR", "MANAGER", "SALES_MANAGER", "SALES"));
+    }
+
+    private boolean canUseInteraction(Authentication authentication) {
+        return hasAnyRole(authentication, "MARKETING", "SALES", "SALES_MANAGER", "MANAGER", "ADMIN");
+    }
+
+    private boolean hasAnyRole(Authentication authentication, String... roles) {
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return false;
+        }
+        for (String role : roles) {
+            String authority = "ROLE_" + role;
+            boolean matched = authentication.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> authority.equals(grantedAuthority.getAuthority()));
+            if (matched) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String reportTitle(Authentication authentication) {
+        if (hasAnyRole(authentication, "ACCOUNTANT")) {
+            return "Báo cáo tài chính khách hàng";
+        }
+        if (hasAnyRole(authentication, "ADMIN_OFFICER", "ADMINOFFICER")) {
+            return "Báo cáo hợp đồng và điều khoản";
+        }
+        if (hasAnyRole(authentication, "DIRECTOR")) {
+            return "Báo cáo tổng hợp khách hàng";
+        }
+        if (hasAnyRole(authentication, "MARKETING")) {
+            return "Báo cáo nguồn và chất lượng khách hàng";
+        }
+        return "Báo cáo CRM khách hàng";
+    }
+
+    private String reportSubtitle(Authentication authentication) {
+        if (hasAnyRole(authentication, "ACCOUNTANT")) {
+            return "Theo dõi hóa đơn, trạng thái phát hành, đã thanh toán và công nợ.";
+        }
+        if (hasAnyRole(authentication, "ADMIN_OFFICER", "ADMINOFFICER")) {
+            return "Theo dõi trạng thái hợp đồng, yêu cầu chỉnh sửa và hồ sơ ký kết.";
+        }
+        if (hasAnyRole(authentication, "DIRECTOR")) {
+            return "Tổng hợp hợp đồng, hóa đơn và tiến độ chăm sóc của khách hàng.";
+        }
+        if (hasAnyRole(authentication, "MARKETING")) {
+            return "Theo dõi nguồn khách hàng, trạng thái phân bổ và lịch sử chăm sóc.";
+        }
+        return "Theo dõi tương tác, báo giá, hợp đồng và tiến độ chuyển đổi.";
+    }
+
+    private BigDecimal sumInvoices(List<Invoice> invoices, Invoice.InvoiceStatus status) {
+        return invoices.stream()
+                .filter(invoice -> status == null || status.equals(invoice.getStatus()))
+                .map(invoice -> value(invoice.getTotalAmount()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal value(BigDecimal amount) {
+        return amount != null ? amount : BigDecimal.ZERO;
     }
 
 }

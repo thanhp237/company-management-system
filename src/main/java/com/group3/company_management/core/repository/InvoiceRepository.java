@@ -16,12 +16,46 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     long countByStatus(Invoice.InvoiceStatus status);
 
+    @Query("""
+            select count(i)
+            from Invoice i
+            where i.status = :status
+            and (i.createdBy = :employeeId or i.updatedBy = :employeeId)
+            """)
+    long countByAccountantAndStatus(
+            @Param("employeeId") Long employeeId,
+            @Param("status") Invoice.InvoiceStatus status);
+
     @Query("select coalesce(sum(i.totalAmount), 0) from Invoice i where i.status = :status")
     BigDecimal sumTotalAmountByStatus(@Param("status") Invoice.InvoiceStatus status);
+
+    @Query("""
+            select coalesce(sum(i.totalAmount), 0)
+            from Invoice i
+            where i.status = :status
+            and (i.createdBy = :employeeId or i.updatedBy = :employeeId)
+            """)
+    BigDecimal sumTotalAmountByAccountantAndStatus(
+            @Param("employeeId") Long employeeId,
+            @Param("status") Invoice.InvoiceStatus status);
 
     @Query("select coalesce(sum(i.paidAmount), 0) from Invoice i")
     BigDecimal sumPaidAmount();
 
+    @Query("""
+            select coalesce(sum(i.paidAmount), 0)
+            from Invoice i
+            where i.createdBy = :employeeId or i.updatedBy = :employeeId
+            """)
+    BigDecimal sumPaidAmountByAccountant(@Param("employeeId") Long employeeId);
+
     @Query("select coalesce(sum(i.outstandingAmount), 0) from Invoice i")
     BigDecimal sumOutstandingAmount();
+
+    @Query("""
+            select coalesce(sum(i.outstandingAmount), 0)
+            from Invoice i
+            where i.createdBy = :employeeId or i.updatedBy = :employeeId
+            """)
+    BigDecimal sumOutstandingAmountByAccountant(@Param("employeeId") Long employeeId);
 }

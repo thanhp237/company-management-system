@@ -44,10 +44,64 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     List<Customer> findByAssignedSalesIdOrderByCreatedAtDesc(Long assignedSalesId);
     List<Customer> findByCustomerStatusAndAssignedSalesIdOrderByCreatedAtDesc(String status, Long assignedSalesId);
+    long countByAssignedSalesIdIn(List<Long> assignedSalesIds);
+
+    @Query("""
+            select distinct c
+            from Customer c
+            where (:status is null or c.customerStatus = :status)
+            and exists (
+                select i.id
+                from Invoice i
+                where i.contract.customer.id = c.id
+                and (:employeeId is null or i.createdBy = :employeeId or i.updatedBy = :employeeId)
+            )
+            order by c.createdAt desc
+            """)
+    List<Customer> findCustomersWithInvoicesOrderByCreatedAtDesc(
+            @Param("status") String status,
+            @Param("employeeId") Long employeeId);
+
+    @Query("""
+            select count(i) > 0
+            from Invoice i
+            where i.contract.customer.id = :customerId
+            and (:employeeId is null or i.createdBy = :employeeId or i.updatedBy = :employeeId)
+            """)
+    boolean existsInvoiceForCustomerId(
+            @Param("customerId") Long customerId,
+            @Param("employeeId") Long employeeId);
+
+    @Query("""
+            select distinct c
+            from Customer c
+            where (:status is null or c.customerStatus = :status)
+            and exists (
+                select co.id
+                from Contract co
+                where co.customer.id = c.id
+                and co.adminOfficer.id = :adminOfficerId
+            )
+            order by c.createdAt desc
+            """)
+    List<Customer> findCustomersByAdminOfficerIdOrderByCreatedAtDesc(
+            @Param("adminOfficerId") Long adminOfficerId,
+            @Param("status") String status);
+
+    @Query("""
+            select count(co) > 0
+            from Contract co
+            where co.customer.id = :customerId
+            and co.adminOfficer.id = :adminOfficerId
+            """)
+    boolean existsContractForAdminOfficerAndCustomer(
+            @Param("adminOfficerId") Long adminOfficerId,
+            @Param("customerId") Long customerId);
 
     long countByCustomerStatusIgnoreCase(String status);
 
     long countByAssignedSalesId(Long assignedSalesId);
+    long countByAssignedSalesIdIsNotNull();
 
     long countByOwnerId(Long ownerId);
     

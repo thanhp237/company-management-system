@@ -44,6 +44,11 @@
             </div>
         </div>
 
+        <div th:if="${errorMessage}" class="management-alert danger">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+        </div>
+
         <form class="customer-filterbar" method="get" th:action="@{/customer-activities}">
             <input type="hidden" name="customerId" th:if="${customerId != null}" th:value="${customerId}">
             <label>

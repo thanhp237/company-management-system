@@ -20,6 +20,12 @@
     <div class="management-page">
         <a class="btn btn-outline-secondary mb-3" th:href="@{/customer/portal}">Quay lại</a>
         <h1>Thanh toán</h1>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">
+            Đã gửi yêu cầu hỗ trợ.
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}">
+            Có lỗi xảy ra.
+        </div>
         <div th:if="${param.payment != null and param.payment[0] == 'success'}" class="alert alert-success">
             Thanh toán thành công. Hóa đơn đã được cập nhật.
         </div>
@@ -43,10 +49,16 @@
                     <td th:text="${#numbers.formatDecimal(invoice.totalAmount,0,'COMMA',0,'POINT') + ' VNĐ'}">0</td>
                     <td th:text="${invoice.status}">ISSUED</td>
                     <td>
+                        <div class="d-flex flex-wrap gap-2">
                         <form th:if="${invoice.status.name() == 'ISSUED'}"
                               th:action="@{/customer/portal/payments/{id}/pay(id=${invoice.id})}" method="post">
                             <button class="btn btn-primary" type="submit">Thanh toán VNPAY</button>
                         </form>
+                        <a class="btn btn-outline-secondary"
+                           th:href="@{/customer/portal/payments/{id}/support(id=${invoice.id})}">
+                            Trợ giúp
+                        </a>
+                        </div>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(invoices)}"><td colspan="6">Chưa có hóa đơn.</td></tr>

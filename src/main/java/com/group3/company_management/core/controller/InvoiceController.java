@@ -19,7 +19,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/invoices")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
+@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN', 'DIRECTOR', 'MANAGER', 'SALES_MANAGER', 'SALES', 'ADMIN_OFFICER', 'ADMINOFFICER')")
 
 public class InvoiceController {
 
@@ -29,12 +29,14 @@ public class InvoiceController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String list(@RequestParam(required = false) String search,
                        @RequestParam(required = false) String status,
                        @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                        @RequestParam(required = false, defaultValue = "desc") String order,
                        Model model) {
 
+        int syncedDraftCount = invoiceService.syncDraftInvoicesForSignedContracts();
         List<Invoice> allInvoices = invoiceService.getAllInvoices();
         long totalCount = allInvoices.size();
         long draftCount = allInvoices.stream().filter(inv -> Invoice.InvoiceStatus.DRAFT.equals(inv.getStatus())).count();
@@ -53,6 +55,7 @@ public class InvoiceController {
         model.addAttribute("status", status);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("order", order);
+        model.addAttribute("syncedDraftCount", syncedDraftCount);
 
         return "Invoice/list";
     }
@@ -158,6 +161,7 @@ public class InvoiceController {
     }
 
     @PostMapping("/create/{contractId}")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String create(@PathVariable Long contractId,
                          @ModelAttribute("invoiceForm") CreateInvoiceRequest request,
                          RedirectAttributes ra) {
@@ -260,6 +264,7 @@ public class InvoiceController {
     }
 
     @PostMapping("/edit/{id}")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String edit(@PathVariable Long id,
                        @ModelAttribute("invoiceForm") CreateInvoiceRequest request,
                        RedirectAttributes ra) {
@@ -278,7 +283,6 @@ public class InvoiceController {
     }
 
     @GetMapping("/detail/{id}")
-    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String detail(@PathVariable Long id, Model model) {
         Invoice invoice = invoiceService.getInvoiceById(id);
         model.addAttribute("invoice", invoice);
@@ -319,6 +323,7 @@ public class InvoiceController {
 
 
     @PostMapping("/{id}/issue")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String issue(@PathVariable Long id, RedirectAttributes ra) {
         try {
             invoiceService.issueInvoice(id);
@@ -329,7 +334,6 @@ public class InvoiceController {
         return "redirect:/invoices";
     }
     @GetMapping("/print/{id}")
-    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String print(@PathVariable Long id, Model model) {
         Invoice invoice = invoiceService.getInvoiceById(id);
         model.addAttribute("invoice", invoice);
@@ -400,6 +404,7 @@ public class InvoiceController {
 
 
     @PostMapping("/{id}/delete")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         try {
             invoiceService.deleteInvoice(id);

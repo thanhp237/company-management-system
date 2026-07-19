@@ -63,6 +63,8 @@ public interface OpportunityRepository extends JpaRepository<Opportunity, Long> 
 
     long countByAssignedToUsername(String username);
 
+    long countByAssignedToUsernameIn(List<String> usernames);
+
     long countByStageAndAssignedToUsername(String stage, String username);
 
     long countByStageAndAssignedToUsernameIn(String stage, List<String> usernames);

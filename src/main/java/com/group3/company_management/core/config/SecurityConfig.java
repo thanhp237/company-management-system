@@ -137,13 +137,16 @@ public class SecurityConfig {
                                                 .hasRole("ACCOUNTANT")
 
                                                 .requestMatchers("/invoices/**")
-                                                .hasAnyRole("ACCOUNTANT", "ADMIN")
+                                                .hasAnyRole("ACCOUNTANT", "ADMIN", "DIRECTOR", "MANAGER", "SALES_MANAGER", "SALES", "ADMIN_OFFICER", "ADMINOFFICER")
 
                                                 .requestMatchers("/dashboard/admin-officer/**")
                                                 .hasAnyRole("ADMIN_OFFICER", "ADMINOFFICER")
 
                                                 .requestMatchers("/business-rules", "/business-rules/**")
                                                 .hasAnyRole("ADMIN", "ADMIN_OFFICER", "ADMINOFFICER")
+
+                                                .requestMatchers("/support", "/support/**")
+                                                .hasAnyRole("ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "ACCOUNTANT")
 
                                                 .requestMatchers("/dashboard/sales-manager/**")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER")
@@ -166,7 +169,7 @@ public class SecurityConfig {
                                                 .hasRole("ADMIN")
 
                                                 .requestMatchers("/customers", "/customers/**")
-                                                .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")
+                                                .hasAnyRole("MARKETING", "SALES", "SALES_MANAGER", "MANAGER", "ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "ACCOUNTANT", "DIRECTOR")
 
                                                 .requestMatchers(HttpMethod.POST, "/customer/check")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")
@@ -181,7 +184,7 @@ public class SecurityConfig {
                                                 .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN")
 
                                                 .requestMatchers("/customer-activities", "/customer-activities/**", "/appointments", "/appointments/**")
-                                                .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN")
+                                                .hasAnyRole("MARKETING", "SALES", "SALES_MANAGER", "MANAGER", "ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "ACCOUNTANT", "DIRECTOR")
 
                                                 .requestMatchers("/contracts/**")
                                                 .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "ACCOUNTANT", "DIRECTOR")

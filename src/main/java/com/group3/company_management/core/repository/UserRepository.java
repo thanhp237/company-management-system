@@ -36,13 +36,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
     and u.isDeleted = false
 """)
     List<User> findUsersByRoleNames(@Param("roles") List<String> roles);
-    boolean existsByUsernameAndIsDeletedFalse(String username);
+    @Query("select count(u) > 0 from User u where lower(u.username) = lower(:username) and u.isDeleted = false")
+    boolean existsByUsernameAndIsDeletedFalse(@Param("username") String username);
 
-    boolean existsByEmailAndIsDeletedFalse(String email);
+    @Query("select count(u) > 0 from User u where lower(u.email) = lower(:email) and u.isDeleted = false")
+    boolean existsByEmailAndIsDeletedFalse(@Param("email") String email);
 
-    boolean existsByUsernameAndIsDeletedFalseAndIdNot(String username, Long id);
+    @Query("select count(u) > 0 from User u where lower(u.username) = lower(:username) and u.isDeleted = false and u.id <> :id")
+    boolean existsByUsernameAndIsDeletedFalseAndIdNot(@Param("username") String username, @Param("id") Long id);
 
-    boolean existsByEmailAndIsDeletedFalseAndIdNot(String email, Long id);
+    @Query("select count(u) > 0 from User u where lower(u.email) = lower(:email) and u.isDeleted = false and u.id <> :id")
+    boolean existsByEmailAndIsDeletedFalseAndIdNot(@Param("email") String email, @Param("id") Long id);
 
     // 1. Hàm đếm số lượng User theo từng RoleCode (Dùng cho trang danh sách Role)
     @Query("SELECT COUNT(u) FROM User u WHERE u.role.roleCode = :roleCode AND u.isDeleted = false")

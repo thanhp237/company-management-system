@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void createUser(UserRequest request) {
         String username = normalizeRequired(request.getUsername(), "Vui lòng nhập tên đăng nhập");
-        String email = normalizeRequired(request.getEmail(), "Vui lòng nhập email");
+        String email = normalizeEmail(request.getEmail());
         String password = normalizeRequired(request.getPassword(), "Vui lòng nhập mật khẩu");
         Role role = findRoleById(normalizeRequired(request.getRoleId(), "Vui lòng chọn vai trò"));
 
@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
         Long id = normalizeRequired(request.getId(), "Thiếu mã tài khoản");
         User user = findActiveUserById(id);
         String username = normalizeRequired(request.getUsername(), "Vui lòng nhập tên đăng nhập");
-        String email = normalizeRequired(request.getEmail(), "Vui lòng nhập email");
+        String email = normalizeEmail(request.getEmail());
         Role role = findRoleById(normalizeRequired(request.getRoleId(), "Vui lòng chọn vai trò"));
 
         validateUniqueUsername(username, id);
@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
     public User updateUser(Long id, User userDetails) {
         User user = findActiveUserById(id);
         String username = normalizeRequired(userDetails.getUsername(), "Vui lòng nhập tên đăng nhập");
-        String email = normalizeRequired(userDetails.getEmail(), "Vui lòng nhập email");
+        String email = normalizeEmail(userDetails.getEmail());
 
         validateUniqueUsername(username, id);
         validateUniqueEmail(email, id);
@@ -257,6 +257,10 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException(message);
         }
         return normalized;
+    }
+
+    private String normalizeEmail(String value) {
+        return normalizeRequired(value, "Vui lòng nhập email").toLowerCase(Locale.ROOT);
     }
 
     private Long normalizeRequired(Long value, String message) {

@@ -49,6 +49,7 @@
                 </div>
             </div>
             <form class="customer-form"
+                  sec:authorize="hasAnyRole('MARKETING', 'SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')"
                   method="post"
                   th:action="@{/customer-activities/{id}/note(id=${activity.id})}">
                 <input type="hidden" name="returnUrl" th:value="${'/customer-activities/' + activity.id}">
@@ -82,6 +83,31 @@
                     </button>
                 </div>
             </form>
+            <div class="customer-form"
+                 sec:authorize="!hasAnyRole('MARKETING', 'SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')">
+                <div class="customer-form-grid">
+                    <label>
+                        <span>Mã khách hàng</span>
+                        <input type="text" th:value="${activity.customerId}" readonly>
+                    </label>
+                    <label>
+                        <span>Liên quan</span>
+                        <input type="text"
+                               th:value="${activity.relatedType != null ? activity.relatedType + ' #' + activity.relatedId : 'Chưa có'}"
+                               readonly>
+                    </label>
+                    <label class="wide">
+                        <span>Ghi chú</span>
+                        <textarea rows="6" th:text="${activity.activityNote}" readonly></textarea>
+                    </label>
+                </div>
+                <div class="customer-form-actions">
+                    <a class="customer-secondary-button" th:href="@{/customers/{id}(id=${activity.customerId})}">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Về khách hàng</span>
+                    </a>
+                </div>
+            </div>
         </section>
     </div>
 </main>

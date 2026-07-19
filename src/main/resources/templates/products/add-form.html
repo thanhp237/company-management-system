@@ -84,7 +84,7 @@
 
                     <label class="wide">
                         <span>Ảnh sản phẩm</span>
-                        <input type="file" th:field="*{imageFile}" accept="image/png,image/jpeg,image/webp,image/gif">
+                        <input type="file" th:field="*{imageFile}" accept="image/png,image/jpeg">
                         <small class="product-field-hint" th:if="${productForm.imageUrl != null and !#strings.isEmpty(productForm.imageUrl)}">
                             Đang dùng ảnh hiện tại. Chọn file mới nếu muốn thay ảnh.
                         </small>

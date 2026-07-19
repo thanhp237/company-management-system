@@ -58,6 +58,14 @@
 
         <div class="contract-detail-layout">
             <div class="contract-detail-main">
+                <section class="contract-detail-card" th:if="${contract.revisionReason != null and !#strings.isEmpty(contract.revisionReason)}">
+                    <div class="contract-card-title">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <h2>Yêu cầu chỉnh sửa từ khách hàng</h2>
+                    </div>
+                    <p th:text="${contract.revisionReason}">Nội dung khách hàng yêu cầu chỉnh sửa.</p>
+                </section>
+
                 <section class="contract-detail-card">
                     <div class="contract-card-title">
                         <i class="fas fa-file-lines"></i>
