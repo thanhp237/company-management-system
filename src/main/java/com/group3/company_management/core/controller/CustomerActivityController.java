@@ -6,6 +6,7 @@ import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.repository.EmployeeRepository;
 import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.service.CustomerActivityService;
+import com.group3.company_management.core.service.CustomerReportScopeService;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ public class CustomerActivityController {
 
     private final CustomerActivityService activityService;
     private final CustomerService customerService;
+    private final CustomerReportScopeService customerReportScopeService;
     private final EmployeeRepository employeeRepository;
     private final OpportunityRepository opportunityRepository;
 
@@ -35,14 +37,16 @@ public class CustomerActivityController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) Long customerId,
+            Authentication authentication,
             Model model) {
 
         Page<CustomerActivity> activityPage =
-                activityService.getActivities(
+                customerReportScopeService.visibleActivityPage(
                         customerId,
                         type,
                         page,
-                        10);
+                        10,
+                        authentication);
 
         model.addAttribute(
                 "activityPage",
@@ -136,7 +140,13 @@ public class CustomerActivityController {
     @GetMapping("/{id}")
     public String detailActivity(
             @PathVariable Long id,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes,
             Model model) {
+        if (!customerReportScopeService.canViewActivity(id, authentication)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền xem tương tác này.");
+            return "redirect:/customer-activities";
+        }
 
         CustomerActivity activity =
                 activityService.getActivityById(id);

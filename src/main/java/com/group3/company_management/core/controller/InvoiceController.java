@@ -4,9 +4,11 @@ import com.group3.company_management.core.dto.CreateInvoiceRequest;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Invoice;
 import com.group3.company_management.core.repository.ContractRepository;
+import com.group3.company_management.core.service.CustomerReportScopeService;
 import com.group3.company_management.core.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,7 @@ public class InvoiceController {
     private final InvoiceService invoiceService;
     private final ContractRepository contractRepository;
     private final com.group3.company_management.core.repository.UserRepository userRepository;
+    private final CustomerReportScopeService customerReportScopeService;
 
 
     @GetMapping
@@ -283,7 +286,14 @@ public class InvoiceController {
     }
 
     @GetMapping("/detail/{id}")
-    public String detail(@PathVariable Long id, Model model) {
+    public String detail(@PathVariable Long id,
+                         Authentication authentication,
+                         RedirectAttributes redirectAttributes,
+                         Model model) {
+        if (!customerReportScopeService.canViewInvoice(id, authentication)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền xem hóa đơn này.");
+            return "redirect:/invoices";
+        }
         Invoice invoice = invoiceService.getInvoiceById(id);
         model.addAttribute("invoice", invoice);
         BigDecimal totalContractAmount = invoice.getContract().getFinalAmount();
@@ -334,7 +344,14 @@ public class InvoiceController {
         return "redirect:/invoices";
     }
     @GetMapping("/print/{id}")
-    public String print(@PathVariable Long id, Model model) {
+    public String print(@PathVariable Long id,
+                        Authentication authentication,
+                        RedirectAttributes redirectAttributes,
+                        Model model) {
+        if (!customerReportScopeService.canViewInvoice(id, authentication)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền in hóa đơn này.");
+            return "redirect:/invoices";
+        }
         Invoice invoice = invoiceService.getInvoiceById(id);
         model.addAttribute("invoice", invoice);
 

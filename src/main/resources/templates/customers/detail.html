@@ -65,17 +65,17 @@
         </div>
 
         <section class="customer-stat-grid">
-            <article class="customer-stat-card success">
+            <article class="customer-stat-card success" th:if="${canViewContractReport}">
                 <span>Hợp đồng</span>
                 <strong th:text="${contractCount}">0</strong>
                 <small th:text="${signedContractCount + ' đã ký'}">0 đã ký</small>
             </article>
-            <article class="customer-stat-card info">
+            <article class="customer-stat-card info" th:if="${canViewFinanceReport}">
                 <span>Hóa đơn</span>
                 <strong th:text="${invoiceCount}">0</strong>
                 <small th:text="${draftInvoiceCount + ' nháp / ' + issuedInvoiceCount + ' phát hành'}">0 nháp</small>
             </article>
-            <article class="customer-stat-card warning">
+            <article class="customer-stat-card warning" th:if="${canViewFinanceReport}">
                 <span>Công nợ</span>
                 <strong th:text="${#numbers.formatDecimal(outstandingInvoiceAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
                 <small>Chưa thanh toán</small>
@@ -95,7 +95,7 @@
                 </div>
             </div>
             <div class="customer-panel-body">
-                <div class="customer-info-grid">
+                <div class="customer-info-grid" th:if="${canViewFinanceReport}">
                     <div>
                         <span>Tổng giá trị hóa đơn</span>
                         <strong th:text="${#numbers.formatDecimal(totalInvoiceAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>

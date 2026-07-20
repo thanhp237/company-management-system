@@ -7,6 +7,7 @@ import com.group3.company_management.core.dto.PaymentScheduleRequest;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.service.ContractService;
 import com.group3.company_management.core.service.CustomerAccountService;
+import com.group3.company_management.core.service.CustomerReportScopeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +30,7 @@ public class ContractController {
 
     private final ContractService contractService;
     private final CustomerAccountService customerAccountService;
+    private final CustomerReportScopeService customerReportScopeService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
@@ -72,9 +74,14 @@ public class ContractController {
     @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
     public String detailContract(
             @PathVariable Long id,
+            Authentication authentication,
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
+            if (!customerReportScopeService.canViewContract(id, authentication)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền xem hợp đồng này.");
+                return "redirect:/contracts";
+            }
             ContractResponse contract = contractService.getContractDetail(id);
             model.addAttribute("contract", contract);
             model.addAttribute("contractRuleRequest", toRuleRequest(contract));
@@ -233,7 +240,14 @@ public class ContractController {
 
     @GetMapping("/export-pdf/{id}")
     @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
-    public String printPreview(@PathVariable Long id, Model model) {
+    public String printPreview(@PathVariable Long id,
+                               Authentication authentication,
+                               RedirectAttributes redirectAttributes,
+                               Model model) {
+        if (!customerReportScopeService.canViewContract(id, authentication)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền xuất hợp đồng này.");
+            return "redirect:/contracts";
+        }
         ContractResponse contract = contractService.getContractDetail(id);
 
         String buyerCompanyName = contract.getBuyerCompanyName();
