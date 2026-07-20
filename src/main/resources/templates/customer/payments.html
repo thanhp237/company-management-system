@@ -47,13 +47,25 @@
                     <td th:text="${invoice.contract.contractCode}">CT</td>
                     <td th:text="${invoice.dueDate}">Ngày</td>
                     <td th:text="${#numbers.formatDecimal(invoice.totalAmount,0,'COMMA',0,'POINT') + ' VNĐ'}">0</td>
-                    <td th:text="${invoice.status}">ISSUED</td>
+                    <td>
+                        <span th:if="${invoice.status.name() == 'DRAFT'}" class="badge text-bg-secondary">Chờ phát hành</span>
+                        <span th:if="${invoice.status.name() == 'ISSUED'}" class="badge text-bg-warning">Chờ thanh toán</span>
+                        <span th:if="${invoice.status.name() == 'PARTIALLY_PAID'}" class="badge text-bg-info">Thanh toán một phần</span>
+                        <span th:if="${invoice.status.name() == 'PAID'}" class="badge text-bg-success">Đã thanh toán</span>
+                        <span th:if="${invoice.status.name() == 'CANCELLED'}" class="badge text-bg-danger">Đã hủy</span>
+                    </td>
                     <td>
                         <div class="d-flex flex-wrap gap-2">
                         <form th:if="${invoice.status.name() == 'ISSUED'}"
                               th:action="@{/customer/portal/payments/{id}/pay(id=${invoice.id})}" method="post">
                             <button class="btn btn-primary" type="submit">Thanh toán VNPAY</button>
                         </form>
+                        <button th:if="${invoice.status.name() == 'DRAFT'}"
+                                class="btn btn-outline-secondary"
+                                type="button"
+                                disabled>
+                            Chờ kế toán phát hành
+                        </button>
                         <a class="btn btn-outline-secondary"
                            th:href="@{/customer/portal/payments/{id}/support(id=${invoice.id})}">
                             Trợ giúp

@@ -29,6 +29,21 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
     List<Contract> findByCustomerIdAndAdminOfficerIdOrderByCreatedAtDesc(Long customerId, Long adminOfficerId);
 
     @Query("""
+            select c
+            from Contract c
+            where c.customer.id = :customerId
+            and (
+                c.adminOfficer.id = :adminOfficerId
+                or c.status in :pooledStatuses
+            )
+            order by c.createdAt desc
+            """)
+    List<Contract> findByCustomerIdAndAdminOfficerScopeOrderByCreatedAtDesc(
+            @Param("customerId") Long customerId,
+            @Param("adminOfficerId") Long adminOfficerId,
+            @Param("pooledStatuses") List<Contract.ContractStatus> pooledStatuses);
+
+    @Query("""
             select distinct c
             from Contract c
             join Invoice i on i.contract = c

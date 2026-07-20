@@ -131,12 +131,13 @@ public class ContractController {
             @PathVariable Long id,
             @ModelAttribute("contractRuleRequest") ContractRuleRequest request,
             Authentication authentication,
+            Model model,
             RedirectAttributes redirectAttributes) {
         try {
             contractService.updateDraftContractInfo(id, request, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Đã lưu thông tin nháp của hợp đồng.");
         } catch (RuntimeException exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return renderContractFormWithSubmittedData(id, request, exception.getMessage(), model, redirectAttributes);
         }
 
         return "redirect:/contracts/" + id;
@@ -148,12 +149,13 @@ public class ContractController {
             @PathVariable Long id,
             @ModelAttribute("contractRuleRequest") ContractRuleRequest request,
             Authentication authentication,
+            Model model,
             RedirectAttributes redirectAttributes) {
         try {
             contractService.updateContractRules(id, request, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Đã lưu điều khoản hợp đồng.");
         } catch (RuntimeException exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return renderContractFormWithSubmittedData(id, request, exception.getMessage(), model, redirectAttributes);
         }
 
         return "redirect:/contracts/" + id;
@@ -377,6 +379,34 @@ public class ContractController {
                 "SIGNED", " signed",
                 "CANCELLED", " cancelled"
         );
+    }
+
+    private String renderContractFormWithSubmittedData(Long id,
+                                                       ContractRuleRequest request,
+                                                       String errorMessage,
+                                                       Model model,
+                                                       RedirectAttributes redirectAttributes) {
+        try {
+            ContractResponse contract = contractService.getContractDetail(id);
+            padPaymentSchedules(request);
+            model.addAttribute("contract", contract);
+            model.addAttribute("contractRuleRequest", request);
+            model.addAttribute("statusClasses", statusClasses());
+            model.addAttribute("errorMessage", errorMessage);
+            return "contracts/contract";
+        } catch (RuntimeException fallbackException) {
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/contracts/" + id;
+        }
+    }
+
+    private void padPaymentSchedules(ContractRuleRequest request) {
+        if (request.getPaymentSchedules() == null) {
+            request.setPaymentSchedules(new ArrayList<>());
+        }
+        while (request.getPaymentSchedules().size() < 5) {
+            request.getPaymentSchedules().add(new PaymentScheduleRequest());
+        }
     }
 
     private void addCustomerAccountMessage(

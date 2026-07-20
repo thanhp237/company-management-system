@@ -180,11 +180,17 @@ public class SecurityConfig {
                                                 .requestMatchers("/products", "/products/**")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")
 
+                                                .requestMatchers("/quotation", "/quotation/**")
+                                                .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN")
+
                                                 .requestMatchers("/pipeline", "/pipeline/**")
                                                 .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN")
 
-                                                .requestMatchers("/customer-activities", "/customer-activities/**", "/appointments", "/appointments/**")
+                                                .requestMatchers("/customer-activities", "/customer-activities/**")
                                                 .hasAnyRole("MARKETING", "SALES", "SALES_MANAGER", "MANAGER", "ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "ACCOUNTANT", "DIRECTOR")
+
+                                                .requestMatchers("/appointments", "/appointments/**")
+                                                .hasAnyRole("MARKETING", "SALES", "SALES_MANAGER", "MANAGER", "ADMIN")
 
                                                 .requestMatchers("/contracts/**")
                                                 .hasAnyRole("SALES", "SALES_MANAGER", "MANAGER", "ADMIN", "ADMIN_OFFICER", "ADMINOFFICER", "ACCOUNTANT", "DIRECTOR")

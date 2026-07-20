@@ -28,6 +28,7 @@ import java.util.UUID;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/quotation")
+@PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
 public class QuotationController {
     private final VoucherRepository voucherRepository;
     private final QuotationService quotationService;

@@ -3,6 +3,7 @@
 package com.group3.company_management.core.repository;
 
 import com.group3.company_management.core.entity.Customer;
+import com.group3.company_management.core.entity.Contract;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -89,6 +90,26 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             @Param("status") String status);
 
     @Query("""
+            select distinct c
+            from Customer c
+            where (:status is null or c.customerStatus = :status)
+            and exists (
+                select co.id
+                from Contract co
+                where co.customer.id = c.id
+                and (
+                    co.adminOfficer.id = :adminOfficerId
+                    or co.status in :pooledStatuses
+                )
+            )
+            order by c.createdAt desc
+            """)
+    List<Customer> findCustomersByAdminOfficerScopeOrderByCreatedAtDesc(
+            @Param("adminOfficerId") Long adminOfficerId,
+            @Param("status") String status,
+            @Param("pooledStatuses") List<Contract.ContractStatus> pooledStatuses);
+
+    @Query("""
             select count(co) > 0
             from Contract co
             where co.customer.id = :customerId
@@ -97,6 +118,20 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     boolean existsContractForAdminOfficerAndCustomer(
             @Param("adminOfficerId") Long adminOfficerId,
             @Param("customerId") Long customerId);
+
+    @Query("""
+            select count(co) > 0
+            from Contract co
+            where co.customer.id = :customerId
+            and (
+                co.adminOfficer.id = :adminOfficerId
+                or co.status in :pooledStatuses
+            )
+            """)
+    boolean existsContractForAdminOfficerScopeAndCustomer(
+            @Param("adminOfficerId") Long adminOfficerId,
+            @Param("customerId") Long customerId,
+            @Param("pooledStatuses") List<Contract.ContractStatus> pooledStatuses);
 
     long countByCustomerStatusIgnoreCase(String status);
 

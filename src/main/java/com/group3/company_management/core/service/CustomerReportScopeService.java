@@ -27,6 +27,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CustomerReportScopeService {
 
+    private static final List<Contract.ContractStatus> ADMIN_OFFICER_POOLED_STATUSES =
+            List.of(Contract.ContractStatus.PENDING_ADMIN_OFFICER);
+
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
     private final CustomerRepository customerRepository;
@@ -49,7 +52,10 @@ public class CustomerReportScopeService {
             return contractRepository.findByCustomerIdAndHasScopedInvoiceOrderByCreatedAtDesc(customerId, employee.getId());
         }
         if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
-            return contractRepository.findByCustomerIdAndAdminOfficerIdOrderByCreatedAtDesc(customerId, employee.getId());
+            return contractRepository.findByCustomerIdAndAdminOfficerScopeOrderByCreatedAtDesc(
+                    customerId,
+                    employee.getId(),
+                    ADMIN_OFFICER_POOLED_STATUSES);
         }
         if ("SALES".equals(roleCode)) {
             return contractRepository.findByCustomerIdAndSaleIdOrderByCreatedAtDesc(customerId, employee.getId());
@@ -109,7 +115,10 @@ public class CustomerReportScopeService {
                     : activityRepository.findByCustomerIdAndEmployeeIdInOrderByCreatedAtDesc(customerId, employeeIds);
         }
         if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
-            return customerRepository.existsContractForAdminOfficerAndCustomer(employee.getId(), customerId)
+            return customerRepository.existsContractForAdminOfficerScopeAndCustomer(
+                    employee.getId(),
+                    customerId,
+                    ADMIN_OFFICER_POOLED_STATUSES)
                     ? activityRepository.findByCustomerIdOrderByCreatedAtDesc(customerId)
                     : List.of();
         }
@@ -195,7 +204,10 @@ public class CustomerReportScopeService {
                             .toList();
         }
         if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
-            return customerRepository.findCustomersByAdminOfficerIdOrderByCreatedAtDesc(employee.getId(), null)
+            return customerRepository.findCustomersByAdminOfficerScopeOrderByCreatedAtDesc(
+                            employee.getId(),
+                            null,
+                            ADMIN_OFFICER_POOLED_STATUSES)
                     .stream()
                     .map(customer -> customer.getId())
                     .toList();
