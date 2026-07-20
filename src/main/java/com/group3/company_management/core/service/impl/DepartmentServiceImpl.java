@@ -9,9 +9,7 @@ import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.DepartmentService;
 import com.group3.company_management.core.service.UserService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

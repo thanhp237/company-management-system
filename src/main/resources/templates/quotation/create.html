@@ -90,7 +90,7 @@
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Tên khách hàng</label>
                     <input class="form-control"
-                           th:value="${customer.fullName != null ? customer.fullName : (customer.name != null ? customer.name : customer.companyName)}"
+                           th:value="${customer.fullName != null ? customer.fullName : (customer.name != null ? customer.name )}"
                            readonly>
                 </div>
 

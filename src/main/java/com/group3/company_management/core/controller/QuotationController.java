@@ -140,7 +140,7 @@ public class QuotationController {
                 approverName = quotation.getApprovedBy();
             }
         } else if (authentication != null) {
-            // 2. Lấy người duyệt hiện thời (nếu chưa duyệt hoặc in nháp)
+           
             var currentUserOpt = userRepository.findByUsername(authentication.getName());
             if (currentUserOpt.isPresent()) {
                 approverName = currentUserOpt.get().getFullName();
