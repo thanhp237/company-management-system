@@ -402,14 +402,14 @@
             </article>
         </section>
 
-        <section class="executive-grid" th:if="${executiveDashboard}">
+        <section class="executive-grid" th:if="${roleReportDashboard or executiveDashboard}">
             <article class="executive-card">
                 <div class="executive-card-header">
-                    <h2>Revenue Summary</h2>
-                    <p>Báo cáo doanh thu, đã thu và công nợ từ hợp đồng/invoice.</p>
+                    <h2 th:text="${roleReportTitle}">Báo cáo nhiệm vụ chính</h2>
+                    <p th:text="${roleReportSubtitle}">Các chỉ số tổng hợp theo vai trò.</p>
                 </div>
                 <div class="executive-metric-list">
-                    <div class="executive-metric" th:each="metric : ${revenueSummaryRows}">
+                    <div class="executive-metric" th:each="metric : ${roleReportRows}">
                         <span class="executive-metric-icon" th:classappend="${metric.tone}">
                             <i class="fas" th:classappend="${metric.icon}"></i>
                         </span>
@@ -422,7 +422,7 @@
                 </div>
             </article>
 
-            <article class="executive-card">
+            <article class="executive-card" th:if="${executiveDashboard}">
                 <div class="executive-card-header">
                     <h2>Executive Dashboard</h2>
                     <p>KPI overview cho Director theo hợp đồng, pipeline và khách hàng.</p>

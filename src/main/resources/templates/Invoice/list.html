@@ -39,6 +39,10 @@
             <i class="fa-solid fa-circle-check"></i>
             <span th:text="${successMessage}">Thành công.</span>
         </div>
+        <div class="alert-box alert-success-custom" th:if="${syncedDraftCount != null && syncedDraftCount > 0}">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${'Đã tự tạo ' + syncedDraftCount + ' hóa đơn nháp từ hợp đồng đã ký.'}">Đã tự tạo hóa đơn nháp.</span>
+        </div>
 
         <!-- Tiêu đề trang -->
         <div class="page-top">
@@ -171,7 +175,7 @@
                             <!-- Trạng thái nháp -->
                             <span th:if="${invoice.status.name() == 'DRAFT'}" class="status-badge st-draft">Bản nháp</span>
                             <!-- Trạng thái chốt -->
-                            <span th:if="${invoice.status.name() == 'ISSUED'}" class="status-badge st-issued">Đã chốt</span>
+                            <span th:if="${invoice.status.name() == 'ISSUED'}" class="status-badge st-issued">Đã phát hành</span>
                             <!-- Trạng thái đã thanh toán -->
                             <span th:if="${invoice.status.name() == 'PAID'}" class="status-badge st-paid">Đã thanh toán</span>
                             <!-- Trạng thái hủy -->
@@ -190,6 +194,14 @@
                                 </a>
                                 <!-- Nút xóa bản nháp (Chỉ hiển thị và hoạt động khi hóa đơn là DRAFT) -->
                                 <th:block th:if="${invoice.status.name() == 'DRAFT'}">
+                                    <a th:href="@{/invoices/edit/{id}(id=${invoice.id})}" class="icon-action" title="Chỉnh sửa hóa đơn nháp">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                    <form th:action="@{/invoices/{id}/issue(id=${invoice.id})}" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn phát hành hóa đơn này?')">
+                                        <button type="submit" class="icon-action" title="Phát hành hóa đơn">
+                                            <i class="fa-solid fa-circle-check"></i>
+                                        </button>
+                                    </form>
                                     <form th:action="@{/invoices/{id}/delete(id=${invoice.id})}" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản nháp hóa đơn này?')">
                                         <button type="submit" class="icon-action danger" title="Xóa bản nháp">
                                             <i class="fa-regular fa-trash-can"></i>

@@ -170,6 +170,37 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public int syncDraftInvoicesForSignedContracts() {
+        int created = 0;
+        List<Contract> signedContracts = contractRepository.findByStatus(Contract.ContractStatus.SIGNED);
+        for (Contract contract : signedContracts) {
+            ensurePaymentScheduleExists(contract);
+            List<PaymentSchedule> schedules = paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contract.getId());
+            for (PaymentSchedule schedule : schedules) {
+                if (invoiceRepository.existsByPaymentScheduleId(schedule.getId())) {
+                    continue;
+                }
+
+                BigDecimal amount = schedule.getAmount() != null ? schedule.getAmount() : BigDecimal.ZERO;
+                invoiceRepository.save(Invoice.builder()
+                        .contract(contract)
+                        .paymentSchedule(schedule)
+                        .invoiceCode(generateInvoiceCode())
+                        .dueDate(schedule.getDueDate())
+                        .note(schedule.getDescription() != null ? schedule.getDescription() : "")
+                        .status(Invoice.InvoiceStatus.DRAFT)
+                        .totalAmount(amount)
+                        .paidAmount(BigDecimal.ZERO)
+                        .outstandingAmount(amount)
+                        .invoiceItems(new ArrayList<>())
+                        .build());
+                created++;
+            }
+        }
+        return created;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<Invoice> getAllInvoicesFiltered(String search, String status, String sortBy, String order) {
         List<Invoice> list = new ArrayList<>(invoiceRepository.findAll());
@@ -459,6 +490,25 @@ public class InvoiceServiceImpl implements InvoiceService {
         java.time.LocalDate now = java.time.LocalDate.now();
         String yearMonth = String.format("%04d%02d", now.getYear(), now.getMonthValue());
         return String.format("INV%s%03d", yearMonth, count);
+    }
+
+    private void ensurePaymentScheduleExists(Contract contract) {
+        if (contract == null || contract.getId() == null
+                || !paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contract.getId()).isEmpty()) {
+            return;
+        }
+
+        if (contract.getPaymentPlanType() == null) {
+            contract.setPaymentPlanType(Contract.PaymentPlanType.ONE_TIME);
+        }
+
+        paymentScheduleRepository.save(PaymentSchedule.builder()
+                .contract(contract)
+                .installmentNo(1)
+                .dueDate(contract.getPaymentDueDate() != null ? contract.getPaymentDueDate() : LocalDate.now())
+                .amount(contract.getFinalAmount() != null ? contract.getFinalAmount() : BigDecimal.ZERO)
+                .description("Thanh toán toàn bộ hợp đồng")
+                .build());
     }
 
     private Long getCurrentEmployeeId() {

@@ -38,7 +38,7 @@
             </div>
 
             <div class="sidebar-group"
-                 sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN')">
+                 sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER','ACCOUNTANT','DIRECTOR')">
                 <button class="sidebar-link sidebar-toggle collapsed"
                         type="button"
                         data-bs-toggle="collapse"
@@ -50,10 +50,10 @@
                     <i class="fas fa-chevron-down sidebar-chevron"></i>
                 </button>
                 <div class="collapse sidebar-submenu" id="crmMenu">
-                    <a sec:authorize="hasAnyRole('MANAGER','SALES_MANAGER','ADMIN')"
+                    <a sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER','ACCOUNTANT','DIRECTOR')"
                        href="/customers"
                        data-nav-match="/customers">Hồ sơ khách hàng</a>
-                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
+                    <a sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER','ACCOUNTANT','DIRECTOR')"
                        href="/customer-activities"
                        data-nav-match="/customer-activities">Lịch sử tương tác</a>
                     <a sec:authorize="hasRole('MARKETING')"
@@ -62,7 +62,7 @@
                     <a sec:authorize="hasRole('ADMIN')"
                        href="/customer"
                        data-nav-match="/customer">Nhập dữ liệu & phân bổ</a>
-                    <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN')"
+                    <a sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN')"
                        href="/appointments"
                        data-nav-match="/appointments">Lịch hẹn</a>
                     <a sec:authorize="hasAnyRole('MARKETING','SALES','MANAGER','SALES_MANAGER','ADMIN')"
@@ -114,7 +114,10 @@
                 <i class="fas fa-gear"></i>
                 <span>Cài đặt</span>
             </a>
-            <a class="sidebar-link" href="/change-password" data-nav-match="/change-password">
+            <a class="sidebar-link"
+               sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER','ADMINOFFICER','ACCOUNTANT')"
+               href="/support"
+               data-nav-match="/support">
                 <i class="fas fa-circle-question"></i>
                 <span>Trợ giúp</span>
             </a>

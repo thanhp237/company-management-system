@@ -32,7 +32,8 @@ public class ProductServiceImpl implements ProductService {
     private static final Path PRODUCT_UPLOAD_DIR = Paths.get("uploads", "products");
     private static final String PRODUCT_UPLOAD_URL_PREFIX = "/uploads/products/";
     private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp", "gif");
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png");
+    private static final Set<String> ALLOWED_IMAGE_CONTENT_TYPES = Set.of("image/jpeg", "image/png");
 
     private static final List<String> PRODUCT_CATEGORIES = List.of(
             "Camera Body",
@@ -207,12 +208,12 @@ public class ProductServiceImpl implements ProductService {
 
         String extension = getFileExtension(imageFile.getOriginalFilename());
         if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("Ảnh sản phẩm chỉ hỗ trợ JPG, PNG, WEBP hoặc GIF");
+            throw new IllegalArgumentException("Ảnh sản phẩm chỉ hỗ trợ JPG hoặc PNG");
         }
 
         String contentType = imageFile.getContentType();
-        if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
-            throw new IllegalArgumentException("File tải lên phải là ảnh");
+        if (contentType == null || !ALLOWED_IMAGE_CONTENT_TYPES.contains(contentType.toLowerCase(Locale.ROOT))) {
+            throw new IllegalArgumentException("File tải lên phải là ảnh JPG hoặc PNG");
         }
     }
 

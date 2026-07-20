@@ -14,6 +14,8 @@ public interface InvoiceService {
 
     List<Invoice> getAllInvoices();
 
+    int syncDraftInvoicesForSignedContracts();
+
     List<Invoice> getAllInvoicesFiltered(String search, String status, String sortBy, String order);
 
     CreateInvoiceRequest prepareCreateRequest(Long contractId);

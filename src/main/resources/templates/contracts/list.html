@@ -595,6 +595,7 @@
                             <span class="status-badge st-pending" th:if="${contract.status == 'PENDING_ADMIN_OFFICER'}">Chờ hành chính hợp đồng</span>
                             <span class="status-badge st-reviewed" th:if="${contract.status == 'ADMIN_REVIEWED'}">Đã duyệt điều khoản</span>
                             <span class="status-badge st-sent" th:if="${contract.status == 'SENT_TO_CUSTOMER'}">Đã gửi khách hàng</span>
+                            <span class="status-badge st-pending" th:if="${contract.status == 'REVISION_REQUESTED'}">Khách yêu cầu chỉnh sửa</span>
                             <span class="status-badge st-signed" th:if="${contract.status == 'SIGNED'}">Đã ký</span>
                             <span class="status-badge st-cancelled" th:if="${contract.status == 'CANCELLED'}">Đã hủy</span>
                         </td>

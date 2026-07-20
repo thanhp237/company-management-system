@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -44,6 +45,9 @@ class BusinessRuleControllerTest {
 
     @MockBean(name = "customUserDetailsService")
     private UserDetailsService userDetailsService;
+
+    @MockBean
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     void businessRulesPageRendersVoucherBelowCommission() throws Exception {

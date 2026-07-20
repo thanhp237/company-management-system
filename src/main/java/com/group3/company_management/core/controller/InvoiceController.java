@@ -7,6 +7,7 @@ import com.group3.company_management.core.repository.ContractRepository;
 import com.group3.company_management.core.service.InvoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,9 @@ import java.util.List;
 @Controller
 @RequestMapping("/invoices")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN','CUSTOMER')")
+
+@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN', 'DIRECTOR','CUSTOMER', 'MANAGER', 'SALES_MANAGER', 'SALES', 'ADMIN_OFFICER', 'ADMINOFFICER')")
+
 
 public class InvoiceController {
 
@@ -29,12 +32,14 @@ public class InvoiceController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String list(@RequestParam(required = false) String search,
                        @RequestParam(required = false) String status,
                        @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                        @RequestParam(required = false, defaultValue = "desc") String order,
                        Model model) {
 
+        int syncedDraftCount = invoiceService.syncDraftInvoicesForSignedContracts();
         List<Invoice> allInvoices = invoiceService.getAllInvoices();
         long totalCount = allInvoices.size();
         long draftCount = allInvoices.stream().filter(inv -> Invoice.InvoiceStatus.DRAFT.equals(inv.getStatus())).count();
@@ -53,6 +58,7 @@ public class InvoiceController {
         model.addAttribute("status", status);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("order", order);
+        model.addAttribute("syncedDraftCount", syncedDraftCount);
 
         return "Invoice/list";
     }
@@ -158,6 +164,7 @@ public class InvoiceController {
     }
 
     @PostMapping("/create/{contractId}")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String create(@PathVariable Long contractId,
                          @ModelAttribute("invoiceForm") CreateInvoiceRequest request,
                          RedirectAttributes ra) {
@@ -260,6 +267,7 @@ public class InvoiceController {
     }
 
     @PostMapping("/edit/{id}")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String edit(@PathVariable Long id,
                        @ModelAttribute("invoiceForm") CreateInvoiceRequest request,
                        RedirectAttributes ra) {
@@ -278,8 +286,11 @@ public class InvoiceController {
     }
 
     @GetMapping("/detail/{id}")
+
     @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN','CUSTOMER')")
-    public String detail(@PathVariable Long id, Model model, org.springframework.security.core.Authentication authentication) {
+
+    public String detail(@PathVariable Long id, Model model, Authentication authentication) {
+
         Invoice invoice = invoiceService.getInvoiceById(id);
         
         if (authentication != null && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"))) {
@@ -329,6 +340,7 @@ public class InvoiceController {
 
 
     @PostMapping("/{id}/issue")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String issue(@PathVariable Long id, RedirectAttributes ra) {
         try {
             invoiceService.issueInvoice(id);
@@ -339,6 +351,7 @@ public class InvoiceController {
         return "redirect:/invoices";
     }
     @GetMapping("/print/{id}")
+
     @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN', 'CUSTOMER')")
     public String print(@PathVariable Long id, Model model) {
         Invoice invoice = invoiceService.getInvoiceById(id);
@@ -410,6 +423,7 @@ public class InvoiceController {
 
 
     @PostMapping("/{id}/delete")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String delete(@PathVariable Long id, RedirectAttributes ra) {
         try {
             invoiceService.deleteInvoice(id);

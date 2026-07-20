@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/customer-activities")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')")
+@PreAuthorize("hasAnyRole('MARKETING', 'SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN', 'ADMIN_OFFICER', 'ADMINOFFICER', 'ACCOUNTANT', 'DIRECTOR')")
 public class CustomerActivityController {
 
     private static final java.util.Set<String> CLOSED_STAGES = java.util.Set.of("WON", "LOST");
@@ -59,15 +59,21 @@ public class CustomerActivityController {
                 "customerId",
                 customerId);
         if (customerId != null) {
-            model.addAttribute(
-                    "customer",
-                    customerService.getCustomerById(customerId));
+            try {
+                model.addAttribute(
+                        "customer",
+                        customerService.getCustomerById(customerId));
+            } catch (RuntimeException exception) {
+                model.addAttribute("errorMessage", exception.getMessage());
+                model.addAttribute("customerId", null);
+            }
         }
 
         return "activity/list";
     }
 
     @GetMapping("/add")
+    @PreAuthorize("hasAnyRole('MARKETING', 'SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')")
     public String showAddForm(
             @RequestParam Long customerId,
             @RequestParam(required = false) String relatedType,
@@ -93,6 +99,7 @@ public class CustomerActivityController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('MARKETING', 'SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')")
     public String saveActivity(
             @ModelAttribute("activity") CustomerActivity activity,
             @RequestParam(required = false) String returnUrl,
@@ -142,6 +149,7 @@ public class CustomerActivityController {
     }
 
     @PostMapping("/{id}/note")
+    @PreAuthorize("hasAnyRole('MARKETING', 'SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN')")
     public String updateNote(
             @PathVariable Long id,
             @RequestParam String note,

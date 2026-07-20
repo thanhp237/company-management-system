@@ -54,10 +54,6 @@ public class Product {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "image_url", length = 500)
-
-
-
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {

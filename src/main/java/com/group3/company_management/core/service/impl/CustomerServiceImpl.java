@@ -6,23 +6,24 @@ import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.dto.CustomerResponse;
 import com.group3.company_management.customer.dto.CustomerPortalResponse;
 import com.group3.company_management.core.entity.Customer;
-import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.entity.Employee;
+import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.repository.CustomerRepository;
-import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.repository.EmployeeRepository;
+import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Locale;
 
 /**
  * Customer service implementation - UPDATED with portal methods
@@ -65,6 +66,9 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Fetching customer by ID: {}", id);
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khách hàng có mã: " + id));
+        if (!canAccessCustomer(customer)) {
+            throw new AccessDeniedException("Bạn không có quyền xem hồ sơ khách hàng này.");
+        }
         return mapToResponse(customer);
     }
     
@@ -218,61 +222,173 @@ public class CustomerServiceImpl implements CustomerService {
         if (auth == null || !auth.isAuthenticated()) {
             return List.of();
         }
-        String username = auth.getName();
-        Optional<User> userOpt = userRepository.findByUsername(username);
+        Optional<User> userOpt = userRepository.findByUsername(auth.getName());
         if (userOpt.isEmpty()) {
             return List.of();
         }
-        User currentUser = userOpt.get();
 
-        // 1. ADMIN & DIRECTOR see all
-        if (currentUser.isAdmin() || "DIRECTOR".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
-            List<Customer> customers = (status != null && !status.trim().isEmpty())
-                    ? customerRepository.findByCustomerStatusOrderByCreatedAtDesc(status)
+        User currentUser = userOpt.get();
+        String roleCode = roleCode(currentUser);
+        String normalizedStatus = normalizeStatus(status);
+
+        if (canViewAllCustomers(roleCode)) {
+            return loadCustomers(normalizedStatus).stream().map(this::mapToResponse).toList();
+        }
+
+        Optional<Employee> employeeOpt = employeeRepository.findByUser_Username(auth.getName());
+
+        if ("ACCOUNTANT".equals(roleCode)) {
+            if (employeeOpt.isEmpty()) {
+                return List.of();
+            }
+            return customerRepository.findCustomersWithInvoicesOrderByCreatedAtDesc(normalizedStatus, employeeOpt.get().getId())
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+
+        if (employeeOpt.isEmpty()) {
+            return List.of();
+        }
+        Employee employee = employeeOpt.get();
+
+        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+            return loadDepartmentCustomers(currentUser, normalizedStatus).stream().map(this::mapToResponse).toList();
+        }
+
+        if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
+            return customerRepository.findCustomersByAdminOfficerIdOrderByCreatedAtDesc(employee.getId(), normalizedStatus)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .toList();
+        }
+
+        if ("SALES".equals(roleCode)) {
+            List<Customer> customers = (normalizedStatus != null)
+                    ? customerRepository.findByCustomerStatusAndAssignedSalesIdOrderByCreatedAtDesc(normalizedStatus, currentUser.getId())
+                    : customerRepository.findByAssignedSalesIdOrderByCreatedAtDesc(currentUser.getId());
+            return customers.stream().map(this::mapToResponse).toList();
+        }
+
+        if ("MARKETING".equals(roleCode)) {
+            List<Customer> customers = (normalizedStatus != null)
+                    ? customerRepository.findByCustomerStatusOrderByCreatedAtDesc(normalizedStatus)
                     : customerRepository.findAllByOrderByCreatedAtDesc();
             return customers.stream().map(this::mapToResponse).toList();
         }
 
-        // Find the employee representation
-        Optional<Employee> empOpt = employeeRepository.findByUser_Username(username);
-        if (empOpt.isEmpty()) {
+        return List.of();
+    }
+
+    private boolean canAccessCustomer(Customer customer) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return false;
+        }
+
+        Optional<User> userOpt = userRepository.findByUsername(auth.getName());
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+        User currentUser = userOpt.get();
+        String roleCode = roleCode(currentUser);
+
+        if (canViewAllCustomers(roleCode) || "MARKETING".equals(roleCode)) {
+            return true;
+        }
+
+        if ("ACCOUNTANT".equals(roleCode)) {
+            return employeeRepository.findByUser_Username(auth.getName())
+                    .map(employee -> customerRepository.existsInvoiceForCustomerId(customer.getId(), employee.getId()))
+                    .orElse(false);
+        }
+
+        Optional<Employee> employeeOpt = employeeRepository.findByUser_Username(auth.getName());
+        if (employeeOpt.isEmpty()) {
+            return false;
+        }
+        Employee employee = employeeOpt.get();
+
+        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+            if (customer.getAssignedSalesId() == null) {
+                return true;
+            }
+            Long deptId = currentUser.getDepartmentId();
+            if (deptId == null) {
+                return employee.getId().equals(customer.getAssignedSalesId());
+            }
+            return userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId)
+                    .stream()
+                    .filter(user -> "SALES".equals(roleCode(user)))
+                    .map(User::getId)
+                    .anyMatch(customer.getAssignedSalesId()::equals);
+        }
+
+        if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
+            return customerRepository.existsContractForAdminOfficerAndCustomer(employee.getId(), customer.getId());
+        }
+
+        if ("SALES".equals(roleCode)) {
+            return currentUser.getId().equals(customer.getAssignedSalesId());
+        }
+
+        return false;
+    }
+
+    private List<Customer> loadDepartmentCustomers(User currentUser, String status) {
+        Long deptId = currentUser.getDepartmentId();
+        if (deptId == null) {
             return List.of();
         }
-        Employee employee = empOpt.get();
 
-        // 2. Trưởng phòng (MANAGER / SALES_MANAGER) sees department members' customers (excluding manager role and unassigned)
-        if (currentUser.isManager() || "SALES_MANAGER".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
-            Long deptId = currentUser.getDepartmentId();
-            if (deptId != null) {
-                List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
-                List<Long> employeeIds = new ArrayList<>();
-                for (User u : deptUsers) {
-                    if (u.getEmployee() != null && 
-                        !"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
-                        !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
-                        !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode())) {
-                        employeeIds.add(u.getEmployee().getId());
-                    }
-                }
-                
-                List<Customer> customers;
-                if (employeeIds.isEmpty()) {
-                    customers = List.of();
-                } else {
-                    if (status != null && !status.trim().isEmpty()) {
-                        customers = customerRepository.findByCustomerStatusAndAssignedSalesIdInOrderByCreatedAtDesc(status, employeeIds);
-                    } else {
-                        customers = customerRepository.findByAssignedSalesIdInOrderByCreatedAtDesc(employeeIds);
-                    }
-                }
-                return customers.stream().map(this::mapToResponse).toList();
+
+        List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+        List<Long> employeeIds = new ArrayList<>();
+        for (User user : deptUsers) {
+            if ("SALES".equals(roleCode(user))) {
+                employeeIds.add(user.getId());
+
             }
         }
 
-        // 3. Normal Sales rep sees only their assigned customers
-        List<Customer> customers = (status != null && !status.trim().isEmpty())
-                ? customerRepository.findByCustomerStatusAndAssignedSalesIdOrderByCreatedAtDesc(status, employee.getId())
-                : customerRepository.findByAssignedSalesIdOrderByCreatedAtDesc(employee.getId());
-        return customers.stream().map(this::mapToResponse).toList();
+        List<Customer> customers;
+        if (employeeIds.isEmpty()) {
+            customers = (status != null)
+                    ? customerRepository.findByCustomerStatusAndAssignedSalesIdIsNullOrderByCreatedAtDesc(status)
+                    : customerRepository.findByAssignedSalesIdIsNullOrderByCreatedAtDesc();
+        } else if (status != null) {
+            customers = new ArrayList<>(customerRepository.findByCustomerStatusAndAssignedSalesIdInOrderByCreatedAtDesc(status, employeeIds));
+            customers.addAll(customerRepository.findByCustomerStatusAndAssignedSalesIdIsNullOrderByCreatedAtDesc(status));
+        } else {
+            customers = new ArrayList<>(customerRepository.findByAssignedSalesIdInOrderByCreatedAtDesc(employeeIds));
+            customers.addAll(customerRepository.findByAssignedSalesIdIsNullOrderByCreatedAtDesc());
+        }
+
+        customers.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
+        return customers;
+    }
+
+    private List<Customer> loadCustomers(String status) {
+        return (status != null)
+                ? customerRepository.findByCustomerStatusOrderByCreatedAtDesc(status)
+                : customerRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    private boolean canViewAllCustomers(String roleCode) {
+        return "ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode);
+    }
+
+    private String normalizeStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            return null;
+        }
+        return status.trim();
+    }
+
+    private String roleCode(User user) {
+        if (user == null || user.getRole() == null || user.getRole().getRoleCode() == null) {
+            return "";
+        }
+        return user.getRole().getRoleCode().trim().toUpperCase(Locale.ROOT);
     }
 }

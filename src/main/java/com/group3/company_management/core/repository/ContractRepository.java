@@ -41,6 +41,27 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
     @Query("select coalesce(sum(c.finalAmount), 0) from Contract c where c.sale.id = :saleId and c.status = :status")
     BigDecimal sumFinalAmountBySaleIdAndStatus(@Param("saleId") Long saleId, @Param("status") Contract.ContractStatus status);
 
+    @Query("""
+            select coalesce(sum(c.finalAmount), 0)
+            from Contract c
+            where c.sale.id in :saleIds
+            and c.status = :status
+            """)
+    BigDecimal sumFinalAmountBySaleIdInAndStatus(@Param("saleIds") List<Long> saleIds, @Param("status") Contract.ContractStatus status);
+
+    @Query("""
+            select count(c) > 0
+            from Contract c
+            where c.id <> :contractId
+            and c.customer.id <> :customerId
+            and c.buyerBankAccount is not null
+            and replace(replace(lower(c.buyerBankAccount), ' ', ''), '-', '') = :normalizedBankAccount
+            """)
+    boolean existsDuplicateBuyerBankAccount(
+            @Param("contractId") Long contractId,
+            @Param("customerId") Long customerId,
+            @Param("normalizedBankAccount") String normalizedBankAccount);
+
     long countBySaleIdIn(List<Long> saleIds);
 
     long countBySaleIdInAndStatus(List<Long> saleIds, Contract.ContractStatus status);

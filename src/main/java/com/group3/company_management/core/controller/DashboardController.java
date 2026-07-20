@@ -164,9 +164,12 @@ public class DashboardController {
         model.addAttribute("actionGroups", actionGroups(role));
         model.addAttribute("insightItems", insightItems(role));
         boolean executiveDashboard = isExecutiveRole(role);
+        model.addAttribute("roleReportTitle", roleReportTitle(role));
+        model.addAttribute("roleReportSubtitle", roleReportSubtitle(role));
+        model.addAttribute("roleReportRows", roleReportRows(role, authentication));
+        model.addAttribute("roleReportDashboard", true);
         model.addAttribute("executiveDashboard", executiveDashboard);
         if (executiveDashboard) {
-            model.addAttribute("revenueSummaryRows", revenueSummaryRows());
             model.addAttribute("executiveKpiRows", executiveKpiRows());
         }
 
@@ -188,7 +191,7 @@ public class DashboardController {
             );
             case "MARKETING" -> List.of(
                     card("Khách hàng", number(customerRepository.count()), "Tổng hồ sơ khách hàng/lead", "fa-address-book", "success"),
-                    card("Đang hoạt động", number(customerRepository.countByCustomerStatusIgnoreCase("ACTIVE")), "Khách hàng đang hoạt động", "fa-user-check", "info"),
+                    card("Đã phân bổ", number(customerRepository.countByAssignedSalesIdIsNotNull()), "Khách hàng đã chuyển cho sale", "fa-user-check", "info"),
                     card("Quy trình bán hàng", number(opportunityRepository.count()), "Cơ hội đã sinh từ khách hàng tiềm năng", "fa-chart-line", "warning"),
                     card("Thông báo", number(unreadNotifications(user)), "Thông báo chưa đọc", "fa-bell", "danger")
             );
@@ -196,44 +199,21 @@ public class DashboardController {
                     card("Khách hàng của tôi", number(myCustomerCount(user)), "Danh sách được phân bổ", "fa-user-check", "success"),
                     card("Cơ hội", number(opportunityRepository.countByAssignedToUsername(username)), "Quy trình bán hàng cá nhân", "fa-chart-line", "info"),
                     card("Hợp đồng", number(employeeId == null ? 0 : contractRepository.countBySaleId(employeeId)), "Hợp đồng phụ trách", "fa-file-contract", "warning"),
+                    card("Doanh số", money(employeeId == null ? BigDecimal.ZERO : contractRepository.sumFinalAmountBySaleIdAndStatus(employeeId, Contract.ContractStatus.SIGNED)), "Tổng hợp đồng đã ký của bạn", "fa-sack-dollar", "success"),
                     card("Lịch hẹn", number(appointmentRepository.countByEmployeeUsername(username)), "Cuộc hẹn cần theo dõi", "fa-calendar-check", "danger")
             );
             case "SALES_MANAGER" -> {
-                if (user.getDepartmentId() != null) {
-                    List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(user.getDepartmentId());
-                    List<String> deptUsernames = deptUsers.stream()
-                            .filter(u -> !"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
-                                         !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
-                                         !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode()))
-                            .map(User::getUsername)
-                            .toList();
-                    List<Long> deptEmployeeIds = deptUsers.stream()
-                            .filter(u -> !"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
-                                         !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
-                                         !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode()))
-                            .map(u -> u.getEmployee() != null ? u.getEmployee().getId() : null)
-                            .filter(java.util.Objects::nonNull)
-                            .toList();
 
-                    long oppCount = deptUsernames.isEmpty() ? 0 : opportunityRepository.countByAssignedToUsernameIn(deptUsernames);
-                    long wonCount = deptUsernames.isEmpty() ? 0 : opportunityRepository.countByStageAndAssignedToUsernameIn("WON", deptUsernames);
-                    long contractCountVal = deptEmployeeIds.isEmpty() ? 0 : contractRepository.countBySaleIdIn(deptEmployeeIds);
-                    long pendingContracts = deptEmployeeIds.isEmpty() ? 0 : contractRepository.countBySaleIdInAndStatus(deptEmployeeIds, Contract.ContractStatus.PENDING_ADMIN_OFFICER);
+                List<String> teamUsernames = salesTeamUsernames(employee);
+                List<Long> teamEmployeeIds = salesTeamEmployeeIds(employee);
+                yield List.of(
+                        card("Quy trình nhóm", number(teamUsernames.isEmpty() ? 0 : opportunityRepository.countByAssignedToUsernameIn(teamUsernames)), "Cơ hội của đội sale trong phòng", "fa-chart-column", "success"),
+                        card("Thương vụ thắng", number(teamUsernames.isEmpty() ? 0 : opportunityRepository.countByStageAndAssignedToUsernameIn("WON", teamUsernames)), "Cơ hội đã thắng của đội", "fa-trophy", "info"),
+                        card("Hợp đồng", number(teamEmployeeIds.isEmpty() ? 0 : contractRepository.countBySaleIdIn(teamEmployeeIds)), "Hợp đồng do đội sale phụ trách", "fa-file-signature", "warning"),
+                        card("Doanh số Sales", money(sumSignedRevenueForSalesTeam(employee)), "Tổng doanh số hợp đồng đã ký của đội sale", "fa-coins", "success"),
+                        card("Chờ thẩm định", number(teamEmployeeIds.isEmpty() ? 0 : contractRepository.countBySaleIdInAndStatus(teamEmployeeIds, Contract.ContractStatus.PENDING_ADMIN_OFFICER)), "Hợp đồng của đội đang chờ thẩm định", "fa-hourglass-half", "danger")
+                );
 
-                    yield List.of(
-                            card("Quy trình nhóm", number(oppCount), "Cơ hội của nhân viên trong phòng ban", "fa-chart-column", "success"),
-                            card("Thương vụ thắng", number(wonCount), "Cơ hội đã thắng", "fa-trophy", "info"),
-                            card("Hợp đồng", number(contractCountVal), "Tiến độ ký kết", "fa-file-signature", "warning"),
-                            card("Chờ thẩm định", number(pendingContracts), "Hợp đồng chờ thẩm định", "fa-hourglass-half", "danger")
-                    );
-                } else {
-                    yield List.of(
-                            card("Quy trình nhóm", "0", "Cơ hội của nhân viên trong phòng ban", "fa-chart-column", "success"),
-                            card("Thương vụ thắng", "0", "Cơ hội đã thắng", "fa-trophy", "info"),
-                            card("Hợp đồng", "0", "Tiến độ ký kết", "fa-file-signature", "warning"),
-                            card("Chờ thẩm định", "0", "Hợp đồng chờ thẩm định", "fa-hourglass-half", "danger")
-                    );
-                }
             }
             case "ADMIN_OFFICER" -> List.of(
                     card("Chờ thẩm định", number(contractRepository.countByStatus(Contract.ContractStatus.PENDING_ADMIN_OFFICER)), "Hợp đồng chờ xử lý", "fa-clipboard-check", "warning"),
@@ -241,12 +221,15 @@ public class DashboardController {
                     card("Được phân công", number(employeeId == null ? 0 : contractRepository.countByAdminOfficerId(employeeId)), "Hợp đồng đã nhận xử lý", "fa-file-pen", "info"),
                     card("Thông báo", number(unreadNotifications(user)), "Việc cần phản hồi", "fa-bell", "danger")
             );
-            case "ACCOUNTANT" -> List.of(
-                    card("Doanh thu ký", money(contractRepository.sumFinalAmountByStatus(Contract.ContractStatus.SIGNED)), "Tổng giá trị hợp đồng đã ký", "fa-coins", "success"),
-                    card("Hợp đồng gửi khách hàng", number(contractRepository.countByStatus(Contract.ContractStatus.SENT_TO_CUSTOMER)), "Chờ khách ký/thanh toán", "fa-receipt", "warning"),
-                    card("Đã ký", number(contractRepository.countByStatus(Contract.ContractStatus.SIGNED)), "Cơ sở ghi nhận doanh thu", "fa-file-invoice", "info"),
-                    card("Hoa hồng", "Chưa có", "Phân hệ hoa hồng chưa có dữ liệu", "fa-hand-holding-dollar", "danger")
-            );
+            case "ACCOUNTANT" -> {
+                Long accountantId = employeeId;
+                yield List.of(
+                        card("Hóa đơn đã phát hành", money(sumAccountantIssuedInvoices(accountantId)), "Invoice ISSUED/PARTIALLY_PAID/PAID do bạn xử lý", "fa-file-invoice-dollar", "success"),
+                        card("Đã thu", money(sumAccountantPaidAmount(accountantId)), "Tổng tiền đã thu trên hóa đơn của bạn", "fa-sack-dollar", "info"),
+                        card("Còn phải thu", money(sumAccountantOutstandingAmount(accountantId)), "Công nợ trên hóa đơn của bạn", "fa-money-bill-transfer", "warning"),
+                        card("Hóa đơn nháp", number(accountantId == null ? 0 : invoiceRepository.countByAccountantAndStatus(accountantId, Invoice.InvoiceStatus.DRAFT)), "Hóa đơn đang chuẩn bị", "fa-file-pen", "danger")
+                );
+            }
             case "DIRECTOR" -> List.of(
                     card("Doanh thu", money(contractRepository.sumFinalAmountByStatus(Contract.ContractStatus.SIGNED)), "Hiệu suất kinh doanh từ hợp đồng đã ký", "fa-chart-pie", "success"),
                     card("Hợp đồng", number(contractRepository.count()), "Tổng hợp toàn hệ thống", "fa-file-contract", "info"),
@@ -394,6 +377,79 @@ public class DashboardController {
         return "DIRECTOR".equals(role);
     }
 
+    private String roleReportTitle(String role) {
+        return switch (role) {
+            case "ADMIN" -> "Báo cáo quản trị";
+            case "MARKETING" -> "Báo cáo khách hàng tiềm năng";
+            case "SALES" -> "Tổng hợp doanh số cá nhân";
+            case "SALES_MANAGER" -> "Tổng hợp doanh số đội kinh doanh";
+            case "ADMIN_OFFICER" -> "Báo cáo xử lý hợp đồng";
+            case "ACCOUNTANT" -> "Báo cáo tài chính";
+            case "DIRECTOR" -> "Revenue Summary";
+            default -> "Báo cáo nhiệm vụ chính";
+        };
+    }
+
+    private String roleReportSubtitle(String role) {
+        return switch (role) {
+            case "SALES" -> "Doanh số, hợp đồng và pipeline thuộc phạm vi cá nhân.";
+            case "SALES_MANAGER" -> "Tổng hợp hiệu suất toàn bộ đội sale.";
+            case "ACCOUNTANT", "DIRECTOR" -> "Báo cáo doanh thu, đã thu và công nợ từ hợp đồng/invoice.";
+            default -> "Các chỉ số tổng hợp theo nhiệm vụ chính của vai trò.";
+        };
+    }
+
+    private List<Map<String, String>> roleReportRows(String role, Authentication authentication) {
+        User user = currentUser(authentication);
+        Employee employee = currentEmployee(authentication);
+        Long employeeId = employee == null ? null : employee.getId();
+        String username = authentication == null ? "" : authentication.getName();
+
+        return switch (role) {
+            case "ADMIN" -> List.of(
+                    metric("Tài khoản hoạt động", number(userRepository.count()), "Tổng tài khoản hệ thống", "fa-users-gear", "success"),
+                    metric("Vai trò active", number(roleRepository.findByStatusIgnoreCaseOrderByRoleNameAsc("ACTIVE").size()), "Vai trò đang dùng", "fa-user-shield", "info"),
+                    metric("Phòng ban", number(departmentRepository.findByIsDeletedFalseOrderByNameAsc().size()), "Cơ cấu tổ chức", "fa-sitemap", "warning")
+            );
+            case "MARKETING" -> List.of(
+                    metric("Khách hàng/lead", number(customerRepository.count()), "Tổng dữ liệu khách hàng", "fa-address-book", "success"),
+                    metric("Đã phân bổ", number(customerRepository.countByAssignedSalesIdIsNotNull()), "Lead đã chuyển cho sale", "fa-user-check", "info"),
+                    metric("Pipeline phát sinh", number(opportunityRepository.count()), "Cơ hội từ dữ liệu khách hàng", "fa-chart-line", "warning")
+            );
+            case "SALES" -> List.of(
+                    metric("Doanh số đã ký", money(employeeId == null ? BigDecimal.ZERO : contractRepository.sumFinalAmountBySaleIdAndStatus(employeeId, Contract.ContractStatus.SIGNED)), "Tổng hợp đồng SIGNED của bạn", "fa-sack-dollar", "success"),
+                    metric("Hợp đồng cá nhân", number(employeeId == null ? 0 : contractRepository.countBySaleId(employeeId)), "Toàn bộ hợp đồng phụ trách", "fa-file-contract", "info"),
+                    metric("Tỷ lệ thắng", percent(opportunityRepository.countByStageAndAssignedToUsername("WON", username),
+                            opportunityRepository.countByStageAndAssignedToUsername("WON", username) + opportunityRepository.countByStageAndAssignedToUsername("LOST", username)),
+                            "WON / WON+LOST cá nhân", "fa-ranking-star", "success"),
+                    metric("Báo giá", number(employeeId == null ? 0 : quotationRepository.countByEmployeeId(employeeId)), "Báo giá đã tạo", "fa-file-lines", "warning")
+            );
+            case "SALES_MANAGER" -> {
+                BigDecimal revenue = sumSignedRevenueForSalesTeam(employee);
+                long signed = countSignedContractsForSalesTeam(employee);
+                List<String> teamUsernames = salesTeamUsernames(employee);
+                long won = teamUsernames.isEmpty() ? 0 : opportunityRepository.countByStageAndAssignedToUsernameIn("WON", teamUsernames);
+                long lost = teamUsernames.isEmpty() ? 0 : opportunityRepository.countByStageAndAssignedToUsernameIn("LOST", teamUsernames);
+                yield List.of(
+                        metric("Doanh số toàn đội", money(revenue), "Tổng hợp đồng SIGNED của sales", "fa-coins", "success"),
+                        metric("Hợp đồng đã ký", number(signed), "Hợp đồng SIGNED của sales", "fa-file-signature", "info"),
+                        metric("Tỷ lệ thắng toàn đội", percent(won, won + lost), number(won) + " WON / " + number(won + lost) + " WON+LOST", "fa-ranking-star", "success"),
+                        metric("Cơ hội toàn đội", number(teamUsernames.isEmpty() ? 0 : opportunityRepository.countByAssignedToUsernameIn(teamUsernames)), "Tổng pipeline của đội sale", "fa-chart-column", "warning")
+                );
+            }
+            case "ADMIN_OFFICER" -> List.of(
+                    metric("Chờ thẩm định", number(contractRepository.countByStatus(Contract.ContractStatus.PENDING_ADMIN_OFFICER)), "Hợp đồng cần xử lý", "fa-clipboard-check", "warning"),
+                    metric("Đã rà soát", number(employeeId == null ? 0 : contractRepository.countByAdminOfficerIdAndStatus(employeeId, Contract.ContractStatus.ADMIN_REVIEWED)), "Hợp đồng bạn đã xử lý", "fa-scale-balanced", "success"),
+                    metric("Khách yêu cầu sửa", number(contractRepository.countByStatus(Contract.ContractStatus.REVISION_REQUESTED)), "Hợp đồng cần phản hồi", "fa-triangle-exclamation", "danger")
+            );
+            case "ACCOUNTANT" -> accountantRevenueRows(employeeId);
+            case "DIRECTOR" -> revenueSummaryRows();
+            default -> List.of(
+                    metric("Thông báo", number(unreadNotifications(user)), "Công việc cần theo dõi", "fa-bell", "info")
+            );
+        };
+    }
+
     private List<Map<String, String>> revenueSummaryRows() {
         long paidInvoices = invoiceRepository.countByStatus(Invoice.InvoiceStatus.PAID);
         long partiallyPaidInvoices = invoiceRepository.countByStatus(Invoice.InvoiceStatus.PARTIALLY_PAID);
@@ -407,6 +463,23 @@ public class DashboardController {
                         .add(invoiceRepository.sumTotalAmountByStatus(Invoice.InvoiceStatus.PAID))), "Tổng giá trị invoice đã gửi/đã thanh toán", "fa-file-invoice-dollar", "info"),
                 metric("Đã thu", money(invoiceRepository.sumPaidAmount()), number(paidInvoices) + " invoice đã PAID", "fa-sack-dollar", "success"),
                 metric("Còn phải thu", money(invoiceRepository.sumOutstandingAmount()), number(unpaidInvoices) + " invoice chưa tất toán", "fa-money-bill-transfer", "warning")
+        );
+    }
+
+    private List<Map<String, String>> accountantRevenueRows(Long accountantEmployeeId) {
+        long paidInvoices = accountantEmployeeId == null ? 0
+                : invoiceRepository.countByAccountantAndStatus(accountantEmployeeId, Invoice.InvoiceStatus.PAID);
+        long partiallyPaidInvoices = accountantEmployeeId == null ? 0
+                : invoiceRepository.countByAccountantAndStatus(accountantEmployeeId, Invoice.InvoiceStatus.PARTIALLY_PAID);
+        long issuedInvoices = accountantEmployeeId == null ? 0
+                : invoiceRepository.countByAccountantAndStatus(accountantEmployeeId, Invoice.InvoiceStatus.ISSUED);
+        long unpaidInvoices = issuedInvoices + partiallyPaidInvoices;
+
+        return List.of(
+                metric("Invoice đã phát hành", money(sumAccountantIssuedInvoices(accountantEmployeeId)), "Hóa đơn bạn đã tạo/cập nhật và đã gửi/đã thanh toán", "fa-file-invoice-dollar", "info"),
+                metric("Đã thu", money(sumAccountantPaidAmount(accountantEmployeeId)), number(paidInvoices) + " invoice đã PAID", "fa-sack-dollar", "success"),
+                metric("Còn phải thu", money(sumAccountantOutstandingAmount(accountantEmployeeId)), number(unpaidInvoices) + " invoice chưa tất toán", "fa-money-bill-transfer", "warning"),
+                metric("Hóa đơn nháp", number(accountantEmployeeId == null ? 0 : invoiceRepository.countByAccountantAndStatus(accountantEmployeeId, Invoice.InvoiceStatus.DRAFT)), "Hóa đơn đang chuẩn bị", "fa-file-pen", "danger")
         );
     }
 
@@ -467,10 +540,6 @@ public class DashboardController {
         if (user == null || user.getId() == null) {
             return 0;
         }
-        long ownerCount = customerRepository.countByOwnerId(user.getId());
-        if (ownerCount > 0) {
-            return ownerCount;
-        }
         return customerRepository.countByAssignedSalesId(user.getId());
     }
 
@@ -488,6 +557,78 @@ public class DashboardController {
     private String money(BigDecimal value) {
         BigDecimal safeValue = value == null ? BigDecimal.ZERO : value;
         return String.format("%,.0f VND", safeValue);
+    }
+
+    private BigDecimal sumSignedRevenueForSalesTeam(Employee currentEmployee) {
+        List<Long> saleIds = salesTeamEmployeeIds(currentEmployee);
+        if (saleIds.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return contractRepository.sumFinalAmountBySaleIdInAndStatus(saleIds, Contract.ContractStatus.SIGNED);
+    }
+
+    private long countSignedContractsForSalesTeam(Employee currentEmployee) {
+        List<Long> saleIds = salesTeamEmployeeIds(currentEmployee);
+        if (saleIds.isEmpty()) {
+            return 0;
+        }
+        return contractRepository.countBySaleIdInAndStatus(saleIds, Contract.ContractStatus.SIGNED);
+    }
+
+    private List<Long> salesTeamEmployeeIds(Employee currentEmployee) {
+        if (currentEmployee == null || currentEmployee.getUser() == null
+                || currentEmployee.getUser().getDepartmentId() == null) {
+            return List.of();
+        }
+        return userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(currentEmployee.getUser().getDepartmentId())
+                .stream()
+                .filter(user -> "SALES".equals(roleCode(user)))
+                .map(User::getEmployee)
+                .filter(employee -> employee != null && employee.getId() != null)
+                .map(Employee::getId)
+                .toList();
+    }
+
+    private List<String> salesTeamUsernames(Employee currentEmployee) {
+        if (currentEmployee == null || currentEmployee.getUser() == null
+                || currentEmployee.getUser().getDepartmentId() == null) {
+            return List.of();
+        }
+        return userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(currentEmployee.getUser().getDepartmentId())
+                .stream()
+                .filter(user -> "SALES".equals(roleCode(user)))
+                .map(User::getUsername)
+                .toList();
+    }
+
+    private BigDecimal sumAccountantIssuedInvoices(Long accountantEmployeeId) {
+        if (accountantEmployeeId == null) {
+            return BigDecimal.ZERO;
+        }
+        return invoiceRepository.sumTotalAmountByAccountantAndStatus(accountantEmployeeId, Invoice.InvoiceStatus.ISSUED)
+                .add(invoiceRepository.sumTotalAmountByAccountantAndStatus(accountantEmployeeId, Invoice.InvoiceStatus.PARTIALLY_PAID))
+                .add(invoiceRepository.sumTotalAmountByAccountantAndStatus(accountantEmployeeId, Invoice.InvoiceStatus.PAID));
+    }
+
+    private BigDecimal sumAccountantPaidAmount(Long accountantEmployeeId) {
+        if (accountantEmployeeId == null) {
+            return BigDecimal.ZERO;
+        }
+        return invoiceRepository.sumPaidAmountByAccountant(accountantEmployeeId);
+    }
+
+    private BigDecimal sumAccountantOutstandingAmount(Long accountantEmployeeId) {
+        if (accountantEmployeeId == null) {
+            return BigDecimal.ZERO;
+        }
+        return invoiceRepository.sumOutstandingAmountByAccountant(accountantEmployeeId);
+    }
+
+    private String roleCode(User user) {
+        if (user == null || user.getRole() == null || user.getRole().getRoleCode() == null) {
+            return "";
+        }
+        return user.getRole().getRoleCode().trim().toUpperCase();
     }
 
     private String dashboardUrl(Authentication authentication) {

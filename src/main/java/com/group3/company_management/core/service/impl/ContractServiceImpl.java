@@ -8,6 +8,7 @@ import com.group3.company_management.core.dto.PaymentScheduleResponse;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Employee;
+import com.group3.company_management.core.entity.Invoice;
 import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.entity.Product;
 import com.group3.company_management.core.entity.Quotation;
@@ -241,6 +242,7 @@ public class ContractServiceImpl implements ContractService {
         contract.setPaymentTerms(request.getPaymentTerms());
         Contract.PaymentPlanType planType = parsePlanType(request.getPaymentPlanType());
         List<PaymentScheduleRequest> schedules = validateSchedules(planType, request.getPaymentSchedules(), contract.getFinalAmount());
+        validateUniqueBuyerBankAccount(contract, request.getBuyerBankAccount());
         contract.setPaymentPlanType(planType);
         contract.setRevisionReason(null);
         contract.setDeliveryTerms(request.getDeliveryTerms());
@@ -348,6 +350,7 @@ public class ContractServiceImpl implements ContractService {
         contract.setStatus(Contract.ContractStatus.SIGNED);
         contract.setSignedAt(LocalDateTime.now());
         contractRepository.save(contract);
+        createDraftInvoicesForSignedContract(contract);
 
         // Gửi email và thông báo hệ thống
         sendContractSignedNotifications(contract);
@@ -398,8 +401,15 @@ public class ContractServiceImpl implements ContractService {
             String sortBy,
             String sortDir
     ) {
-        Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên."));
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản."));
+        String currentRoleCode = roleCode(currentUser);
+        Employee employee = canReadAllContracts(currentRoleCode)
+                ? null
+                : employeeRepository.findByUser_Username(username)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên."));
+        final Employee scopedEmployee = employee;
+        final String scopedRoleCode = currentRoleCode;
 
         Sort sort = "asc".equalsIgnoreCase(sortDir)
                 ? Sort.by(sortBy).ascending()
@@ -410,12 +420,11 @@ public class ContractServiceImpl implements ContractService {
         Specification<Contract> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            String roleCode = roleCode(employee);
-            if ("ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode)) {
+            if (canReadAllContracts(scopedRoleCode)) {
                 // Global access: no restriction
-            } else if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+            } else if ("MANAGER".equals(scopedRoleCode) || "SALES_MANAGER".equals(scopedRoleCode)) {
                 // Department manager: see department employees' contracts
-                Long deptId = employee.getUser() != null ? employee.getUser().getDepartmentId() : null;
+                Long deptId = scopedEmployee.getUser() != null ? scopedEmployee.getUser().getDepartmentId() : null;
                 if (deptId != null) {
                     List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
                     List<Long> deptEmployeeIds = deptUsers.stream()
@@ -432,14 +441,14 @@ public class ContractServiceImpl implements ContractService {
                     }
                 } else {
                     predicates.add(cb.or(
-                        cb.equal(root.get("sale").get("id"), employee.getId()),
-                        cb.equal(root.get("adminOfficer").get("id"), employee.getId())
+                        cb.equal(root.get("sale").get("id"), scopedEmployee.getId()),
+                        cb.equal(root.get("adminOfficer").get("id"), scopedEmployee.getId())
                     ));
                 }
-            } else if (canReviewContract(employee)) {
-                predicates.add(cb.equal(root.get("adminOfficer").get("id"), employee.getId()));
+            } else if (canReviewContract(scopedEmployee)) {
+                predicates.add(cb.equal(root.get("adminOfficer").get("id"), scopedEmployee.getId()));
             } else {
-                predicates.add(cb.equal(root.get("sale").get("id"), employee.getId()));
+                predicates.add(cb.equal(root.get("sale").get("id"), scopedEmployee.getId()));
             }
 
             if (status != null) {
@@ -468,13 +477,11 @@ public class ContractServiceImpl implements ContractService {
     @Override
     @Transactional(readOnly = true)
     public ContractStatisticsResponse getContractStatistics(String username) {
-        Employee employee = employeeRepository.findByUser_Username(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
 
-        Long employeeId = employee.getId();
-
-        String roleCode = roleCode(employee);
-        if ("ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode)) {
+        String roleCode = roleCode(currentUser);
+        if (canReadAllContracts(roleCode)) {
             return ContractStatisticsResponse.builder()
                     .total(contractRepository.count())
                     .draft(contractRepository.countByStatus(Contract.ContractStatus.DRAFT))
@@ -485,6 +492,11 @@ public class ContractServiceImpl implements ContractService {
                     .cancelled(contractRepository.countByStatus(Contract.ContractStatus.CANCELLED))
                     .build();
         }
+
+        Employee employee = employeeRepository.findByUser_Username(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
+
+        Long employeeId = employee.getId();
 
         if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
             Long deptId = employee.getUser() != null ? employee.getUser().getDepartmentId() : null;
@@ -866,6 +878,12 @@ public class ContractServiceImpl implements ContractService {
                 || "DIRECTOR".equals(roleCode);
     }
 
+    private boolean canReadAllContracts(String roleCode) {
+        return "ADMIN".equals(roleCode)
+                || "DIRECTOR".equals(roleCode)
+                || "ACCOUNTANT".equals(roleCode);
+    }
+
     private void ensurePaymentScheduleExists(Contract contract) {
         if (contract == null || contract.getId() == null
                 || !paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contract.getId()).isEmpty()) {
@@ -883,6 +901,50 @@ public class ContractServiceImpl implements ContractService {
                 .amount(defaultMoney(contract.getFinalAmount()))
                 .description("Thanh toán toàn bộ hợp đồng")
                 .build());
+    }
+
+    private void createDraftInvoicesForSignedContract(Contract contract) {
+        List<PaymentSchedule> schedules = paymentScheduleRepository.findByContractIdOrderByInstallmentNo(contract.getId());
+        for (PaymentSchedule schedule : schedules) {
+            if (invoiceRepository.existsByPaymentScheduleId(schedule.getId())) {
+                continue;
+            }
+
+            invoiceRepository.save(Invoice.builder()
+                    .contract(contract)
+                    .paymentSchedule(schedule)
+                    .invoiceCode(generateInvoiceCode())
+                    .dueDate(schedule.getDueDate())
+                    .note(schedule.getDescription() != null ? schedule.getDescription() : "")
+                    .status(Invoice.InvoiceStatus.DRAFT)
+                    .totalAmount(defaultMoney(schedule.getAmount()))
+                    .paidAmount(BigDecimal.ZERO)
+                    .outstandingAmount(defaultMoney(schedule.getAmount()))
+                    .build());
+        }
+    }
+
+    private String generateInvoiceCode() {
+        long count = invoiceRepository.count() + 1;
+        LocalDate now = LocalDate.now();
+        return String.format("INV%04d%02d%03d", now.getYear(), now.getMonthValue(), count);
+    }
+
+    private void validateUniqueBuyerBankAccount(Contract contract, String bankAccount) {
+        String normalized = normalizeBankAccount(bankAccount);
+        if (normalized == null || contract.getCustomer() == null || contract.getCustomer().getId() == null) {
+            return;
+        }
+        if (contractRepository.existsDuplicateBuyerBankAccount(contract.getId(), contract.getCustomer().getId(), normalized)) {
+            throw new RuntimeException("Tài khoản ngân hàng bên mua đã được sử dụng cho khách hàng khác.");
+        }
+    }
+
+    private String normalizeBankAccount(String value) {
+        if (!hasText(value)) {
+            return null;
+        }
+        return value.replaceAll("[\\s-]", "").toLowerCase(Locale.ROOT);
     }
 
     private void validateSalesStepAccess(Contract contract, Employee employee) {
@@ -908,6 +970,13 @@ public class ContractServiceImpl implements ContractService {
             return "";
         }
         return employee.getUser().getRole().getRoleCode().trim().toUpperCase(Locale.ROOT);
+    }
+
+    private String roleCode(User user) {
+        if (user == null || user.getRole() == null || user.getRole().getRoleCode() == null) {
+            return "";
+        }
+        return user.getRole().getRoleCode().trim().toUpperCase(Locale.ROOT);
     }
 
     private boolean hasContractRules(Contract contract) {

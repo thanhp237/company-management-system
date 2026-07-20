@@ -38,11 +38,13 @@
                 </p>
             </div>
             <div class="management-actions">
-                <a class="customer-secondary-button" th:href="@{/customers/add(id=${customer.id})}">
+                <a class="customer-secondary-button" th:if="${canManageCustomer}" th:href="@{/customers/add(id=${customer.id})}">
                     <i class="fas fa-pen"></i>
                     <span>Sửa khách hàng</span>
                 </a>
-                <a th:if="!existsQuotation" class="customer-primary-button" th:href="@{/quotation/create/{customerId}(customerId=${customer.id})}">
+
+                <a class="customer-primary-button" th:if="${canCreateQuotation}" th:href="@{/quotation/create/{customerId}(customerId=${customer.id})}">
+
                     <i class="fas fa-paper-plane"></i>
                     <span>Tạo báo giá</span>
                 </a>
@@ -66,25 +68,138 @@
 
         <section class="customer-stat-grid">
             <article class="customer-stat-card success">
-                <span>Tương tác</span>
-                <strong th:text="${activityCount}">0</strong>
-                <small>Lịch sử tương tác</small>
+                <span>Hợp đồng</span>
+                <strong th:text="${contractCount}">0</strong>
+                <small th:text="${signedContractCount + ' đã ký'}">0 đã ký</small>
             </article>
             <article class="customer-stat-card info">
-                <span>Trạng thái</span>
-                <strong th:text="${customer.customerStatus == 'ACTIVE' ? 'Hoạt động' : (customer.customerStatus == 'INACTIVE' ? 'Ngừng hoạt động' : 'Chưa có')}">Hoạt động</strong>
-                <small>Hồ sơ khách hàng</small>
+                <span>Hóa đơn</span>
+                <strong th:text="${invoiceCount}">0</strong>
+                <small th:text="${draftInvoiceCount + ' nháp / ' + issuedInvoiceCount + ' phát hành'}">0 nháp</small>
             </article>
             <article class="customer-stat-card warning">
-                <span>Nguồn</span>
-                <strong th:text="${customer.customerSource != null ? customer.customerSource : 'Chưa có'}">Website</strong>
-                <small>Kênh ghi nhận</small>
+                <span>Công nợ</span>
+                <strong th:text="${#numbers.formatDecimal(outstandingInvoiceAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
+                <small>Chưa thanh toán</small>
             </article>
             <article class="customer-stat-card neutral">
-                <span>Mã nhân viên kinh doanh</span>
-                <strong th:text="${customer.assignedSalesId != null ? customer.assignedSalesId : 'Chưa có'}">Chưa có</strong>
-                <small>Người phụ trách</small>
+                <span>Tương tác</span>
+                <strong th:text="${activityCount}">0</strong>
+                <small th:text="${customer.customerSource != null ? customer.customerSource : 'Chưa có nguồn'}">Nguồn</small>
             </article>
+        </section>
+
+        <section class="customer-panel">
+            <div class="customer-panel-header">
+                <div>
+                    <h2 th:text="${reportTitle}">Báo cáo khách hàng</h2>
+                    <p th:text="${reportSubtitle}">Báo cáo chi tiết theo vai trò.</p>
+                </div>
+            </div>
+            <div class="customer-panel-body">
+                <div class="customer-info-grid">
+                    <div>
+                        <span>Tổng giá trị hóa đơn</span>
+                        <strong th:text="${#numbers.formatDecimal(totalInvoiceAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
+                    </div>
+                    <div>
+                        <span>Đã phát hành</span>
+                        <strong th:text="${#numbers.formatDecimal(issuedInvoiceAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
+                    </div>
+                    <div>
+                        <span>Đã thanh toán</span>
+                        <strong th:text="${#numbers.formatDecimal(paidInvoiceAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
+                    </div>
+                    <div>
+                        <span>Còn phải thu</span>
+                        <strong th:text="${#numbers.formatDecimal(outstandingInvoiceAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
+                    </div>
+                </div>
+
+                <div class="table-responsive mt-3" th:if="${canViewFinanceReport}">
+                    <table class="customer-table">
+                        <thead>
+                        <tr>
+                            <th>Hóa đơn</th>
+                            <th>Hợp đồng</th>
+                            <th>Trạng thái</th>
+                            <th>Hạn thanh toán</th>
+                            <th class="text-end">Tổng tiền</th>
+                            <th class="text-end">Còn phải thu</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="invoice : ${invoices}">
+                            <td>
+                                <strong th:text="${invoice.invoiceCode}">INV</strong>
+                                <div class="text-muted small" th:text="${invoice.createdAt != null ? #temporals.format(invoice.createdAt, 'dd/MM/yyyy HH:mm') : 'Chưa có ngày tạo'}">Ngày tạo</div>
+                            </td>
+                            <td th:text="${invoice.contract != null ? invoice.contract.contractCode : 'Chưa có'}">CT</td>
+                            <td>
+                                <span class="customer-pill"
+                                      th:classappend="${invoice.status.name() == 'PAID'} ? ' active' : (${invoice.status.name() == 'CANCELLED'} ? ' inactive' : '')"
+                                      th:text="${invoice.status.name() == 'DRAFT' ? 'Nháp' : (invoice.status.name() == 'ISSUED' ? 'Đã phát hành' : (invoice.status.name() == 'PAID' ? 'Đã thanh toán' : (invoice.status.name() == 'PARTIALLY_PAID' ? 'Thanh toán một phần' : 'Đã hủy')))}">Trạng thái</span>
+                            </td>
+                            <td th:text="${invoice.dueDate != null ? #temporals.format(invoice.dueDate, 'dd/MM/yyyy') : 'Chưa có'}">Hạn</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(invoice.totalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(invoice.outstandingAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+                            <td class="text-end">
+                                <a th:href="@{/invoices/detail/{id}(id=${invoice.id})}">Chi tiết</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(invoices)}">
+                            <td colspan="7">
+                                <div class="customer-empty">
+                                    <i class="fas fa-file-invoice"></i>
+                                    <span>Khách hàng chưa có hóa đơn.</span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive mt-3" th:if="${canViewContractReport}">
+                    <table class="customer-table">
+                        <thead>
+                        <tr>
+                            <th>Hợp đồng</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày ký</th>
+                            <th class="text-end">Giá trị</th>
+                            <th class="text-end">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="contract : ${contracts}">
+                            <td>
+                                <strong th:text="${contract.contractCode}">CT</strong>
+                                <div class="text-muted small" th:text="${contract.createdAt != null ? #temporals.format(contract.createdAt, 'dd/MM/yyyy') : 'Chưa có ngày tạo'}">Ngày tạo</div>
+                            </td>
+                            <td>
+                                <span class="customer-pill"
+                                      th:classappend="${contract.status.name() == 'SIGNED'} ? ' active' : (${contract.status.name() == 'CANCELLED'} ? ' inactive' : '')"
+                                      th:text="${contract.status.name() == 'DRAFT' ? 'Nháp' : (contract.status.name() == 'PENDING_ADMIN_OFFICER' ? 'Chờ hành chính' : (contract.status.name() == 'ADMIN_REVIEWED' ? 'Đã duyệt điều khoản' : (contract.status.name() == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách' : (contract.status.name() == 'REVISION_REQUESTED' ? 'Khách yêu cầu sửa' : (contract.status.name() == 'SIGNED' ? 'Đã ký' : 'Đã hủy')))))}">Trạng thái</span>
+                            </td>
+                            <td th:text="${contract.signedAt != null ? #temporals.format(contract.signedAt, 'dd/MM/yyyy HH:mm') : 'Chưa ký'}">Chưa ký</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(contract.finalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+                            <td class="text-end">
+                                <a th:href="@{/contracts/{id}(id=${contract.id})}">Chi tiết</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(contracts)}">
+                            <td colspan="5">
+                                <div class="customer-empty">
+                                    <i class="fas fa-file-signature"></i>
+                                    <span>Khách hàng chưa có hợp đồng.</span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <div class="customer-detail-layout">
