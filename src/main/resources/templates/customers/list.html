@@ -29,6 +29,11 @@
                 <p class="management-subtitle">Quản lý hồ sơ khách hàng đã có trong hệ thống CRM.</p>
             </div>
         </div>
+        <div>
+            <a th:href="@{/customers/add}">
+                Them khach hang
+            </a>
+        </div>
 
         <div class="customer-tabs">
             <a th:if="${canManageCustomer}" th:href="@{/customer}">

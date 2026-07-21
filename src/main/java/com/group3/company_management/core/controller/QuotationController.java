@@ -5,6 +5,7 @@ import com.group3.company_management.core.dto.QuotationRequest;
 import com.group3.company_management.core.dto.QuotationResponse;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Product;
+import com.group3.company_management.core.entity.User;
 import com.group3.company_management.core.repository.*;
 import com.group3.company_management.core.service.QuotationService;
 
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Controller
@@ -131,17 +133,17 @@ public class QuotationController {
 
         String approverName = "Ban Giám Đốc";
         
-        // 1. Lấy Tên đầy đủ của người duyệt báo giá thực tế
+
         if (quotation.getApprovedBy() != null) {
-            var approvedUserOpt = userRepository.findByUsername(quotation.getApprovedBy());
+            Optional<User> approvedUserOpt = userRepository.findByUsername(quotation.getApprovedBy());
             if (approvedUserOpt.isPresent()) {
                 approverName = approvedUserOpt.get().getFullName();
             } else {
                 approverName = quotation.getApprovedBy();
             }
         } else if (authentication != null) {
-           
-            var currentUserOpt = userRepository.findByUsername(authentication.getName());
+
+            Optional<User> currentUserOpt = userRepository.findByUsername(authentication.getName());
             if (currentUserOpt.isPresent()) {
                 approverName = currentUserOpt.get().getFullName();
             } else {
