@@ -295,9 +295,6 @@ public class QuotationServiceImpl implements QuotationService {
         response.setCustomerPhone(customer.getPhone());
         response.setCustomerAddress(customer.getAddress());
 
-        response.setSubTotal(quotation.getSubTotal());
-        response.setDiscountAmount(quotation.getDiscountAmount());
-        response.setFinalAmount(quotation.getFinalAmount());
         response.setVoucherId(quotation.getVoucherId());
         if (quotation.getVoucherId() != null) {
             voucherRepository.findById(quotation.getVoucherId()).ifPresent(voucher -> {
@@ -331,8 +328,26 @@ public class QuotationServiceImpl implements QuotationService {
                 .toList();
 
         response.setDetails(details);
+        applyDisplayTotals(response, quotation);
 
         return response;
+    }
+
+    private void applyDisplayTotals(QuotationResponse response, Quotation quotation) {
+        BigDecimal subTotal = response.getDetails() == null || response.getDetails().isEmpty()
+                ? defaultMoney(quotation.getSubTotal())
+                : response.getDetails().stream()
+                        .map(QuotationDetailResponse::getTotalPrice)
+                        .map(this::defaultMoney)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal discountAmount = defaultMoney(quotation.getDiscountAmount());
+        if (discountAmount.compareTo(subTotal) > 0) {
+            discountAmount = subTotal;
+        }
+
+        response.setSubTotal(subTotal);
+        response.setDiscountAmount(discountAmount);
+        response.setFinalAmount(subTotal.subtract(discountAmount));
     }
 
     private BigDecimal defaultMoney(BigDecimal value) {

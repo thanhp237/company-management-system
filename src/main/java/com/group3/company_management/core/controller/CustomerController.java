@@ -15,6 +15,7 @@ import com.group3.company_management.core.repository.InvoiceRepository;
 import com.group3.company_management.core.repository.OpportunityRepository;
 import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.service.CustomerActivityService;
+import com.group3.company_management.core.service.CustomerReportScopeService;
 import com.group3.company_management.core.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ public class CustomerController {
     private final OpportunityRepository opportunityRepository;
     private final ContractRepository contractRepository;
     private final InvoiceRepository invoiceRepository;
+    private final CustomerReportScopeService customerReportScopeService;
 
     @Autowired
 
@@ -49,15 +51,14 @@ public class CustomerController {
                               CustomerActivityService activityService,
                               OpportunityRepository opportunityRepository,
                               ContractRepository contractRepository,
-                              QuotationRepository quotationRepository,
-                              InvoiceRepository invoiceRepository) {
+                              InvoiceRepository invoiceRepository,
+                              CustomerReportScopeService customerReportScopeService) {
         this.customerService = customerService;
         this.activityService = activityService;
         this.opportunityRepository = opportunityRepository;
         this.contractRepository = contractRepository;
         this.invoiceRepository = invoiceRepository;
-        this.quotationRepository= quotationRepository;
-
+        this.customerReportScopeService = customerReportScopeService;
     }
 
     /**
@@ -107,9 +108,9 @@ public class CustomerController {
         log.info("Showing detail for customer ID: {}", id);
 
         CustomerResponse customer = customerService.getCustomerById(id);
-        List<CustomerActivity> activities = activityService.getActivitiesByCustomerId(id);
-        List<Contract> contracts = contractRepository.findByCustomerIdOrderByCreatedAtDesc(id);
-        List<Invoice> invoices = invoiceRepository.findByContractCustomerIdOrderByCreatedAtDesc(id);
+        List<CustomerActivity> activities = customerReportScopeService.visibleActivities(id, authentication);
+        List<Contract> contracts = customerReportScopeService.visibleContracts(id, authentication);
+        List<Invoice> invoices = customerReportScopeService.visibleInvoices(id, authentication);
         Opportunity latestOpportunity = opportunityRepository.findByCustomerIdOrderByUpdatedAtDesc(id)
                 .stream()
                 .findFirst()

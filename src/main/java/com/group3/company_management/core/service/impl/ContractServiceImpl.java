@@ -107,6 +107,7 @@ public class ContractServiceImpl implements ContractService {
         contract.setSale(sale);
         contract.setAssignedEmployee(sale);
         fillBuyerDefaults(contract, quotation.getCustomer());
+        refreshContractAmountsFromQuotation(contract);
 
         Contract savedContract = contractRepository.save(contract);
 
@@ -241,6 +242,7 @@ public class ContractServiceImpl implements ContractService {
         contract.setContractEndDate(request.getContractEndDate());
         contract.setPaymentTerms(request.getPaymentTerms());
         Contract.PaymentPlanType planType = parsePlanType(request.getPaymentPlanType());
+        refreshContractAmountsFromQuotation(contract);
         List<PaymentScheduleRequest> schedules = validateSchedules(planType, request.getPaymentSchedules(), contract.getFinalAmount());
         validateUniqueBuyerBankAccount(contract, request.getBuyerBankAccount());
         contract.setPaymentPlanType(planType);
@@ -446,7 +448,10 @@ public class ContractServiceImpl implements ContractService {
                     ));
                 }
             } else if (canReviewContract(scopedEmployee)) {
-                predicates.add(cb.equal(root.get("adminOfficer").get("id"), scopedEmployee.getId()));
+                predicates.add(cb.or(
+                        cb.equal(root.get("adminOfficer").get("id"), scopedEmployee.getId()),
+                        cb.equal(root.get("status"), Contract.ContractStatus.PENDING_ADMIN_OFFICER)
+                ));
             } else {
                 predicates.add(cb.equal(root.get("sale").get("id"), scopedEmployee.getId()));
             }
@@ -569,9 +574,6 @@ public class ContractServiceImpl implements ContractService {
         response.setId(contract.getId());
         response.setContractCode(contract.getContractCode());
         response.setStatus(contract.getStatus().name());
-        response.setContractAmount(defaultMoney(contract.getContractAmount()));
-        response.setDiscountAmount(defaultMoney(contract.getDiscountAmount()));
-        response.setFinalAmount(defaultMoney(contract.getFinalAmount()));
         response.setCreatedAt(contract.getCreatedAt());
         response.setSignedAt(contract.getSignedAt());
         response.setContractStartDate(contract.getContractStartDate());
@@ -648,6 +650,7 @@ public class ContractServiceImpl implements ContractService {
             }
             response.setItems(mapContractItems(quotation.getDetails()));
         }
+        applyDisplayAmounts(response, contract);
 
         Customer customer = contract.getCustomer();
         if (customer != null) {
@@ -672,6 +675,43 @@ public class ContractServiceImpl implements ContractService {
         }
 
         return response;
+    }
+
+    private void applyDisplayAmounts(ContractResponse response, Contract contract) {
+        BigDecimal contractAmount = response.getItems() == null || response.getItems().isEmpty()
+                ? defaultMoney(contract.getContractAmount())
+                : response.getItems().stream()
+                        .map(ContractItemResponse::getTotalPrice)
+                        .map(this::defaultMoney)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal discountAmount = defaultMoney(contract.getDiscountAmount());
+        if (discountAmount.compareTo(contractAmount) > 0) {
+            discountAmount = contractAmount;
+        }
+
+        response.setContractAmount(contractAmount);
+        response.setDiscountAmount(discountAmount);
+        response.setFinalAmount(contractAmount.subtract(discountAmount));
+    }
+
+    private void refreshContractAmountsFromQuotation(Contract contract) {
+        Quotation quotation = contract.getQuotation();
+        if (quotation == null || quotation.getDetails() == null || quotation.getDetails().isEmpty()) {
+            return;
+        }
+
+        BigDecimal contractAmount = quotation.getDetails().stream()
+                .map(QuotationDetail::getTotalPrice)
+                .map(this::defaultMoney)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal discountAmount = defaultMoney(contract.getDiscountAmount());
+        if (discountAmount.compareTo(contractAmount) > 0) {
+            discountAmount = contractAmount;
+        }
+
+        contract.setContractAmount(contractAmount);
+        contract.setDiscountAmount(discountAmount);
+        contract.setFinalAmount(contractAmount.subtract(discountAmount));
     }
 
     private Contract getCustomerOwnedContract(Long contractId, Long customerId) {

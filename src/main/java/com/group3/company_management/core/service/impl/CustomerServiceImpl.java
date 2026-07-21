@@ -5,6 +5,7 @@ package com.group3.company_management.core.service.impl;
 import com.group3.company_management.core.dto.CustomerRequest;
 import com.group3.company_management.core.dto.CustomerResponse;
 import com.group3.company_management.customer.dto.CustomerPortalResponse;
+import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Employee;
 import com.group3.company_management.core.entity.User;
@@ -32,6 +33,9 @@ import java.util.Locale;
 @RequiredArgsConstructor
 @Slf4j
 public class CustomerServiceImpl implements CustomerService {
+
+    private static final List<Contract.ContractStatus> ADMIN_OFFICER_POOLED_STATUSES =
+            List.of(Contract.ContractStatus.PENDING_ADMIN_OFFICER);
     
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
@@ -257,7 +261,10 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
-            return customerRepository.findCustomersByAdminOfficerIdOrderByCreatedAtDesc(employee.getId(), normalizedStatus)
+            return customerRepository.findCustomersByAdminOfficerScopeOrderByCreatedAtDesc(
+                            employee.getId(),
+                            normalizedStatus,
+                            ADMIN_OFFICER_POOLED_STATUSES)
                     .stream()
                     .map(this::mapToResponse)
                     .toList();
@@ -325,7 +332,10 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
-            return customerRepository.existsContractForAdminOfficerAndCustomer(employee.getId(), customer.getId());
+            return customerRepository.existsContractForAdminOfficerScopeAndCustomer(
+                    employee.getId(),
+                    customer.getId(),
+                    ADMIN_OFFICER_POOLED_STATUSES);
         }
 
         if ("SALES".equals(roleCode)) {

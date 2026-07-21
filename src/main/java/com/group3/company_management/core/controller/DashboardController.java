@@ -289,7 +289,7 @@ public class DashboardController {
             );
             case "ACCOUNTANT" -> List.of(
                     group("Tài chính & doanh thu", "Các phân hệ kế toán đang được kết nối theo đặc tả.", List.of(
-                            disabledAction("Trung tâm hóa đơn", "Quản lý hóa đơn từ hợp đồng", "fa-file-invoice"),
+                            action("Trung tâm hóa đơn", "/invoices", "Quản lý và phát hành hóa đơn từ hợp đồng", "fa-file-invoice"),
                             disabledAction("Phiếu thu thanh toán", "Ghi nhận thanh toán theo đợt", "fa-money-check-dollar"),
                             disabledAction("Sổ hoa hồng", "Tính hoa hồng tự động", "fa-hand-holding-dollar"),
                             disabledAction("Báo cáo tài chính", "Xuất Excel/PDF báo cáo tài chính", "fa-file-export")
@@ -335,7 +335,7 @@ public class DashboardController {
             );
             case "ACCOUNTANT" -> List.of(
                     insight("Phạm vi tài chính", "Kế toán theo dõi hóa đơn, thanh toán, công nợ và hoa hồng."),
-                    insight("Module đang kết nối", "Các màn invoice/payment/report sẽ mở khi phân hệ tài chính hoàn tất.")
+                    insight("Hóa đơn đã hoạt động", "Kế toán có thể vào trung tâm hóa đơn để tạo, phát hành và theo dõi trạng thái thanh toán.")
             );
             case "DIRECTOR" -> List.of(
                     insight("Góc nhìn điều hành", "Giám đốc tập trung vào KPI doanh thu, hợp đồng và hiệu suất tổng thể."),
