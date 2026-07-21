@@ -2,6 +2,7 @@ package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.entity.Voucher;
 import com.group3.company_management.core.repository.BusinessSettingRepository;
+import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.repository.VoucherRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ class BusinessRuleControllerTest {
 
     @MockBean
     private VoucherRepository voucherRepository;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @MockBean
     private JwtTokenProvider jwtTokenProvider;

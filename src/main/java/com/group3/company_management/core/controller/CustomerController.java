@@ -52,12 +52,14 @@ public class CustomerController {
                               OpportunityRepository opportunityRepository,
                               ContractRepository contractRepository,
                               InvoiceRepository invoiceRepository,
+                              QuotationRepository quotationRepository,
                               CustomerReportScopeService customerReportScopeService) {
         this.customerService = customerService;
         this.activityService = activityService;
         this.opportunityRepository = opportunityRepository;
         this.contractRepository = contractRepository;
         this.invoiceRepository = invoiceRepository;
+        this.quotationRepository = quotationRepository;
         this.customerReportScopeService = customerReportScopeService;
     }
 

@@ -107,6 +107,8 @@ public class ContractServiceImpl implements ContractService {
         contract.setSale(sale);
         contract.setAssignedEmployee(sale);
         fillBuyerDefaults(contract, quotation.getCustomer());
+        contract.setAdminNote(normalize(quotation.getNote()));
+        contract.setPaymentDueDate(quotation.getValidUntil());
         refreshContractAmountsFromQuotation(contract);
 
         Contract savedContract = contractRepository.save(contract);
@@ -236,6 +238,7 @@ public class ContractServiceImpl implements ContractService {
             throw new RuntimeException("Chỉ hành chính hợp đồng mới được cập nhật điều khoản hợp đồng.");
         }
 
+        validateContractRuleRequest(request);
         contract.setAdminOfficer(adminOfficer);
         contract.setAssignedEmployee(adminOfficer);
         contract.setContractStartDate(request.getContractStartDate());
@@ -1049,11 +1052,117 @@ public class ContractServiceImpl implements ContractService {
         for (PaymentScheduleRequest row : valid) {
             if (row.getDueDate() == null || row.getAmount() == null || row.getAmount().signum() <= 0)
                 throw new RuntimeException("Mỗi đợt phải có hạn thanh toán và số tiền lớn hơn 0.");
+            if (!hasText(row.getDescription()))
+                throw new RuntimeException("Mỗi đợt thanh toán phải có mô tả.");
             total = total.add(row.getAmount());
         }
         if (total.compareTo(defaultMoney(finalAmount)) != 0)
             throw new RuntimeException("Tổng lịch thanh toán phải bằng tổng giá trị hợp đồng.");
         return valid;
+    }
+
+    private void validateContractRuleRequest(ContractRuleRequest request) {
+        if (request == null) {
+            throw new RuntimeException("Vui lòng nhập thông tin điều khoản hợp đồng.");
+        }
+
+        requireDate(request.getSigningDate(), "Ngày ký");
+        requireText(request.getSigningPlace(), "Nơi ký");
+        requireDate(request.getContractStartDate(), "Ngày bắt đầu");
+        requireDate(request.getContractEndDate(), "Ngày kết thúc");
+        if (request.getContractEndDate().isBefore(request.getContractStartDate())) {
+            throw new RuntimeException("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.");
+        }
+
+        requireText(request.getSellerCompanyName(), "Tên doanh nghiệp bên bán");
+        requireText(request.getSellerTaxCode(), "Mã số doanh nghiệp bên bán");
+        requireText(request.getSellerAddress(), "Địa chỉ trụ sở bên bán");
+        requireText(request.getSellerPhone(), "Điện thoại bên bán");
+        requireText(request.getSellerFax(), "Fax bên bán");
+        requireText(request.getSellerBankAccount(), "Tài khoản ngân hàng bên bán");
+        requireText(request.getSellerBankName(), "Ngân hàng bên bán");
+        requireText(request.getSellerRepresentativeName(), "Đại diện pháp luật bên bán");
+        requireText(request.getSellerRepresentativeTitle(), "Chức vụ đại diện bên bán");
+        requireText(request.getSellerIdentityNumber(), "CMND/CCCD bên bán");
+        requireText(request.getSellerIdentityIssuedPlace(), "Nơi cấp giấy tờ bên bán");
+        requireDate(request.getSellerIdentityIssuedDate(), "Ngày cấp giấy tờ bên bán");
+        requireText(request.getSellerAuthorizationInfo(), "Giấy ủy quyền bên bán");
+
+        requireText(request.getBuyerCompanyName(), "Tên doanh nghiệp bên mua");
+        requireText(request.getBuyerTaxCode(), "Mã số doanh nghiệp bên mua");
+        requireText(request.getBuyerAddress(), "Địa chỉ trụ sở bên mua");
+        requireText(request.getBuyerPhone(), "Điện thoại bên mua");
+        requireText(request.getBuyerFax(), "Fax bên mua");
+        requireText(request.getBuyerBankAccount(), "Tài khoản ngân hàng bên mua");
+        requireText(request.getBuyerBankName(), "Ngân hàng bên mua");
+        requireText(request.getBuyerRepresentativeName(), "Đại diện pháp luật bên mua");
+        requireText(request.getBuyerRepresentativeTitle(), "Chức vụ đại diện bên mua");
+        requireText(request.getBuyerIdentityNumber(), "CMND/CCCD bên mua");
+        requireText(request.getBuyerIdentityIssuedPlace(), "Nơi cấp giấy tờ bên mua");
+        requireDate(request.getBuyerIdentityIssuedDate(), "Ngày cấp giấy tờ bên mua");
+        requireText(request.getBuyerAuthorizationInfo(), "Giấy ủy quyền bên mua");
+
+        requireText(request.getAmountInWords(), "Số tiền bằng chữ");
+        requireDate(request.getPaymentDueDate(), "Hạn thanh toán");
+        requireText(request.getPaymentMethod(), "Hình thức thanh toán");
+        requireText(request.getPaymentTerms(), "Điều khoản thanh toán");
+        if (!hasText(request.getPaymentPlanType())) {
+            throw new RuntimeException("Vui lòng chọn hình thức thu tiền.");
+        }
+        requireText(request.getDeliverySchedule(), "Lịch giao hàng");
+        requireText(request.getShippingResponsibility(), "Bên chịu phí vận chuyển");
+        requireText(request.getUnloadingCost(), "Chi phí bốc xếp");
+        requireText(request.getStorageFeePerDay(), "Phí lưu kho/ngày");
+        requireText(request.getInspectionAgency(), "Cơ quan kiểm tra trung gian");
+        requireText(request.getDeliveryTerms(), "Điều khoản giao hàng");
+
+        requireText(request.getWarrantyProductScope(), "Phạm vi bảo hành");
+        requireNonNegative(request.getWarrantyMonths(), "Thời gian bảo hành");
+        requirePercentText(request.getPenaltyRate(), "Mức phạt vi phạm");
+        requirePositive(request.getContractCopies(), "Số bản hợp đồng");
+        requirePositive(request.getCopiesPerParty(), "Số bản mỗi bên giữ");
+        if (request.getCopiesPerParty() * 2 > request.getContractCopies()) {
+            throw new RuntimeException("Tổng số bản mỗi bên giữ không được vượt quá số bản hợp đồng.");
+        }
+        requireText(request.getLegalTerms(), "Điều khoản pháp lý");
+        requireText(request.getGeneralTerms(), "Điều khoản chung");
+    }
+
+    private void requireText(String value, String fieldName) {
+        if (!hasText(value)) {
+            throw new RuntimeException("Vui lòng nhập " + fieldName + ".");
+        }
+    }
+
+    private void requireDate(LocalDate value, String fieldName) {
+        if (value == null) {
+            throw new RuntimeException("Vui lòng chọn " + fieldName + ".");
+        }
+    }
+
+    private void requirePositive(Integer value, String fieldName) {
+        if (value == null || value <= 0) {
+            throw new RuntimeException(fieldName + " phải lớn hơn 0.");
+        }
+    }
+
+    private void requireNonNegative(Integer value, String fieldName) {
+        if (value == null || value < 0) {
+            throw new RuntimeException(fieldName + " không được âm.");
+        }
+    }
+
+    private void requirePercentText(String value, String fieldName) {
+        requireText(value, fieldName);
+        String normalized = value.trim().replace("%", "");
+        try {
+            BigDecimal percent = new BigDecimal(normalized);
+            if (percent.signum() < 0 || percent.compareTo(BigDecimal.valueOf(100)) > 0) {
+                throw new RuntimeException(fieldName + " phải nằm trong khoảng 0 đến 100%.");
+            }
+        } catch (NumberFormatException exception) {
+            throw new RuntimeException(fieldName + " phải là số hợp lệ.");
+        }
     }
 
     private BigDecimal defaultMoney(BigDecimal value) {

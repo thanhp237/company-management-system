@@ -347,11 +347,11 @@
                         <div class="contract-rule-grid">
                             <label>
                                 <span>Ngày ký</span>
-                                <input type="date" th:field="*{signingDate}">
+                                <input type="date" th:field="*{signingDate}" required>
                             </label>
                             <label>
                                 <span>Nơi ký</span>
-                                <input type="text" th:field="*{signingPlace}" placeholder="VD: TP. Hồ Chí Minh">
+                                <input type="text" th:field="*{signingPlace}" placeholder="VD: TP. Hồ Chí Minh" required>
                             </label>
                             <label>
                                 <span>Ngày bắt đầu</span>
@@ -369,55 +369,55 @@
                         <div class="contract-rule-grid">
                             <label>
                                 <span>Tên doanh nghiệp</span>
-                                <input type="text" th:field="*{sellerCompanyName}">
+                                <input type="text" th:field="*{sellerCompanyName}" required>
                             </label>
                             <label>
                                 <span>Mã số doanh nghiệp</span>
-                                <input type="text" th:field="*{sellerTaxCode}">
+                                <input type="text" th:field="*{sellerTaxCode}" required>
                             </label>
                             <label class="wide">
                                 <span>Địa chỉ trụ sở</span>
-                                <input type="text" th:field="*{sellerAddress}">
+                                <input type="text" th:field="*{sellerAddress}" required>
                             </label>
                             <label>
                                 <span>Điện thoại</span>
-                                <input type="text" th:field="*{sellerPhone}">
+                                <input type="text" th:field="*{sellerPhone}" required>
                             </label>
                             <label>
                                 <span>Fax</span>
-                                <input type="text" th:field="*{sellerFax}">
+                                <input type="text" th:field="*{sellerFax}" required>
                             </label>
                             <label>
                                 <span>Tài khoản số</span>
-                                <input type="text" th:field="*{sellerBankAccount}">
+                                <input type="text" th:field="*{sellerBankAccount}" required>
                             </label>
                             <label>
                                 <span>Mở tại ngân hàng</span>
-                                <input type="text" th:field="*{sellerBankName}">
+                                <input type="text" th:field="*{sellerBankName}" required>
                             </label>
                             <label>
                                 <span>Đại diện pháp luật</span>
-                                <input type="text" th:field="*{sellerRepresentativeName}">
+                                <input type="text" th:field="*{sellerRepresentativeName}" required>
                             </label>
                             <label>
                                 <span>Chức vụ</span>
-                                <input type="text" th:field="*{sellerRepresentativeTitle}">
+                                <input type="text" th:field="*{sellerRepresentativeTitle}" required>
                             </label>
                             <label>
                                 <span>CMND/CCCD</span>
-                                <input type="text" th:field="*{sellerIdentityNumber}">
+                                <input type="text" th:field="*{sellerIdentityNumber}" required>
                             </label>
                             <label>
                                 <span>Nơi cấp</span>
-                                <input type="text" th:field="*{sellerIdentityIssuedPlace}">
+                                <input type="text" th:field="*{sellerIdentityIssuedPlace}" required>
                             </label>
                             <label>
                                 <span>Ngày cấp</span>
-                                <input type="date" th:field="*{sellerIdentityIssuedDate}">
+                                <input type="date" th:field="*{sellerIdentityIssuedDate}" required>
                             </label>
                             <label class="wide">
                                 <span>Giấy ủy quyền</span>
-                                <textarea th:field="*{sellerAuthorizationInfo}" rows="2"></textarea>
+                                <textarea th:field="*{sellerAuthorizationInfo}" rows="2" required></textarea>
                             </label>
                         </div>
                     </div>
@@ -427,55 +427,55 @@
                         <div class="contract-rule-grid">
                             <label>
                                 <span>Tên doanh nghiệp</span>
-                                <input type="text" th:field="*{buyerCompanyName}">
+                                <input type="text" th:field="*{buyerCompanyName}" required>
                             </label>
                             <label>
                                 <span>Mã số doanh nghiệp</span>
-                                <input type="text" th:field="*{buyerTaxCode}">
+                                <input type="text" th:field="*{buyerTaxCode}" required>
                             </label>
                             <label class="wide">
                                 <span>Địa chỉ trụ sở</span>
-                                <input type="text" th:field="*{buyerAddress}">
+                                <input type="text" th:field="*{buyerAddress}" required>
                             </label>
                             <label>
                                 <span>Điện thoại</span>
-                                <input type="text" th:field="*{buyerPhone}">
+                                <input type="text" th:field="*{buyerPhone}" required>
                             </label>
                             <label>
                                 <span>Fax</span>
-                                <input type="text" th:field="*{buyerFax}">
+                                <input type="text" th:field="*{buyerFax}" required>
                             </label>
                             <label>
                                 <span>Tài khoản số</span>
-                                <input type="text" th:field="*{buyerBankAccount}">
+                                <input type="text" th:field="*{buyerBankAccount}" required>
                             </label>
                             <label>
                                 <span>Mở tại ngân hàng</span>
-                                <input type="text" th:field="*{buyerBankName}">
+                                <input type="text" th:field="*{buyerBankName}" required>
                             </label>
                             <label>
                                 <span>Đại diện pháp luật</span>
-                                <input type="text" th:field="*{buyerRepresentativeName}">
+                                <input type="text" th:field="*{buyerRepresentativeName}" required>
                             </label>
                             <label>
                                 <span>Chức vụ</span>
-                                <input type="text" th:field="*{buyerRepresentativeTitle}">
+                                <input type="text" th:field="*{buyerRepresentativeTitle}" required>
                             </label>
                             <label>
                                 <span>CMND/CCCD</span>
-                                <input type="text" th:field="*{buyerIdentityNumber}">
+                                <input type="text" th:field="*{buyerIdentityNumber}" required>
                             </label>
                             <label>
                                 <span>Nơi cấp</span>
-                                <input type="text" th:field="*{buyerIdentityIssuedPlace}">
+                                <input type="text" th:field="*{buyerIdentityIssuedPlace}" required>
                             </label>
                             <label>
                                 <span>Ngày cấp</span>
-                                <input type="date" th:field="*{buyerIdentityIssuedDate}">
+                                <input type="date" th:field="*{buyerIdentityIssuedDate}" required>
                             </label>
                             <label class="wide">
                                 <span>Giấy ủy quyền</span>
-                                <textarea th:field="*{buyerAuthorizationInfo}" rows="2"></textarea>
+                                <textarea th:field="*{buyerAuthorizationInfo}" rows="2" required></textarea>
                             </label>
                         </div>
                     </div>
@@ -485,15 +485,15 @@
                         <div class="contract-rule-grid">
                             <label class="wide">
                                 <span>Số tiền bằng chữ</span>
-                                <input type="text" th:field="*{amountInWords}">
+                                <input type="text" th:field="*{amountInWords}" required>
                             </label>
                             <label>
                                 <span>Hạn thanh toán</span>
-                                <input type="date" th:field="*{paymentDueDate}">
+                                <input type="date" th:field="*{paymentDueDate}" required>
                             </label>
                             <label>
                                 <span>Hình thức thanh toán</span>
-                                <input type="text" th:field="*{paymentMethod}" placeholder="VD: Chuyển khoản">
+                                <input type="text" th:field="*{paymentMethod}" placeholder="VD: Chuyển khoản" required>
                             </label>
                             <label class="wide">
                                 <span>Điều khoản thanh toán</span>
@@ -517,27 +517,27 @@
                             </div>
                             <label class="wide">
                                 <span>Lịch giao hàng</span>
-                                <textarea th:field="*{deliverySchedule}" rows="3"></textarea>
+                                <textarea th:field="*{deliverySchedule}" rows="3" required></textarea>
                             </label>
                             <label>
                                 <span>Bên chịu phí vận chuyển</span>
-                                <input type="text" th:field="*{shippingResponsibility}">
+                                <input type="text" th:field="*{shippingResponsibility}" required>
                             </label>
                             <label>
                                 <span>Chi phí bốc xếp</span>
-                                <input type="text" th:field="*{unloadingCost}">
+                                <input type="text" th:field="*{unloadingCost}" required>
                             </label>
                             <label>
                                 <span>Phí lưu kho/ngày</span>
-                                <input type="text" th:field="*{storageFeePerDay}">
+                                <input type="text" th:field="*{storageFeePerDay}" required>
                             </label>
                             <label>
                                 <span>Cơ quan kiểm tra trung gian</span>
-                                <input type="text" th:field="*{inspectionAgency}">
+                                <input type="text" th:field="*{inspectionAgency}" required>
                             </label>
                             <label class="wide">
                                 <span>Điều khoản giao hàng</span>
-                                <textarea th:field="*{deliveryTerms}" rows="3"></textarea>
+                                <textarea th:field="*{deliveryTerms}" rows="3" required></textarea>
                             </label>
                         </div>
                     </div>
@@ -547,23 +547,23 @@
                         <div class="contract-rule-grid">
                             <label class="wide">
                                 <span>Phạm vi bảo hành</span>
-                                <input type="text" th:field="*{warrantyProductScope}">
+                                <input type="text" th:field="*{warrantyProductScope}" required>
                             </label>
                             <label>
                                 <span>Thời gian bảo hành (tháng)</span>
-                                <input type="number" min="0" th:field="*{warrantyMonths}">
+                                <input type="number" min="0" th:field="*{warrantyMonths}" required>
                             </label>
                             <label>
                                 <span>Mức phạt vi phạm (%)</span>
-                                <input type="text" th:field="*{penaltyRate}">
+                                <input type="text" th:field="*{penaltyRate}" required>
                             </label>
                             <label>
                                 <span>Số bản hợp đồng</span>
-                                <input type="number" min="1" th:field="*{contractCopies}">
+                                <input type="number" min="1" th:field="*{contractCopies}" required>
                             </label>
                             <label>
                                 <span>Mỗi bên giữ</span>
-                                <input type="number" min="1" th:field="*{copiesPerParty}">
+                                <input type="number" min="1" th:field="*{copiesPerParty}" required>
                             </label>
                             <label class="wide">
                                 <span>Điều khoản pháp lý</span>
@@ -571,7 +571,7 @@
                             </label>
                             <label class="wide">
                                 <span>Điều khoản chung</span>
-                                <textarea th:field="*{generalTerms}" rows="4"></textarea>
+                                <textarea th:field="*{generalTerms}" rows="4" required></textarea>
                             </label>
                             <label class="wide">
                                 <span>Ghi chú Admin</span>

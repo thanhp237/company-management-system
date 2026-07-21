@@ -104,8 +104,15 @@ public class QuotationServiceImpl implements QuotationService {
             throw new RuntimeException("Báo giá phải có ít nhất một sản phẩm hợp lệ");
         }
 
-        for (int index = 0; index < details.size(); index += 1) {
-            QuotationDetailRequest item = details.get(index);
+        List<QuotationDetailRequest> selectedDetails = details.stream()
+                .filter(item -> item != null && item.isSelected())
+                .toList();
+        if (selectedDetails.isEmpty()) {
+            throw new RuntimeException("Vui lòng chọn ít nhất một sản phẩm cho báo giá");
+        }
+
+        for (int index = 0; index < selectedDetails.size(); index += 1) {
+            QuotationDetailRequest item = selectedDetails.get(index);
             int lineNumber = index + 1;
 
             if (item == null || item.getProductId() == null) {
@@ -116,7 +123,7 @@ public class QuotationServiceImpl implements QuotationService {
             }
         }
 
-        return details;
+        return selectedDetails;
     }
 
     private void validateOpportunityQuotation(QuotationRequest request, String username) {
