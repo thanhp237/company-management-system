@@ -17,12 +17,18 @@
 </head>
 <body>
 
-<th:block th:insert="~{layouts/navbar}"></th:block>
-<div sec:authorize="isAuthenticated()">
-    <th:block th:insert="~{layouts/sidebar}"></th:block>
+<div sec:authorize="hasRole('CUSTOMER')">
+    <th:block th:insert="~{layouts/customer-sidebar :: customerLayout}"></th:block>
+</div>
+<div sec:authorize="!hasRole('CUSTOMER')">
+    <th:block th:insert="~{layouts/navbar}"></th:block>
+    <div sec:authorize="isAuthenticated()">
+        <th:block th:insert="~{layouts/sidebar}"></th:block>
+    </div>
 </div>
 
-<main class="invoice-workspace with-sidebar">
+<main th:class="${#authorization.expression('hasRole(''CUSTOMER'')')} ? 'invoice-workspace customer-app-content' : 'invoice-workspace with-sidebar'"
+      th:style="${#authorization.expression('hasRole(''CUSTOMER'')')} ? 'padding-top: 96px;' : ''">
     <div class="invoice-page">
 
         <div class="alert-box alert-error-custom" th:if="${errorMessage}">
@@ -34,7 +40,11 @@
             <span th:text="${successMessage}">Thành công.</span>
         </div>
 
-        <a class="invoice-back-link" th:href="@{/invoices}">
+        <a sec:authorize="hasRole('CUSTOMER')" class="invoice-back-link" th:href="@{/customer/portal/payments}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Quay lại</span>
+        </a>
+        <a sec:authorize="!hasRole('CUSTOMER')" class="invoice-back-link" th:href="@{/invoices}">
             <i class="fas fa-arrow-left"></i>
             <span>Quay lại</span>
         </a>
@@ -54,7 +64,7 @@
                 <a th:href="@{/invoices/print/{id}(id=${invoice.id})}" target="_blank" class="soft-btn" style="margin-right: 8px;">
                     <i class="fa-solid fa-print"></i> In hóa đơn (PDF)
                 </a>
-                <th:block th:if="${invoice.status.name() == 'DRAFT'}">
+                <th:block sec:authorize="!hasRole('CUSTOMER')" th:if="${invoice.status.name() == 'DRAFT'}">
                     <a th:href="@{/invoices/edit/{id}(id=${invoice.id})}" class="soft-btn">
                         <i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa
                     </a>
@@ -101,7 +111,8 @@
                 <div>
                     <span>Liên kết hợp đồng</span>
                     <strong>
-                        <a th:href="@{/contracts/{id}(id=${invoice.contract.id})}" th:text="${invoice.contract.contractCode}" style="color: #2563eb; text-decoration: none;">CT-001</a>
+                        <a sec:authorize="hasRole('CUSTOMER')" th:href="@{/customer/portal/contracts/{id}(id=${invoice.contract.id})}" th:text="${invoice.contract.contractCode}" style="color: #2563eb; text-decoration: none;">CT-001</a>
+                        <a sec:authorize="!hasRole('CUSTOMER')" th:href="@{/contracts/{id}(id=${invoice.contract.id})}" th:text="${invoice.contract.contractCode}" style="color: #2563eb; text-decoration: none;">CT-001</a>
                     </strong>
                 </div>
                 <div class="wide">

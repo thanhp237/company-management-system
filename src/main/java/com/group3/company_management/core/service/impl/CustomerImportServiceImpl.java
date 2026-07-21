@@ -1,6 +1,6 @@
 package com.group3.company_management.core.service.impl;
 
-import com.group3.company_management.core.dto.LeadDTO;
+
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.entity.User;
@@ -126,18 +126,9 @@ public class CustomerImportServiceImpl implements CustomerImportService {
             throw new RuntimeException("Nhập dữ liệu thất bại: " + e.getMessage());
         }
     }
-    @Override
-    public void saveCustomer(Customer customer) {
-        leadRepository.save(customer);
-    }
 
 
-    @Override
-    public List<Customer> allCustomer() {
-        return leadRepository.findAll(Sort.by("id").ascending());
-    }
 
-    // === CHÈN THÊM HÀM NÀY ===
     @Override
     public Page<Customer> allCustomer(String status, Pageable pageable) {
 
@@ -149,7 +140,7 @@ public class CustomerImportServiceImpl implements CustomerImportService {
         return leadRepository.findAll(pageable);
     }
 
-    // === CHÈN THÊM 3 HÀM THỐNG KÊ NÀY ===
+
     @Override
     public long countTotalCustomers() {
         return leadRepository.count();

@@ -13,6 +13,7 @@ import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.repository.ContractRepository;
 import com.group3.company_management.core.repository.InvoiceRepository;
 import com.group3.company_management.core.repository.OpportunityRepository;
+import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.service.CustomerActivityService;
 import com.group3.company_management.core.service.CustomerReportScopeService;
 import com.group3.company_management.core.service.CustomerService;
@@ -36,7 +37,7 @@ import java.util.List;
 @Slf4j
 @PreAuthorize("hasAnyRole('MARKETING', 'SALES', 'MANAGER', 'SALES_MANAGER', 'ADMIN', 'ADMIN_OFFICER', 'ADMINOFFICER', 'ACCOUNTANT', 'DIRECTOR')")
 public class CustomerController {
-
+    private final QuotationRepository quotationRepository;
     private final CustomerService customerService;
     private final CustomerActivityService activityService;
     private final OpportunityRepository opportunityRepository;
@@ -45,6 +46,7 @@ public class CustomerController {
     private final CustomerReportScopeService customerReportScopeService;
 
     @Autowired
+
     public CustomerController(CustomerService customerService,
                               CustomerActivityService activityService,
                               OpportunityRepository opportunityRepository,
@@ -114,6 +116,7 @@ public class CustomerController {
                 .findFirst()
                 .orElse(null);
         model.addAttribute("customer", customer);
+        model.addAttribute("existsQuotation", quotationRepository.existsByCustomerId(id));
         model.addAttribute("activities", activities);
         model.addAttribute("activityCount", activities.size());
         model.addAttribute("contracts", contracts);

@@ -112,9 +112,12 @@
             const navItems = document.querySelectorAll('[data-customer-nav]');
             navItems.forEach(function (item) {
                 const target = item.getAttribute('data-customer-nav');
-                const active = target === '/customer/portal'
+                let active = target === '/customer/portal'
                     ? path === target
                     : path === target || path.startsWith(target + '/');
+                if (target === '/customer/portal/payments' && path.startsWith('/invoices/detail/')) {
+                    active = true;
+                }
                 item.classList.toggle('active', active);
             });
 
@@ -206,4 +209,5 @@
                 .catch(err => console.error('Lỗi xử lý đọc thông báo:', err));
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </th:block>

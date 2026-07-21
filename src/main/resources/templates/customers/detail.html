@@ -42,7 +42,9 @@
                     <i class="fas fa-pen"></i>
                     <span>Sửa khách hàng</span>
                 </a>
+
                 <a class="customer-primary-button" th:if="${canCreateQuotation}" th:href="@{/quotation/create/{customerId}(customerId=${customer.id})}">
+
                     <i class="fas fa-paper-plane"></i>
                     <span>Tạo báo giá</span>
                 </a>

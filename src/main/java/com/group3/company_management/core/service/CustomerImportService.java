@@ -12,10 +12,8 @@ import java.util.List;
 
 public interface CustomerImportService {
     void importCustomer(MultipartFile file,String name);
-    List<Customer> allCustomer();
     List<User> findSale(String roleName);
     public Customer findCustomerById(Long id);
-    public void saveCustomer(Customer customer);
     public User findUser(Long id);
     void assignCustomersToSale(List<Long> customerIds, Long saleId);
     Page<Customer> allCustomer(String status, Pageable pageable);

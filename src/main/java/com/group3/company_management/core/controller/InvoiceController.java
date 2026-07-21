@@ -21,7 +21,9 @@ import java.util.List;
 @Controller
 @RequestMapping("/invoices")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN', 'DIRECTOR', 'MANAGER', 'SALES_MANAGER', 'SALES', 'ADMIN_OFFICER', 'ADMINOFFICER')")
+
+@PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN', 'DIRECTOR','CUSTOMER', 'MANAGER', 'SALES_MANAGER', 'SALES', 'ADMIN_OFFICER', 'ADMINOFFICER')")
+
 
 public class InvoiceController {
 
@@ -295,6 +297,16 @@ public class InvoiceController {
             return "redirect:/invoices";
         }
         Invoice invoice = invoiceService.getInvoiceById(id);
+        
+        if (authentication != null && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"))) {
+            com.group3.company_management.core.entity.Customer customer = (com.group3.company_management.core.entity.Customer) authentication.getPrincipal();
+            if (invoice.getContract().getCustomer() == null || !customer.getId().equals(invoice.getContract().getCustomer().getId())) {
+                throw new RuntimeException("Bạn không có quyền xem hóa đơn này.");
+            }
+            if (invoice.getStatus() == Invoice.InvoiceStatus.DRAFT) {
+                throw new RuntimeException("Hóa đơn chưa sẵn sàng (Bản nháp).");
+            }
+        }
         model.addAttribute("invoice", invoice);
         BigDecimal totalContractAmount = invoice.getContract().getFinalAmount();
         BigDecimal paidPreviously = BigDecimal.ZERO;

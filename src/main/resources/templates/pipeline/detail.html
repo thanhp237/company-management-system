@@ -220,9 +220,9 @@
                     </a>
                     <a th:if="${opportunity.customer != null}"
                        class="detail-action-secondary"
-                       th:href="@{/customers/{id}(id=${opportunity.customer.id})}">
+                       th:href="@{/customer-activities(customerId=${opportunity.customer.id})}">
                         <i class="fas fa-clock-rotate-left"></i>
-                        <span>Lịch sử khách hàng</span>
+                        <span>Lịch sử tương tác</span>
                     </a>
                     <div class="detail-action-note" th:if="${!canAddActivity}">
                         <i class="fas fa-lock"></i>

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.group3.company_management.core.entity.User; // <-- ĐẢM BẢO CÓ DÒNG NÀY
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -30,16 +31,60 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<Notification> getNotificationsByUsername(String username) {
-        Long accountId = getAccountIdByUsername(username);
-        if (accountId == null) return List.of();
-        return notificationRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) return List.of();
+        User currentUser = userOpt.get();
+
+        if (currentUser.isManager() || "SALES_MANAGER".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
+            Long deptId = currentUser.getDepartmentId();
+            if (deptId != null) {
+                List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+                List<Long> deptUserIds = new java.util.ArrayList<>();
+                for (User u : deptUsers) {
+                    if (!"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
+                        !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
+                        !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode())) {
+                        deptUserIds.add(u.getId());
+                    }
+                }
+                if (deptUserIds.isEmpty()) {
+                    return List.of();
+                }
+                return notificationRepository.findByAccountIdInOrderByCreatedAtDesc(deptUserIds);
+            }
+            return List.of();
+        }
+
+        return notificationRepository.findByAccountIdOrderByCreatedAtDesc(currentUser.getId());
     }
 
     @Override
     public long getUnreadCount(String username) {
-        Long accountId = getAccountIdByUsername(username);
-        if (accountId == null) return 0;
-        return notificationRepository.countByAccountIdAndIsReadFalse(accountId);
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) return 0;
+        User currentUser = userOpt.get();
+
+        if (currentUser.isManager() || "SALES_MANAGER".equalsIgnoreCase(currentUser.getRole().getRoleCode())) {
+            Long deptId = currentUser.getDepartmentId();
+            if (deptId != null) {
+                List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+                List<Long> deptUserIds = new java.util.ArrayList<>();
+                for (User u : deptUsers) {
+                    if (!"MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) && 
+                        !"SALES_MANAGER".equalsIgnoreCase(u.getRole().getRoleCode()) &&
+                        !"ADMIN".equalsIgnoreCase(u.getRole().getRoleCode())) {
+                        deptUserIds.add(u.getId());
+                    }
+                }
+                if (deptUserIds.isEmpty()) {
+                    return 0;
+                }
+                return notificationRepository.countByAccountIdInAndIsReadFalse(deptUserIds);
+            }
+            return 0;
+        }
+
+        return notificationRepository.countByAccountIdAndIsReadFalse(currentUser.getId());
     }
 
     @Override

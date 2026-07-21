@@ -49,4 +49,9 @@ public interface CustomerActivityRepository
             String relatedType,
             Long relatedId
     );
+    Page<CustomerActivity> findByEmployeeIdIn(List<Long> employeeIds, Pageable pageable);
+    Page<CustomerActivity> findByEmployeeIdInAndActivityTypeIgnoreCase(List<Long> employeeIds, String activityType, Pageable pageable);
+    Page<CustomerActivity> findByEmployeeIdInAndCustomerId(List<Long> employeeIds, Long customerId, Pageable pageable);
+    Page<CustomerActivity> findByEmployeeIdInAndCustomerIdAndActivityTypeIgnoreCase(List<Long> employeeIds, Long customerId, String activityType, Pageable pageable);
+    List<CustomerActivity> findByEmployeeIdInAndCustomerIdOrderByCreatedAtDesc(List<Long> employeeIds, Long customerId);
 }

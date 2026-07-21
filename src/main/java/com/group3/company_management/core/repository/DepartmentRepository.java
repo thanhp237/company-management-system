@@ -33,13 +33,7 @@ and (d.status = :filter or :filter = 'all')
     boolean existsByCode(String code);
 
     boolean existsByCodeAndIdNot(String code, Long id);
-    Optional<Department> findByName(String name);
-    @Query("""
-select d
-from Department d
-where d.isDeleted = false
-""")
-    Page<Department> findAllNotDeleted(Pageable pageable);
+
     Optional<Department> findByIdAndIsDeletedFalse(Long id);
 
     List<Department> findByIsDeletedFalseOrderByNameAsc();

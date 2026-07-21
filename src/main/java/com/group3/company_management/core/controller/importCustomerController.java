@@ -28,7 +28,7 @@ public class importCustomerController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
+    @PreAuthorize("hasAnyRole('MARKETING','ADMIN')")
     public String showImportPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -47,7 +47,7 @@ public class importCustomerController {
     }
 
     @PostMapping("/import")
-    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
+    @PreAuthorize("hasAnyRole('MARKETING','ADMIN')")
     public String importCustomer(
             @RequestParam("file") MultipartFile file,
             @RequestParam(defaultValue = "0") int page,
@@ -71,7 +71,7 @@ public class importCustomerController {
             return "lead/import";
         }
 
-        // Sau khi import thành công, đưa về trang 0 và hiển thị lead mới nhất
+
         Sort sortObj = Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(0, size, sortObj);
         Page<Customer> customerPage = customerImportService.allCustomer("all", pageable);
@@ -81,7 +81,7 @@ public class importCustomerController {
     }
 
     @PostMapping("/check")
-    @PreAuthorize("hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public String checkBox(
             @RequestParam(value = "checkbox", required = false) List<Long> id,
             @RequestParam("saleId") Long idSale,
@@ -105,7 +105,7 @@ public class importCustomerController {
     }
 
     @GetMapping("/detail")
-    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
+    @PreAuthorize("hasAnyRole('MARKETING','ADMIN')")
     public String detailCustomer(@RequestParam Long id, Model model) {
         Customer customer = customerService.findCustomerById(id);
         model.addAttribute("customer", customer);
@@ -113,11 +113,10 @@ public class importCustomerController {
     }
 
     @PostMapping("/detail")
-    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
+    @PreAuthorize("hasAnyRole('MARKETING','ADMIN')")
     public String saveImformationCustomer(
             @ModelAttribute("customer") Customer customer,
             Model model) {
-
         Customer oldCustomer = customerService.findCustomerById(customer.getId());
 
         oldCustomer.setName(customer.getName());
@@ -135,7 +134,7 @@ public class importCustomerController {
         return "redirect:/customer/detail?id=" + oldCustomer.getId();
     }
 
-    // Hàm phụ trợ dùng chung có 6 tham số đầy đủ
+
     private void addCommonAttributes(Model model, Page<Customer> customerPage, int page, int size, String status, String sort) {
         model.addAttribute("customerPage", customerPage);
         model.addAttribute("customer", customerPage.getContent());

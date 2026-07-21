@@ -59,6 +59,11 @@ public class DashboardController {
         return "redirect:" + dashboardUrl(authentication);
     }
 
+    @GetMapping("/settings")
+    public String settings() {
+        return "dashboard/settings";
+    }
+
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public String adminDashboard(Authentication authentication, Model model) {
@@ -198,6 +203,7 @@ public class DashboardController {
                     card("Lịch hẹn", number(appointmentRepository.countByEmployeeUsername(username)), "Cuộc hẹn cần theo dõi", "fa-calendar-check", "danger")
             );
             case "SALES_MANAGER" -> {
+
                 List<String> teamUsernames = salesTeamUsernames(employee);
                 List<Long> teamEmployeeIds = salesTeamEmployeeIds(employee);
                 yield List.of(
@@ -207,6 +213,7 @@ public class DashboardController {
                         card("Doanh số Sales", money(sumSignedRevenueForSalesTeam(employee)), "Tổng doanh số hợp đồng đã ký của đội sale", "fa-coins", "success"),
                         card("Chờ thẩm định", number(teamEmployeeIds.isEmpty() ? 0 : contractRepository.countBySaleIdInAndStatus(teamEmployeeIds, Contract.ContractStatus.PENDING_ADMIN_OFFICER)), "Hợp đồng của đội đang chờ thẩm định", "fa-hourglass-half", "danger")
                 );
+
             }
             case "ADMIN_OFFICER" -> List.of(
                     card("Chờ thẩm định", number(contractRepository.countByStatus(Contract.ContractStatus.PENDING_ADMIN_OFFICER)), "Hợp đồng chờ xử lý", "fa-clipboard-check", "warning"),

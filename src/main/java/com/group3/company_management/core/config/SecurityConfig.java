@@ -137,7 +137,9 @@ public class SecurityConfig {
                                                 .hasRole("ACCOUNTANT")
 
                                                 .requestMatchers("/invoices/**")
-                                                .hasAnyRole("ACCOUNTANT", "ADMIN", "DIRECTOR", "MANAGER", "SALES_MANAGER", "SALES", "ADMIN_OFFICER", "ADMINOFFICER")
+
+                                                .hasAnyRole("ACCOUNTANT", "ADMIN", "DIRECTOR", "MANAGER","CUSTOMER", "SALES_MANAGER", "SALES", "ADMIN_OFFICER", "ADMINOFFICER")
+
 
                                                 .requestMatchers("/dashboard/admin-officer/**")
                                                 .hasAnyRole("ADMIN_OFFICER", "ADMINOFFICER")

@@ -54,7 +54,7 @@ public class DepartmentController {
         return "departments/list";
     }
     @GetMapping("/edit")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ADMIN_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public String editDepartment(@RequestParam(required = false) Long id,Model model){
         DepartmentRequest department;
         if(id == null){
@@ -79,11 +79,11 @@ public class DepartmentController {
                     )
             );
         }
-        model.addAttribute(("listManager"), userService.getUsersByRoles(List.of("ADMIN","ADMIN_OFFICER","SALES_MANAGER")));
+        model.addAttribute(("listManager"), userService.getUsersByRoles(List.of("ADMIN","ADMIN_OFFICER","SALES_MANAGER","MANAGER")));
         return "departments/form";
     }
     @PostMapping("/save")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ADMIN_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public String saveDepartment(@ModelAttribute("department") DepartmentRequest departmentRequest,
                                  Authentication authentication,
                                  Model model) {
@@ -101,12 +101,12 @@ public class DepartmentController {
                         userRepository.findAvailableEmployeesForEdit(departmentRequest.getId(), List.of("SALES", "ACCOUNTANT", "MARKETING")));
             }
 
-            model.addAttribute("listManager", userService.getUsersByRoles(List.of("ADMIN","ADMIN_OFFICER","SALES_MANAGER")));
+            model.addAttribute("listManager", userService.getUsersByRoles(List.of("ADMIN","ADMIN_OFFICER","SALES_MANAGER","MANAGER")));
             return "departments/form";
         }
     }
     @GetMapping("/delete")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ADMIN_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public String deleteDepartment(@RequestParam Long id,
                                    Authentication authentication) {
 
@@ -115,14 +115,14 @@ public class DepartmentController {
         return "redirect:/departments";
     }
     @PostMapping("/active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ADMIN_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public String updateStatus(@RequestParam String status,@RequestParam Long id,
                                Model model){
         departmentService.updateDepartmentStatus(id,status);
         return "redirect:/departments";
     }
     @GetMapping("/detail")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ADMIN_OFFICER', 'MANAGER', 'SALES_MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public String detailDepartment(@RequestParam Long id, Model model){
 
         DepartmentRequest department = departmentService.getDepartmentById(id);

@@ -351,11 +351,13 @@ public class CustomerServiceImpl implements CustomerService {
             return List.of();
         }
 
+
         List<User> deptUsers = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
         List<Long> employeeIds = new ArrayList<>();
         for (User user : deptUsers) {
             if ("SALES".equals(roleCode(user))) {
                 employeeIds.add(user.getId());
+
             }
         }
 
