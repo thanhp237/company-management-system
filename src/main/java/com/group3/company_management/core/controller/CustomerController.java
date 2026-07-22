@@ -61,7 +61,6 @@ public class CustomerController {
         this.invoiceRepository = invoiceRepository;
         this.quotationRepository = quotationRepository;
         this.customerReportScopeService = customerReportScopeService;
-        this.quotationRepository= quotationRepository;
     }
 
     /**
