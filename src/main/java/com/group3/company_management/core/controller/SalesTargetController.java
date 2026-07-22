@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.time.YearMonth;
+import java.util.List;
 
 @Controller
 @RequestMapping("/sales-targets")
@@ -31,7 +32,12 @@ public class SalesTargetController {
         YearMonth period = resolvePeriod(year, month);
         model.addAttribute("periodYear", period.getYear());
         model.addAttribute("periodMonth", period.getMonthValue());
-        model.addAttribute("targets", salesTargetService.getTargetSummaries(authentication.getName(), period));
+        try {
+            model.addAttribute("targets", salesTargetService.getTargetSummaries(authentication.getName(), period));
+        } catch (RuntimeException exception) {
+            model.addAttribute("errorMessage", exception.getMessage());
+            model.addAttribute("targets", List.of());
+        }
         return "sales-targets/list";
     }
 

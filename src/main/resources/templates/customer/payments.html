@@ -56,7 +56,11 @@
                     </td>
                     <td>
                         <div class="d-flex flex-wrap gap-2">
-                        <form th:if="${invoice.status.name() == 'ISSUED'}"
+                            <a class="btn btn-outline-primary"
+                               th:href="@{/customer/portal/payments/{id}(id=${invoice.id})}">
+                                Chi tiết
+                            </a>
+                            <form th:if="${invoice.status.name() == 'ISSUED'}"
                               th:action="@{/customer/portal/payments/{id}/pay(id=${invoice.id})}" method="post">
                             <button class="btn btn-primary" type="submit">Thanh toán VNPAY</button>
                         </form>
@@ -71,12 +75,6 @@
                             Trợ giúp
                         </a>
                         </div>
-                    </td>
-                    <td>
-                        <a th:href="@{/invoices/detail/{id}(id=${invoice.id})}"
-                           style="text-decoration: none; color: #2563eb; font-weight: 700;">
-                           Detail
-                        </a>
                     </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(invoices)}"><td colspan="6">Chưa có hóa đơn.</td></tr>
