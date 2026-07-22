@@ -28,6 +28,10 @@
                 <h1>Quản lý khách hàng</h1>
                 <p class="management-subtitle">Quản lý hồ sơ khách hàng đã có trong hệ thống CRM.</p>
             </div>
+            <a class="customer-primary-button" th:if="${canManageCustomer}" th:href="@{/customers/add}">
+                <i class="fas fa-plus"></i>
+                <span>Thêm khách hàng</span>
+            </a>
         </div>
 
         <div class="customer-tabs">

@@ -25,9 +25,12 @@
         <div class="management-taskbar customer-taskbar">
             <div>
                 <p class="management-eyebrow">CRM / Nhập khách hàng tiềm năng</p>
-                <h1>Nhập khách hàng tiềm năng</h1>
+                <h1 sec:authorize="hasRole('MARKETING')">Nhập khách hàng tiềm năng</h1>
+                <h1 sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER')">Phân bổ khách hàng tiềm năng</h1>
+                <h1 sec:authorize="hasRole('ADMIN')">Nhập dữ liệu & phân bổ</h1>
                 <p class="management-subtitle" sec:authorize="hasRole('MARKETING')">Nhập danh sách khách hàng tiềm năng từ Excel và kiểm tra dữ liệu trước khi chuyển cho quản lý kinh doanh phân bổ.</p>
-                <p class="management-subtitle" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Nhập danh sách khách hàng tiềm năng từ Excel, kiểm tra dữ liệu và phân bổ cho đội kinh doanh.</p>
+                <p class="management-subtitle" sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER')">Xem danh sách khách hàng tiềm năng đã nhập và phân bổ cho đội kinh doanh.</p>
+                <p class="management-subtitle" sec:authorize="hasRole('ADMIN')">Nhập danh sách khách hàng tiềm năng từ Excel, kiểm tra dữ liệu và phân bổ cho đội kinh doanh.</p>
             </div>
         </div>
 
@@ -35,7 +38,8 @@
             <a class="active" th:href="@{/customer}">
                 <i class="fas fa-file-import"></i>
                 <span sec:authorize="hasRole('MARKETING')">Nhập khách hàng tiềm năng</span>
-                <span sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Nhập dữ liệu & phân bổ</span>
+                <span sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER')">Phân bổ khách hàng tiềm năng</span>
+                <span sec:authorize="hasRole('ADMIN')">Nhập dữ liệu & phân bổ</span>
             </a>
             <a sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')" th:href="@{/customers}">
                 <i class="fas fa-table-list"></i>
@@ -61,7 +65,8 @@
             <article class="customer-stat-card warning">
                 <span>Chưa phân bổ</span>
                 <strong th:text="${unassignedCustomers != null ? unassignedCustomers : 0}">0</strong>
-                <small>Cần chọn nhân viên kinh doanh phụ trách</small>
+                <small sec:authorize="hasRole('MARKETING')">Chờ quản lý kinh doanh phân bổ</small>
+                <small sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')">Cần chọn nhân viên kinh doanh phụ trách</small>
             </article>
             <article class="customer-stat-card info">
                 <span>Đã phân bổ</span>
@@ -75,7 +80,51 @@
             </article>
         </section>
 
-        <section class="customer-panel">
+        <section class="customer-panel mb-3"
+                 sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')"
+                 th:if="${targetSummaries != null}">
+            <div class="customer-panel-header">
+                <div>
+                    <h2>Target đội kinh doanh tháng này</h2>
+                    <p>Dùng để cân đối lead khi phân bổ cho từng nhân viên kinh doanh.</p>
+                </div>
+                <a class="customer-secondary-button" th:href="@{/sales-targets}">
+                    <i class="fas fa-bullseye"></i>
+                    <span>Quản lý target</span>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="customer-table">
+                    <thead>
+                    <tr>
+                        <th>Sales</th>
+                        <th class="text-end">Target</th>
+                        <th class="text-end">Đã đạt</th>
+                        <th class="text-end">Còn thiếu</th>
+                        <th class="text-end">% đạt</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="target : ${targetSummaries}">
+                        <td>
+                            <strong th:text="${target.saleName}">Sales</strong>
+                            <div class="text-muted small" th:text="${target.employeeCode != null ? target.employeeCode : 'Chưa có mã'}">Mã NV</div>
+                        </td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(target.targetAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(target.achievedAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(target.remainingAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+                        <td class="text-end">
+                            <span class="customer-pill"
+                                  th:classappend="${target.targetReached} ? ' active' : ' warm'"
+                                  th:text="${#numbers.formatDecimal(target.achievementRate, 0, 'POINT', 2, 'COMMA') + '%'}">0%</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="customer-panel" sec:authorize="hasAnyRole('MARKETING','ADMIN')">
             <div class="customer-panel-header">
                 <div>
                     <h2>Nạp dữ liệu từ Excel</h2>

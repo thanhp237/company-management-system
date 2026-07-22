@@ -59,6 +59,9 @@
                     <a sec:authorize="hasRole('MARKETING')"
                        href="/customer"
                        data-nav-match="/customer">Nhập khách hàng tiềm năng</a>
+                    <a sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER')"
+                       href="/customer"
+                       data-nav-match="/customer">Phân bổ khách hàng tiềm năng</a>
                     <a sec:authorize="hasRole('ADMIN')"
                        href="/customer"
                        data-nav-match="/customer">Nhập dữ liệu & phân bổ</a>
@@ -90,6 +93,9 @@
                     <a sec:authorize="hasAnyRole('SALES','MANAGER','SALES_MANAGER','ADMIN','ADMIN_OFFICER','ADMINOFFICER','ACCOUNTANT','DIRECTOR')"
                        href="/contracts"
                        data-nav-match="/contracts">Hợp đồng</a>
+                    <a sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')"
+                       href="/sales-targets"
+                       data-nav-match="/sales-targets">Target doanh số</a>
                 </div>
             </div>
 

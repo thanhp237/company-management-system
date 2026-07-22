@@ -80,6 +80,8 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public void createCustomer(CustomerRequest request) {
         log.info("Creating new customer: {}", request.getFullName());
+        User creator = currentUser()
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản đang đăng nhập"));
         
          // Validate phone uniqueness
         if (customerRepository.findByPhone(request.getPhone()).isPresent()) {
@@ -88,12 +90,14 @@ public class CustomerServiceImpl implements CustomerService {
         
         Customer customer = Customer.builder()
                 .fullName(request.getFullName())
+                .name(request.getFullName())
                 .phone(request.getPhone())
                 .email(request.getEmail())
                 .address(request.getAddress())
                 .customerSource(request.getCustomerSource())
                 .assignedSalesId(request.getAssignedSalesId())
                 .customerStatus("ACTIVE")
+                .createdBy(creator.getId())
                 .build();
         
         customerRepository.save(customer);
@@ -393,6 +397,14 @@ public class CustomerServiceImpl implements CustomerService {
             return null;
         }
         return status.trim();
+    }
+
+    private Optional<User> currentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getName() == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByUsername(auth.getName());
     }
 
     private String roleCode(User user) {
