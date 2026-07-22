@@ -52,6 +52,7 @@ public class CustomerController {
                               OpportunityRepository opportunityRepository,
                               ContractRepository contractRepository,
                               InvoiceRepository invoiceRepository,
+                              QuotationRepository quotationRepository,
                               CustomerReportScopeService customerReportScopeService) {
         this.customerService = customerService;
         this.activityService = activityService;
@@ -59,6 +60,7 @@ public class CustomerController {
         this.contractRepository = contractRepository;
         this.invoiceRepository = invoiceRepository;
         this.customerReportScopeService = customerReportScopeService;
+        this.quotationRepository= quotationRepository;
     }
 
     /**

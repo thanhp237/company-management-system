@@ -22,16 +22,18 @@
 
 <main class="admin-workspace with-sidebar customer-workspace">
     <div class="management-page customer-page">
-        <div class="management-taskbar customer-taskbar">
+        <div class="management-taskbar customer-taskbar d-flex justify-content-between align-items-center mb-4">
             <div>
                 <p class="management-eyebrow">CRM / Khách hàng</p>
-                <h1>Quản lý khách hàng</h1>
-                <p class="management-subtitle">Quản lý hồ sơ khách hàng đã có trong hệ thống CRM.</p>
+                <h1 class="m-0">Quản lý khách hàng</h1>
+                <p class="management-subtitle m-0">Quản lý hồ sơ khách hàng đã có trong hệ thống CRM.</p>
             </div>
-        </div>
-        <div>
-            <a th:href="@{/customers/add}">
-                Them khach hang
+            <a sec:authorize="hasAnyRole('MARKETING', 'SALES_MANAGER', 'MANAGER', 'ADMIN')"
+               th:href="@{/customers/add}"
+               class="btn btn-success fw-bold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2"
+               style="background-color: #007a3d; border-color: #007a3d;">
+                <i class="fas fa-user-plus"></i>
+                <span>Thêm khách hàng</span>
             </a>
         </div>
 
