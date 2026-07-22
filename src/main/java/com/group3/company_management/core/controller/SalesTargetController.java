@@ -19,12 +19,13 @@ import java.util.List;
 @Controller
 @RequestMapping("/sales-targets")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')")
+@PreAuthorize("hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')")
 public class SalesTargetController {
 
     private final SalesTargetService salesTargetService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')")
     public String listTargets(@RequestParam(required = false) Integer year,
                               @RequestParam(required = false) Integer month,
                               Authentication authentication,
@@ -41,7 +42,26 @@ public class SalesTargetController {
         return "sales-targets/list";
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('SALES')")
+    public String myTargets(@RequestParam(required = false) Integer year,
+                            @RequestParam(required = false) Integer month,
+                            Authentication authentication,
+                            Model model) {
+        YearMonth period = resolvePeriod(year, month);
+        model.addAttribute("periodYear", period.getYear());
+        model.addAttribute("periodMonth", period.getMonthValue());
+        try {
+            model.addAttribute("targets", salesTargetService.getMyTargetSummaries(authentication.getName(), period));
+        } catch (RuntimeException exception) {
+            model.addAttribute("errorMessage", exception.getMessage());
+            model.addAttribute("targets", List.of());
+        }
+        return "sales-targets/me";
+    }
+
     @PostMapping
+    @PreAuthorize("hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')")
     public String saveTarget(@RequestParam Long saleEmployeeId,
                              @RequestParam Integer targetYear,
                              @RequestParam Integer targetMonth,

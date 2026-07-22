@@ -96,6 +96,9 @@
                     <a sec:authorize="hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')"
                        href="/sales-targets"
                        data-nav-match="/sales-targets">Target doanh số</a>
+                    <a sec:authorize="hasRole('SALES')"
+                       href="/sales-targets/me"
+                       data-nav-match="/sales-targets/me">Target của tôi</a>
                 </div>
             </div>
 

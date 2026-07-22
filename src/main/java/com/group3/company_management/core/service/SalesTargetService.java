@@ -9,6 +9,8 @@ import java.util.List;
 public interface SalesTargetService {
     List<SalesTargetSummary> getTargetSummaries(String username, YearMonth period);
 
+    List<SalesTargetSummary> getMyTargetSummaries(String username, YearMonth period);
+
     void saveTarget(String username,
                     Long saleEmployeeId,
                     Integer targetYear,

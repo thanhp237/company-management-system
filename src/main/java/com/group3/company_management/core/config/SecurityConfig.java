@@ -152,6 +152,9 @@ public class SecurityConfig {
 
                                                 .requestMatchers("/dashboard/sales-manager/**")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER")
+                                                .requestMatchers("/sales-targets/me")
+                                                .hasRole("SALES")
+
 
                                                 .requestMatchers("/sales-targets", "/sales-targets/**")
                                                 .hasAnyRole("SALES_MANAGER", "MANAGER", "ADMIN")

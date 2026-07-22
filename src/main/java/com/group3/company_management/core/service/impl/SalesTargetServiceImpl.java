@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SalesTargetServiceImpl implements SalesTargetService {
 
-    private static final String SALES_EMPLOYEE_TYPE = "Sales Staff";
     private static final String COMMISSION_RATE_KEY = "commissionRate";
     private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 
@@ -69,6 +68,30 @@ public class SalesTargetServiceImpl implements SalesTargetService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<SalesTargetSummary> getMyTargetSummaries(String username, YearMonth period) {
+        User currentUser = getCurrentUser(username);
+        if (!"SALES".equals(roleCode(currentUser))) {
+            throw new IllegalArgumentException("Chỉ nhân viên kinh doanh mới xem được target cá nhân.");
+        }
+
+        YearMonth safePeriod = period == null ? YearMonth.now() : period;
+        Employee sale = employeeRepository.findByUser_Username(username)
+                .filter(this::isSalesEmployee)
+                .orElseThrow(() -> new IllegalArgumentException("Tài khoản Sales chưa có hồ sơ nhân viên."));
+
+        SalesTarget target = salesTargetRepository
+                .findBySaleIdAndTargetYearAndTargetMonth(sale.getId(), safePeriod.getYear(), safePeriod.getMonthValue())
+                .orElse(null);
+
+        BigDecimal commissionRate = getCommissionRate();
+        LocalDateTime from = safePeriod.atDay(1).atStartOfDay();
+        LocalDateTime to = safePeriod.plusMonths(1).atDay(1).atStartOfDay();
+
+        return List.of(buildSummary(sale, target, safePeriod, commissionRate, from, to));
+    }
+
+    @Override
     @Transactional
     public void saveTarget(String username,
                            Long saleEmployeeId,
@@ -82,7 +105,7 @@ public class SalesTargetServiceImpl implements SalesTargetService {
         validateTargetInput(saleEmployeeId, targetYear, targetMonth, targetAmount, bonusRate);
 
         Employee sale = employeeRepository.findById(saleEmployeeId)
-                .filter(employee -> SALES_EMPLOYEE_TYPE.equalsIgnoreCase(employee.getEmployeeType()))
+                .filter(this::isSalesEmployee)
                 .orElseThrow(() -> new IllegalArgumentException("Nhan vien kinh doanh khong hop le."));
         assertCanAssignSaleTarget(currentUser, sale);
 
@@ -147,7 +170,7 @@ public class SalesTargetServiceImpl implements SalesTargetService {
 
     private List<Employee> accessibleSales(User currentUser) {
         String roleCode = roleCode(currentUser);
-        List<Employee> allSales = employeeRepository.findByEmployeeType(SALES_EMPLOYEE_TYPE);
+        List<Employee> allSales = employeeRepository.findActiveSalesEmployees();
         if ("ADMIN".equals(roleCode) || "MANAGER".equals(roleCode)) {
             return allSales;
         }
@@ -179,6 +202,12 @@ public class SalesTargetServiceImpl implements SalesTargetService {
         if (sale.getUser() == null || !managerDepartmentId.equals(sale.getUser().getDepartmentId())) {
             throw new IllegalArgumentException("Chi duoc gan target cho Sales cung phong ban.");
         }
+    }
+
+    private boolean isSalesEmployee(Employee employee) {
+        return employee != null
+                && employee.getUser() != null
+                && "SALES".equals(roleCode(employee.getUser()));
     }
 
     private void validateTargetInput(Long saleEmployeeId,
