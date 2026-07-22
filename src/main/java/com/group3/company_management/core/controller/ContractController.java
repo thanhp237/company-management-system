@@ -7,6 +7,7 @@ import com.group3.company_management.core.dto.PaymentScheduleRequest;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.service.ContractService;
 import com.group3.company_management.core.service.CustomerAccountService;
+import com.group3.company_management.core.service.CustomerReportScopeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +30,7 @@ public class ContractController {
 
     private final ContractService contractService;
     private final CustomerAccountService customerAccountService;
+    private final CustomerReportScopeService customerReportScopeService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
@@ -72,9 +74,14 @@ public class ContractController {
     @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
     public String detailContract(
             @PathVariable Long id,
+            Authentication authentication,
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
+            if (!customerReportScopeService.canViewContract(id, authentication)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền xem hợp đồng này.");
+                return "redirect:/contracts";
+            }
             ContractResponse contract = contractService.getContractDetail(id);
             model.addAttribute("contract", contract);
             model.addAttribute("contractRuleRequest", toRuleRequest(contract));
@@ -124,12 +131,13 @@ public class ContractController {
             @PathVariable Long id,
             @ModelAttribute("contractRuleRequest") ContractRuleRequest request,
             Authentication authentication,
+            Model model,
             RedirectAttributes redirectAttributes) {
         try {
             contractService.updateDraftContractInfo(id, request, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Đã lưu thông tin nháp của hợp đồng.");
         } catch (RuntimeException exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return renderContractFormWithSubmittedData(id, request, exception.getMessage(), model, redirectAttributes);
         }
 
         return "redirect:/contracts/" + id;
@@ -141,12 +149,13 @@ public class ContractController {
             @PathVariable Long id,
             @ModelAttribute("contractRuleRequest") ContractRuleRequest request,
             Authentication authentication,
+            Model model,
             RedirectAttributes redirectAttributes) {
         try {
             contractService.updateContractRules(id, request, authentication.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Đã lưu điều khoản hợp đồng.");
         } catch (RuntimeException exception) {
-            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return renderContractFormWithSubmittedData(id, request, exception.getMessage(), model, redirectAttributes);
         }
 
         return "redirect:/contracts/" + id;
@@ -233,7 +242,14 @@ public class ContractController {
 
     @GetMapping("/export-pdf/{id}")
     @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'ADMIN_OFFICER', 'ADMINOFFICER', 'MANAGER', 'ADMIN', 'ACCOUNTANT', 'DIRECTOR')")
-    public String printPreview(@PathVariable Long id, Model model) {
+    public String printPreview(@PathVariable Long id,
+                               Authentication authentication,
+                               RedirectAttributes redirectAttributes,
+                               Model model) {
+        if (!customerReportScopeService.canViewContract(id, authentication)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không có quyền xuất hợp đồng này.");
+            return "redirect:/contracts";
+        }
         ContractResponse contract = contractService.getContractDetail(id);
 
         String buyerCompanyName = contract.getBuyerCompanyName();
@@ -363,6 +379,34 @@ public class ContractController {
                 "SIGNED", " signed",
                 "CANCELLED", " cancelled"
         );
+    }
+
+    private String renderContractFormWithSubmittedData(Long id,
+                                                       ContractRuleRequest request,
+                                                       String errorMessage,
+                                                       Model model,
+                                                       RedirectAttributes redirectAttributes) {
+        try {
+            ContractResponse contract = contractService.getContractDetail(id);
+            padPaymentSchedules(request);
+            model.addAttribute("contract", contract);
+            model.addAttribute("contractRuleRequest", request);
+            model.addAttribute("statusClasses", statusClasses());
+            model.addAttribute("errorMessage", errorMessage);
+            return "contracts/contract";
+        } catch (RuntimeException fallbackException) {
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return "redirect:/contracts/" + id;
+        }
+    }
+
+    private void padPaymentSchedules(ContractRuleRequest request) {
+        if (request.getPaymentSchedules() == null) {
+            request.setPaymentSchedules(new ArrayList<>());
+        }
+        while (request.getPaymentSchedules().size() < 5) {
+            request.getPaymentSchedules().add(new PaymentScheduleRequest());
+        }
     }
 
     private void addCustomerAccountMessage(

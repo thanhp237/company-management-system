@@ -22,6 +22,39 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
 
     List<Contract> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
 
+    List<Contract> findByCustomerIdAndSaleIdOrderByCreatedAtDesc(Long customerId, Long saleId);
+
+    List<Contract> findByCustomerIdAndSaleIdInOrderByCreatedAtDesc(Long customerId, List<Long> saleIds);
+
+    List<Contract> findByCustomerIdAndAdminOfficerIdOrderByCreatedAtDesc(Long customerId, Long adminOfficerId);
+
+    @Query("""
+            select c
+            from Contract c
+            where c.customer.id = :customerId
+            and (
+                c.adminOfficer.id = :adminOfficerId
+                or c.status in :pooledStatuses
+            )
+            order by c.createdAt desc
+            """)
+    List<Contract> findByCustomerIdAndAdminOfficerScopeOrderByCreatedAtDesc(
+            @Param("customerId") Long customerId,
+            @Param("adminOfficerId") Long adminOfficerId,
+            @Param("pooledStatuses") List<Contract.ContractStatus> pooledStatuses);
+
+    @Query("""
+            select distinct c
+            from Contract c
+            join Invoice i on i.contract = c
+            where c.customer.id = :customerId
+            and (i.createdBy = :employeeId or i.updatedBy = :employeeId)
+            order by c.createdAt desc
+            """)
+    List<Contract> findByCustomerIdAndHasScopedInvoiceOrderByCreatedAtDesc(
+            @Param("customerId") Long customerId,
+            @Param("employeeId") Long employeeId);
+
     long countByCustomerId(Long customerId);
 
     long countByCustomerIdAndStatus(Long customerId, Contract.ContractStatus status);

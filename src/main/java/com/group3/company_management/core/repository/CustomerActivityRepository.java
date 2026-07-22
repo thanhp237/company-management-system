@@ -18,12 +18,29 @@ public interface CustomerActivityRepository
     List<CustomerActivity> findByCustomerIdOrderByCreatedAtDesc(
             Long customerId);
 
+    List<CustomerActivity> findByCustomerIdAndEmployeeIdOrderByCreatedAtDesc(
+            Long customerId,
+            Long employeeId);
+
+    List<CustomerActivity> findByCustomerIdAndEmployeeIdInOrderByCreatedAtDesc(
+            Long customerId,
+            List<Long> employeeIds);
+
     Page<CustomerActivity> findByCustomerId(
             Long customerId,
             Pageable pageable);
 
+    Page<CustomerActivity> findByCustomerIdIn(
+            List<Long> customerIds,
+            Pageable pageable);
+
     Page<CustomerActivity> findByCustomerIdAndActivityTypeIgnoreCase(
             Long customerId,
+            String activityType,
+            Pageable pageable);
+
+    Page<CustomerActivity> findByCustomerIdInAndActivityTypeIgnoreCase(
+            List<Long> customerIds,
             String activityType,
             Pageable pageable);
 

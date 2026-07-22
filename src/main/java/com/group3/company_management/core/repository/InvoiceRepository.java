@@ -14,6 +14,21 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     java.util.Optional<Invoice> findByPaymentScheduleId(Long paymentScheduleId);
     java.util.List<Invoice> findByContractCustomerIdOrderByCreatedAtDesc(Long customerId);
 
+    @Query("""
+            select i
+            from Invoice i
+            where i.contract.customer.id = :customerId
+            and (i.createdBy = :employeeId or i.updatedBy = :employeeId)
+            order by i.createdAt desc
+            """)
+    java.util.List<Invoice> findByContractCustomerIdAndAccountantOrderByCreatedAtDesc(
+            @Param("customerId") Long customerId,
+            @Param("employeeId") Long employeeId);
+
+    java.util.List<Invoice> findByContractCustomerIdAndContractSaleIdInOrderByCreatedAtDesc(
+            Long customerId,
+            java.util.List<Long> saleIds);
+
     long countByStatus(Invoice.InvoiceStatus status);
 
     @Query("""
