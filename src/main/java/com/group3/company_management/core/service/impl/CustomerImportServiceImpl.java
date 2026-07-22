@@ -160,6 +160,29 @@ public class CustomerImportServiceImpl implements CustomerImportService {
         return userRepository.findByRole_RoleName(roleName);
     }
     @Override
+    public List<User> findAssignableSales(String username) {
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản đang đăng nhập."));
+        List<User> sales = userRepository.findByRole_RoleName("Sales Staff").stream()
+                .filter(User::isActive)
+                .toList();
+
+        String currentRole = roleCode(currentUser);
+        if ("ADMIN".equals(currentRole) || "MANAGER".equals(currentRole)) {
+            return sales;
+        }
+        if ("SALES_MANAGER".equals(currentRole)) {
+            Long departmentId = currentUser.getDepartmentId();
+            if (departmentId == null) {
+                throw new RuntimeException("Tài khoản quản lý kinh doanh chưa được gán phòng ban.");
+            }
+            return sales.stream()
+                    .filter(sale -> departmentId.equals(sale.getDepartmentId()))
+                    .toList();
+        }
+        return List.of();
+    }
+    @Override
     public Customer findCustomerById(Long id) {
         return leadRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
@@ -172,13 +195,16 @@ public class CustomerImportServiceImpl implements CustomerImportService {
 
     @Override
     @Transactional
-    public void assignCustomersToSale(List<Long> customerIds, Long saleId) {
+    public void assignCustomersToSale(List<Long> customerIds, Long saleId, String username) {
         if (customerIds == null || customerIds.isEmpty()) {
             return;
         }
 
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản đang đăng nhập."));
         User sale = userRepository.findById(saleId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên kinh doanh"));
+        validateAssignableSale(currentUser, sale);
 
         for (Long customerId : customerIds) {
             Customer customer = findCustomerById(customerId);
@@ -197,6 +223,33 @@ public class CustomerImportServiceImpl implements CustomerImportService {
         }
     }
 
+
+    private void validateAssignableSale(User currentUser, User sale) {
+        if (sale == null || sale.getRole() == null || !"SALES".equals(roleCode(sale))) {
+            throw new RuntimeException("Chỉ được phân bổ cho nhân viên kinh doanh.");
+        }
+        String currentRole = roleCode(currentUser);
+        if ("ADMIN".equals(currentRole) || "MANAGER".equals(currentRole)) {
+            return;
+        }
+        if (!"SALES_MANAGER".equals(currentRole)) {
+            throw new RuntimeException("Bạn không có quyền phân bổ khách hàng tiềm năng.");
+        }
+        Long departmentId = currentUser.getDepartmentId();
+        if (departmentId == null) {
+            throw new RuntimeException("Tài khoản quản lý kinh doanh chưa được gán phòng ban.");
+        }
+        if (!departmentId.equals(sale.getDepartmentId())) {
+            throw new RuntimeException("Sales Manager chỉ được phân bổ cho Sales cùng phòng ban.");
+        }
+    }
+
+    private String roleCode(User user) {
+        if (user == null || user.getRole() == null || user.getRole().getRoleCode() == null) {
+            return "";
+        }
+        return user.getRole().getRoleCode().trim().toUpperCase();
+    }
     private String buildOpportunityCode(Customer customer) {
         return "OPP-CUS-%06d".formatted(customer.getId());
     }

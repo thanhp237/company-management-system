@@ -98,8 +98,13 @@ public class importCustomerController {
             @RequestParam(defaultValue = "newest") String sort,
             Authentication authentication,
             Model model) {
-        customerImportService.assignCustomersToSale(id, idSale);
-        String name = customerImportService.findUser(idSale).getUsername();
+        String name = null;
+        try {
+            customerImportService.assignCustomersToSale(id, idSale, authentication.getName());
+            name = customerImportService.findUser(idSale).getUsername();
+        } catch (RuntimeException exception) {
+            model.addAttribute("error", exception.getMessage());
+        }
 
         Sort sortObj = "oldest".equalsIgnoreCase(sort)
                 ? Sort.by("createdAt").ascending()
@@ -107,7 +112,9 @@ public class importCustomerController {
         Pageable pageable = PageRequest.of(page, size, sortObj);
         Page<Customer> customerPage = customerImportService.allCustomer(status, pageable);
 
-        model.addAttribute("nameSale", name);
+        if (name != null) {
+            model.addAttribute("nameSale", name);
+        }
         addCommonAttributes(model, customerPage, page, size, status, sort, authentication);
         return "lead/import";
     }
@@ -146,7 +153,14 @@ public class importCustomerController {
     private void addCommonAttributes(Model model, Page<Customer> customerPage, int page, int size, String status, String sort, Authentication authentication) {
         model.addAttribute("customerPage", customerPage);
         model.addAttribute("customer", customerPage.getContent());
-        model.addAttribute("sales", customerImportService.findSale("Sales Staff"));
+        try {
+            model.addAttribute("sales", customerImportService.findAssignableSales(authentication.getName()));
+        } catch (RuntimeException exception) {
+            model.addAttribute("sales", List.of());
+            if (!model.containsAttribute("error")) {
+                model.addAttribute("error", exception.getMessage());
+            }
+        }
         model.addAttribute("currentPage", page);
         model.addAttribute("size", size);
         model.addAttribute("currentStatus", status);
@@ -156,7 +170,13 @@ public class importCustomerController {
         model.addAttribute("unassignedCustomers", customerImportService.countUnassignedCustomers());
         model.addAttribute("assignedCustomers", customerImportService.countAssignedCustomers());
         if (canViewTargets(authentication)) {
-            model.addAttribute("targetSummaries", salesTargetService.getTargetSummaries(authentication.getName(), YearMonth.now()));
+            try {
+                model.addAttribute("targetSummaries", salesTargetService.getTargetSummaries(authentication.getName(), YearMonth.now()));
+            } catch (RuntimeException exception) {
+                if (!model.containsAttribute("error")) {
+                    model.addAttribute("error", exception.getMessage());
+                }
+            }
         }
     }
 

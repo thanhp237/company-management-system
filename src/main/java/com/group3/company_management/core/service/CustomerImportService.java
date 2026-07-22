@@ -13,9 +13,10 @@ import java.util.List;
 public interface CustomerImportService {
     void importCustomer(MultipartFile file,String name);
     List<User> findSale(String roleName);
+    List<User> findAssignableSales(String username);
     public Customer findCustomerById(Long id);
     public User findUser(Long id);
-    void assignCustomersToSale(List<Long> customerIds, Long saleId);
+    void assignCustomersToSale(List<Long> customerIds, Long saleId, String username);
     Page<Customer> allCustomer(String status, Pageable pageable);
 
     long countTotalCustomers();
