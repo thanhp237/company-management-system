@@ -100,6 +100,7 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = Customer.builder()
                 .name(request.getFullName())
                 .fullName(request.getFullName())
+                .name(request.getFullName())
                 .phone(request.getPhone())
                 .email(request.getEmail())
                 .address(request.getAddress())
@@ -405,6 +406,14 @@ public class CustomerServiceImpl implements CustomerService {
             return null;
         }
         return status.trim();
+    }
+
+    private Optional<User> currentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getName() == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByUsername(auth.getName());
     }
 
     private String roleCode(User user) {

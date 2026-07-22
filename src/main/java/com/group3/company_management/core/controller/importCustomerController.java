@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import com.group3.company_management.core.entity.Customer;
 import com.group3.company_management.core.service.CustomerImportService;
 import com.group3.company_management.core.service.CustomerService;
+import com.group3.company_management.core.service.SalesTargetService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -15,25 +16,31 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.time.YearMonth;
 
 @Controller
 @RequestMapping("/customer")
 public class importCustomerController {
     private final CustomerImportService customerImportService;
     private final CustomerService customerService;
+    private final SalesTargetService salesTargetService;
 
-    public importCustomerController(CustomerImportService customerImportService, CustomerService customerService) {
+    public importCustomerController(CustomerImportService customerImportService,
+                                    CustomerService customerService,
+                                    SalesTargetService salesTargetService) {
         this.customerImportService = customerImportService;
         this.customerService = customerService;
+        this.salesTargetService = salesTargetService;
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('MARKETING','ADMIN')")
+    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
     public String showImportPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "all") String status,
             @RequestParam(defaultValue = "newest") String sort,
+            Authentication authentication,
             Model model) {
 
         Sort sortObj = "oldest".equalsIgnoreCase(sort)
@@ -42,7 +49,7 @@ public class importCustomerController {
 
         Pageable pageable = PageRequest.of(page, size, sortObj);
         Page<Customer> customerPage = customerImportService.allCustomer(status, pageable);
-        addCommonAttributes(model, customerPage, page, size, status, sort);
+        addCommonAttributes(model, customerPage, page, size, status, sort, authentication);
         return "lead/import";
     }
 
@@ -67,7 +74,7 @@ public class importCustomerController {
                     : Sort.by("createdAt").descending();
             Pageable pageable = PageRequest.of(page, size, sortObj);
             Page<Customer> customerPage = customerImportService.allCustomer(status, pageable);
-            addCommonAttributes(model, customerPage, page, size, status, sort);
+            addCommonAttributes(model, customerPage, page, size, status, sort, authentication);
             return "lead/import";
         }
 
@@ -75,13 +82,13 @@ public class importCustomerController {
         Sort sortObj = Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(0, size, sortObj);
         Page<Customer> customerPage = customerImportService.allCustomer("all", pageable);
-        addCommonAttributes(model, customerPage, 0, size, "all", "newest");
+        addCommonAttributes(model, customerPage, 0, size, "all", "newest", authentication);
 
         return "lead/import";
     }
 
     @PostMapping("/check")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('SALES_MANAGER','MANAGER','ADMIN')")
     public String checkBox(
             @RequestParam(value = "checkbox", required = false) List<Long> id,
             @RequestParam("saleId") Long idSale,
@@ -89,6 +96,7 @@ public class importCustomerController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "all") String status,
             @RequestParam(defaultValue = "newest") String sort,
+            Authentication authentication,
             Model model) {
         customerImportService.assignCustomersToSale(id, idSale);
         String name = customerImportService.findUser(idSale).getUsername();
@@ -100,12 +108,12 @@ public class importCustomerController {
         Page<Customer> customerPage = customerImportService.allCustomer(status, pageable);
 
         model.addAttribute("nameSale", name);
-        addCommonAttributes(model, customerPage, page, size, status, sort);
+        addCommonAttributes(model, customerPage, page, size, status, sort, authentication);
         return "lead/import";
     }
 
     @GetMapping("/detail")
-    @PreAuthorize("hasAnyRole('MARKETING','ADMIN')")
+    @PreAuthorize("hasAnyRole('MARKETING','SALES_MANAGER','MANAGER','ADMIN')")
     public String detailCustomer(@RequestParam Long id, Model model) {
         Customer customer = customerService.findCustomerById(id);
         model.addAttribute("customer", customer);
@@ -135,7 +143,7 @@ public class importCustomerController {
     }
 
 
-    private void addCommonAttributes(Model model, Page<Customer> customerPage, int page, int size, String status, String sort) {
+    private void addCommonAttributes(Model model, Page<Customer> customerPage, int page, int size, String status, String sort, Authentication authentication) {
         model.addAttribute("customerPage", customerPage);
         model.addAttribute("customer", customerPage.getContent());
         model.addAttribute("sales", customerImportService.findSale("Sales Staff"));
@@ -147,5 +155,18 @@ public class importCustomerController {
         model.addAttribute("totalCustomers", customerImportService.countTotalCustomers());
         model.addAttribute("unassignedCustomers", customerImportService.countUnassignedCustomers());
         model.addAttribute("assignedCustomers", customerImportService.countAssignedCustomers());
+        if (canViewTargets(authentication)) {
+            model.addAttribute("targetSummaries", salesTargetService.getTargetSummaries(authentication.getName(), YearMonth.now()));
+        }
+    }
+
+    private boolean canViewTargets(Authentication authentication) {
+        if (authentication == null || authentication.getAuthorities() == null || authentication.getName() == null) {
+            return false;
+        }
+        return authentication.getAuthorities().stream().anyMatch(authority ->
+                "ROLE_SALES_MANAGER".equals(authority.getAuthority())
+                        || "ROLE_MANAGER".equals(authority.getAuthority())
+                        || "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 }

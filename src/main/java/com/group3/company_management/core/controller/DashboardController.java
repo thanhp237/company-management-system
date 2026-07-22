@@ -276,6 +276,7 @@ public class DashboardController {
                             action("Quy trình nhóm", "/pipeline", "Theo dõi cơ hội toàn đội", "fa-chart-column"),
                             action("Khách hàng", "/customers", "Giám sát danh sách khách hàng", "fa-users"),
                             action("Hợp đồng", "/contracts", "Theo dõi tiến độ hợp đồng", "fa-file-signature"),
+                            action("Target doanh số", "/sales-targets", "Đặt target tháng và theo dõi thưởng đội sale", "fa-bullseye"),
                             action("Phân bổ khách hàng tiềm năng", "/customer", "Kiểm tra luồng phân bổ khách hàng tiềm năng", "fa-people-arrows")
                     ))
             );
