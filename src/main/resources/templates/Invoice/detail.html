@@ -61,7 +61,14 @@
 
             <div class="top-actions">
                 <!-- Nút In Hóa Đơn / Xuất PDF (Luôn hiển thị ở mọi trạng thái) -->
-                <a th:href="@{/invoices/print/{id}(id=${invoice.id})}" target="_blank" class="soft-btn" style="margin-right: 8px;">
+                <a sec:authorize="hasRole('CUSTOMER')"
+                   th:href="@{/customer/portal/payments/{id}/print(id=${invoice.id})}"
+                   target="_blank" class="soft-btn" style="margin-right: 8px;">
+                    <i class="fa-solid fa-print"></i> In hóa đơn (PDF)
+                </a>
+                <a sec:authorize="!hasRole('CUSTOMER')"
+                   th:href="@{/invoices/print/{id}(id=${invoice.id})}"
+                   target="_blank" class="soft-btn" style="margin-right: 8px;">
                     <i class="fa-solid fa-print"></i> In hóa đơn (PDF)
                 </a>
                 <th:block sec:authorize="!hasRole('CUSTOMER')" th:if="${invoice.status.name() == 'DRAFT'}">

@@ -48,7 +48,7 @@ public class SalesTargetServiceImpl implements SalesTargetService {
         assertCanManageTargets(currentUser);
 
         YearMonth safePeriod = period == null ? YearMonth.now() : period;
-        List<Employee> sales = employeeRepository.findByEmployeeType(SALES_EMPLOYEE_TYPE).stream()
+        List<Employee> sales = accessibleSales(currentUser).stream()
                 .filter(employee -> employee.getUser() != null && employee.getUser().isActive())
                 .sorted(Comparator.comparing(this::saleName, String.CASE_INSENSITIVE_ORDER))
                 .toList();
@@ -84,6 +84,7 @@ public class SalesTargetServiceImpl implements SalesTargetService {
         Employee sale = employeeRepository.findById(saleEmployeeId)
                 .filter(employee -> SALES_EMPLOYEE_TYPE.equalsIgnoreCase(employee.getEmployeeType()))
                 .orElseThrow(() -> new IllegalArgumentException("Nhan vien kinh doanh khong hop le."));
+        assertCanAssignSaleTarget(currentUser, sale);
 
         SalesTarget target = salesTargetRepository
                 .findBySaleIdAndTargetYearAndTargetMonth(saleEmployeeId, targetYear, targetMonth)
@@ -144,6 +145,42 @@ public class SalesTargetServiceImpl implements SalesTargetService {
                 .build();
     }
 
+    private List<Employee> accessibleSales(User currentUser) {
+        String roleCode = roleCode(currentUser);
+        List<Employee> allSales = employeeRepository.findByEmployeeType(SALES_EMPLOYEE_TYPE);
+        if ("ADMIN".equals(roleCode) || "MANAGER".equals(roleCode)) {
+            return allSales;
+        }
+        if ("SALES_MANAGER".equals(roleCode)) {
+            Long departmentId = currentUser.getDepartmentId();
+            if (departmentId == null) {
+                throw new IllegalArgumentException("Tai khoan quan ly kinh doanh chua duoc gan phong ban.");
+            }
+            return allSales.stream()
+                    .filter(sale -> sale.getUser() != null)
+                    .filter(sale -> departmentId.equals(sale.getUser().getDepartmentId()))
+                    .toList();
+        }
+        return List.of();
+    }
+
+    private void assertCanAssignSaleTarget(User currentUser, Employee sale) {
+        String roleCode = roleCode(currentUser);
+        if ("ADMIN".equals(roleCode) || "MANAGER".equals(roleCode)) {
+            return;
+        }
+        if (!"SALES_MANAGER".equals(roleCode)) {
+            throw new IllegalArgumentException("Ban khong co quyen gan target doanh so.");
+        }
+        Long managerDepartmentId = currentUser.getDepartmentId();
+        if (managerDepartmentId == null) {
+            throw new IllegalArgumentException("Tai khoan quan ly kinh doanh chua duoc gan phong ban.");
+        }
+        if (sale.getUser() == null || !managerDepartmentId.equals(sale.getUser().getDepartmentId())) {
+            throw new IllegalArgumentException("Chi duoc gan target cho Sales cung phong ban.");
+        }
+    }
+
     private void validateTargetInput(Long saleEmployeeId,
                                      Integer targetYear,
                                      Integer targetMonth,
@@ -167,7 +204,7 @@ public class SalesTargetServiceImpl implements SalesTargetService {
     }
 
     private void assertCanManageTargets(User user) {
-        String roleCode = user.getRole() == null ? "" : user.getRole().getRoleCode();
+        String roleCode = roleCode(user);
         if (!List.of("SALES_MANAGER", "MANAGER", "ADMIN").contains(roleCode)) {
             throw new IllegalArgumentException("Ban khong co quyen quan ly target doanh so.");
         }
@@ -176,6 +213,13 @@ public class SalesTargetServiceImpl implements SalesTargetService {
     private User getCurrentUser(String username) {
         return userRepository.findByUsernameAndNotDeleted(username)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay tai khoan hien tai."));
+    }
+
+    private String roleCode(User user) {
+        if (user == null || user.getRole() == null || user.getRole().getRoleCode() == null) {
+            return "";
+        }
+        return user.getRole().getRoleCode().trim().toUpperCase();
     }
 
     private BigDecimal getCommissionRate() {

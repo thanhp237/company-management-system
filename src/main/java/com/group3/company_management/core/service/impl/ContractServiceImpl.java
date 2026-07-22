@@ -801,10 +801,10 @@ public class ContractServiceImpl implements ContractService {
                 String subject = "[CompanyMS] Ký kết hợp đồng thành công - " + contract.getContractCode();
                 String content = String.format("""
                         Kính gửi Quý khách hàng,
-                        
+
                         Hợp đồng số %s của Quý khách đã được ký kết trực tuyến thành công vào lúc %s.
                         Hợp đồng hiện đã có hiệu lực chính thức. Quý khách có thể xem và tải bản hợp đồng chi tiết trong cổng thông tin khách hàng bất kỳ lúc nào.
-                        
+
                         Trân trọng cảm ơn,
                         Hệ thống quản trị CompanyMS.
                         """, contract.getContractCode(), LocalDateTime.now().toString());
@@ -1086,6 +1086,7 @@ public class ContractServiceImpl implements ContractService {
         requireText(request.getSellerIdentityNumber(), "CMND/CCCD bên bán");
         requireText(request.getSellerIdentityIssuedPlace(), "Nơi cấp giấy tờ bên bán");
         requireDate(request.getSellerIdentityIssuedDate(), "Ngày cấp giấy tờ bên bán");
+        validateIdentityIssuedDate(request.getSellerIdentityIssuedDate(), request.getSigningDate(), "Ngày cấp giấy tờ bên bán");
         requireText(request.getSellerAuthorizationInfo(), "Giấy ủy quyền bên bán");
 
         requireText(request.getBuyerCompanyName(), "Tên doanh nghiệp bên mua");
@@ -1100,6 +1101,7 @@ public class ContractServiceImpl implements ContractService {
         requireText(request.getBuyerIdentityNumber(), "CMND/CCCD bên mua");
         requireText(request.getBuyerIdentityIssuedPlace(), "Nơi cấp giấy tờ bên mua");
         requireDate(request.getBuyerIdentityIssuedDate(), "Ngày cấp giấy tờ bên mua");
+        validateIdentityIssuedDate(request.getBuyerIdentityIssuedDate(), request.getSigningDate(), "Ngày cấp giấy tờ bên mua");
         requireText(request.getBuyerAuthorizationInfo(), "Giấy ủy quyền bên mua");
 
         requireText(request.getAmountInWords(), "Số tiền bằng chữ");
@@ -1137,6 +1139,17 @@ public class ContractServiceImpl implements ContractService {
     private void requireDate(LocalDate value, String fieldName) {
         if (value == null) {
             throw new RuntimeException("Vui lòng chọn " + fieldName + ".");
+        }
+    }
+
+
+    private void validateIdentityIssuedDate(LocalDate issuedDate, LocalDate signingDate, String fieldName) {
+        LocalDate today = LocalDate.now();
+        if (issuedDate.isAfter(today)) {
+            throw new RuntimeException(fieldName + " không được sau ngày hiện tại.");
+        }
+        if (signingDate != null && issuedDate.isAfter(signingDate)) {
+            throw new RuntimeException(fieldName + " không được sau ngày ký hợp đồng.");
         }
     }
 

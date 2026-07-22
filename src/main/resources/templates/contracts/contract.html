@@ -196,7 +196,7 @@
                             </label>
                             <label>
                                 <span>Ngày cấp</span>
-                                <input type="date" th:field="*{buyerIdentityIssuedDate}">
+                                <input type="date" th:field="*{buyerIdentityIssuedDate}" th:attr="max=${T(java.time.LocalDate).now()}">
                             </label>
                             <label>
                                 <span>Nơi ký dự kiến</span>
@@ -413,7 +413,7 @@
                             </label>
                             <label>
                                 <span>Ngày cấp</span>
-                                <input type="date" th:field="*{sellerIdentityIssuedDate}" required>
+                                <input type="date" th:field="*{sellerIdentityIssuedDate}" th:attr="max=${T(java.time.LocalDate).now()}" required>
                             </label>
                             <label class="wide">
                                 <span>Giấy ủy quyền</span>
@@ -471,7 +471,7 @@
                             </label>
                             <label>
                                 <span>Ngày cấp</span>
-                                <input type="date" th:field="*{buyerIdentityIssuedDate}" required>
+                                <input type="date" th:field="*{buyerIdentityIssuedDate}" th:attr="max=${T(java.time.LocalDate).now()}" required>
                             </label>
                             <label class="wide">
                                 <span>Giấy ủy quyền</span>
