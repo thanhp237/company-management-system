@@ -107,6 +107,13 @@
                 <i class="fas fa-file-invoice-dollar"></i>
                 <span>Hóa đơn</span>
             </a>
+            <a class="sidebar-link"
+               sec:authorize="hasAnyRole('ADMIN','ADMIN_OFFICER','ADMINOFFICER','SALES','MARKETING','SALES_MANAGER','MANAGER','ACCOUNTANT','DIRECTOR')"
+               href="/reports/sales"
+               data-nav-match="/reports/sales">
+                <i class="fas fa-chart-pie"></i>
+                <span>Báo cáo doanh số</span>
+            </a>
         </nav>
 
         <div class="sidebar-footer">

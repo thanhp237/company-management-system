@@ -292,14 +292,14 @@ public class DashboardController {
                             disabledAction("Trung tâm hóa đơn", "Quản lý hóa đơn từ hợp đồng", "fa-file-invoice"),
                             disabledAction("Phiếu thu thanh toán", "Ghi nhận thanh toán theo đợt", "fa-money-check-dollar"),
                             disabledAction("Sổ hoa hồng", "Tính hoa hồng tự động", "fa-hand-holding-dollar"),
-                            disabledAction("Báo cáo tài chính", "Xuất Excel/PDF báo cáo tài chính", "fa-file-export")
+                            action("Báo cáo tài chính", "/reports/sales", "Thống kê & Xuất Excel/PDF báo cáo doanh số", "fa-file-export")
                     ))
             );
             case "DIRECTOR" -> List.of(
                     group("Phân tích điều hành", "Theo dõi KPI, doanh thu và hiệu suất doanh nghiệp.", List.of(
-                            action("Revenue Summary", "/dashboard/director", "Báo cáo doanh thu, đã thu và còn phải thu", "fa-chart-pie"),
+                            action("Revenue Summary", "/reports/sales", "Báo cáo doanh thu, đã thu và còn phải thu", "fa-chart-pie"),
                             action("Executive Dashboard", "/dashboard/director", "KPI overview cho Director", "fa-ranking-star"),
-                            disabledAction("Trung tâm xuất báo cáo", "Tải báo cáo Excel/PDF", "fa-file-export")
+                            action("Trung tâm xuất báo cáo", "/reports/sales", "Tải báo cáo Excel/PDF doanh số", "fa-file-export")
                     ))
             );
             default -> List.of(
