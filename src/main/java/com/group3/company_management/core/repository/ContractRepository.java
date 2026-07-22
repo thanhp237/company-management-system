@@ -98,4 +98,16 @@ public interface ContractRepository extends JpaRepository<Contract, Long>, JpaSp
     long countBySaleIdIn(List<Long> saleIds);
 
     long countBySaleIdInAndStatus(List<Long> saleIds, Contract.ContractStatus status);
+
+    @Query("select coalesce(sum(c.finalAmount), 0) from Contract c where c.status = :status and c.createdAt >= :startDate and c.createdAt <= :endDate")
+    BigDecimal sumFinalAmountByStatusAndCreatedAtBetween(@Param("status") Contract.ContractStatus status, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
+    @Query("select coalesce(sum(c.finalAmount), 0) from Contract c where c.sale.id in :saleIds and c.status = :status and c.createdAt >= :startDate and c.createdAt <= :endDate")
+    BigDecimal sumFinalAmountBySaleIdInAndStatusAndCreatedAtBetween(@Param("saleIds") List<Long> saleIds, @Param("status") Contract.ContractStatus status, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
+    @Query("select c from Contract c where c.createdAt >= :startDate and c.createdAt <= :endDate order by c.createdAt desc")
+    List<Contract> findByCreatedAtBetweenOrderByCreatedAtDesc(@Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
+    @Query("select c from Contract c where c.sale.id in :saleIds and c.createdAt >= :startDate and c.createdAt <= :endDate order by c.createdAt desc")
+    List<Contract> findBySaleIdInAndCreatedAtBetweenOrderByCreatedAtDesc(@Param("saleIds") List<Long> saleIds, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
 }

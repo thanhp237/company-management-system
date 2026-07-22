@@ -61,6 +61,7 @@ public class CustomerController {
         this.invoiceRepository = invoiceRepository;
         this.quotationRepository = quotationRepository;
         this.customerReportScopeService = customerReportScopeService;
+        this.quotationRepository= quotationRepository;
     }
 
     /**
@@ -87,6 +88,7 @@ public class CustomerController {
         addPermissionFlags(model, authentication);
         return "customers/list";
     }
+
 
     /**
      * GET /customers/add
