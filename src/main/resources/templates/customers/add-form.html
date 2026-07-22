@@ -80,10 +80,7 @@
                         <span>Nguồn khách hàng</span>
                         <input type="text" th:field="*{customerSource}">
                     </label>
-                    <label>
-                        <span>Mã nhân viên kinh doanh phụ trách</span>
-                        <input type="number" th:field="*{assignedSalesId}">
-                    </label>
+
                     <label th:if="${isEdit}">
                         <span>Trạng thái</span>
                         <select th:field="*{customerStatus}">

@@ -75,35 +75,44 @@ public class CustomerServiceImpl implements CustomerService {
         }
         return mapToResponse(customer);
     }
-    
+
     @Override
     @Transactional
     public void createCustomer(CustomerRequest request) {
         log.info("Creating new customer: {}", request.getFullName());
-        User creator = currentUser()
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản đang đăng nhập"));
-        
-         // Validate phone uniqueness
+
+        // Validate phone uniqueness
         if (customerRepository.findByPhone(request.getPhone()).isPresent()) {
             throw new IllegalArgumentException("Số điện thoại đã tồn tại");
         }
-        
+
+        // 1. Lấy ID người dùng đang tạo
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long createdBy = null;
+        if (auth != null && auth.isAuthenticated()) {
+            Optional<User> userOpt = userRepository.findByUsername(auth.getName());
+            if (userOpt.isPresent()) {
+                createdBy = userOpt.get().getId();
+            }
+        }
+
+        // 2. Tạo đối tượng Customer với assignedSalesId = null (Chưa phân bổ)
         Customer customer = Customer.builder()
+                .name(request.getFullName())
                 .fullName(request.getFullName())
                 .name(request.getFullName())
                 .phone(request.getPhone())
                 .email(request.getEmail())
                 .address(request.getAddress())
                 .customerSource(request.getCustomerSource())
-                .assignedSalesId(request.getAssignedSalesId())
+                .assignedSalesId(null) // ✅ ĐẶT LÀ NULL ĐỂ CHƯA PHÂN BỔ
                 .customerStatus("ACTIVE")
-                .createdBy(creator.getId())
+                .createdBy(createdBy)
                 .build();
-        
+
         customerRepository.save(customer);
         log.info("Customer created successfully: {}", request.getPhone());
     }
-    
     @Override
     @Transactional
     public void updateCustomer(CustomerRequest request) {
