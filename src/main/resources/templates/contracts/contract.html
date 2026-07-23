@@ -125,6 +125,21 @@
                         </div>
                     </div>
                 </section>
+                <section class="contract-detail-card"
+                         th:if="${contract.status == 'DRAFT'}"
+                         sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')">
+                    <div>
+                        <strong>Gửi Admin Office nhập điều khoản</strong>
+                        <p>Nếu vừa sửa thông tin bên mua thì bấm Lưu thông tin nháp trước, sau đó gửi hợp đồng sang hành chính hợp đồng.</p>
+                    </div>
+                    <form th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}" method="post">
+                        <button class="contract-primary-button" type="submit">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Gửi Admin Office</span>
+                        </button>
+                    </form>
+                </section>
+
                 <form class="contract-detail-card contract-rule-form"
                       th:if="${contract.status == 'DRAFT'}"
                       sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
@@ -139,20 +154,6 @@
                         Lưu thông tin khách hàng trên hợp đồng trước khi gửi cho hành chính hợp đồng nhập điều khoản.
                         Sản phẩm và giá trị vẫn lấy từ báo giá.
                     </p>
-
-                    <div class="contract-form-action-strip">
-                        <button class="contract-primary-button" type="submit">
-                            <i class="fas fa-floppy-disk"></i>
-                            <span>Lưu thông tin nháp</span>
-                        </button>
-                        <button class="contract-primary-button submit-admin" type="submit"
-                                th:formaction="@{/contracts/{id}/submit-admin(id=${contract.id})}"
-                                formmethod="post">
-                            <i class="fas fa-user-shield"></i>
-                            <span>Lưu & gửi Admin Office</span>
-                        </button>
-                    </div>
-
                     <div class="contract-rule-section">
                         <h3>Thông tin doanh nghiệp / khách hàng</h3>
                         <div class="contract-rule-grid">
@@ -221,6 +222,10 @@
                         </div>
                     </div>
 
+                    <button class="contract-primary-button" type="submit">
+                        <i class="fas fa-floppy-disk"></i>
+                        <span>Lưu thông tin nháp</span>
+                    </button>
                 </form>
 
 

@@ -459,21 +459,6 @@
     color: #657386;
 }
 
-.contract-rule-form {
-    position: relative;
-    z-index: 2;
-    overflow: visible;
-    pointer-events: auto;
-}
-
-.contract-rule-form input,
-.contract-rule-form textarea,
-.contract-rule-form select,
-.contract-rule-form button {
-    position: relative;
-    z-index: 3;
-    pointer-events: auto;
-}
 .contract-rule-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -566,29 +551,6 @@
     padding: 0 16px;
 }
 
-.contract-form-action-strip {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 14px 0 18px;
-    padding: 12px;
-    border: 1px solid #b9e6cd;
-    border-radius: 8px;
-    background: #f0fbf5;
-}
-
-.contract-form-action-strip .contract-primary-button {
-    margin-top: 0;
-}
-
-.contract-form-action-strip .submit-admin {
-    background: #005f30;
-}
-
-.contract-form-action-strip .submit-admin:hover {
-    background: #004d28;
-}
 .contract-detail-side {
     position: sticky;
     top: 92px;
@@ -948,16 +910,6 @@ body.print-body .btn-secondary:hover {
 }
 
 @media (max-width: 768px) {
-    .contract-form-action-strip {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .contract-form-action-strip .contract-primary-button {
-        width: 100%;
-    }
-
-
     .contract-taskbar,
     .contract-detail-header,
     .contract-table-header,

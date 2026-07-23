@@ -113,16 +113,13 @@ public class ContractController {
     @PreAuthorize("hasAnyRole('SALES', 'SALES_MANAGER', 'MANAGER', 'ADMIN')")
     public String submitToAdmin(
             @PathVariable Long id,
-            @ModelAttribute("contractRuleRequest") ContractRuleRequest request,
             Authentication authentication,
-            Model model,
             RedirectAttributes redirectAttributes) {
         try {
-            contractService.updateDraftContractInfo(id, request, authentication.getName());
             contractService.submitToAdmin(id, authentication.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Đã lưu thông tin và gửi hợp đồng cho hành chính hợp đồng.");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã gửi hợp đồng cho hành chính hợp đồng.");
         } catch (RuntimeException exception) {
-            return renderContractFormWithSubmittedData(id, request, exception.getMessage(), model, redirectAttributes);
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
         }
 
         return "redirect:/contracts/" + id;
