@@ -125,24 +125,6 @@
                         </div>
                     </div>
                 </section>
-
-                <section class="contract-detail-card contract-submit-admin-card"
-                         th:if="${contract.status == 'DRAFT'}"
-                         sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')">
-                    <div>
-                        <strong>Gửi Admin Office nhập điều khoản</strong>
-                        <p>Lưu thông tin bên mua nếu có chỉnh sửa, rồi gửi hợp đồng sang hành chính hợp đồng để xử lý điều khoản.</p>
-                    </div>
-                    <form th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}"
-                          method="post"
-                          onsubmit="return confirm('Bạn đã lưu/xác nhận thông tin bên mua trước khi gửi hành chính hợp đồng?');">
-                        <button class="contract-primary-button" type="submit">
-                            <i class="fas fa-user-shield"></i>
-                            <span>Gửi Admin Office</span>
-                        </button>
-                    </form>
-                </section>
-
                 <form class="contract-detail-card contract-rule-form"
                       th:if="${contract.status == 'DRAFT'}"
                       sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
@@ -157,6 +139,19 @@
                         Lưu thông tin khách hàng trên hợp đồng trước khi gửi cho hành chính hợp đồng nhập điều khoản.
                         Sản phẩm và giá trị vẫn lấy từ báo giá.
                     </p>
+
+                    <div class="contract-form-action-strip">
+                        <button class="contract-primary-button" type="submit">
+                            <i class="fas fa-floppy-disk"></i>
+                            <span>Lưu thông tin nháp</span>
+                        </button>
+                        <button class="contract-primary-button submit-admin" type="submit"
+                                th:formaction="@{/contracts/{id}/submit-admin(id=${contract.id})}"
+                                formmethod="post">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Lưu & gửi Admin Office</span>
+                        </button>
+                    </div>
 
                     <div class="contract-rule-section">
                         <h3>Thông tin doanh nghiệp / khách hàng</h3>
@@ -226,10 +221,6 @@
                         </div>
                     </div>
 
-                    <button class="contract-primary-button" type="submit">
-                        <i class="fas fa-floppy-disk"></i>
-                        <span>Lưu thông tin nháp</span>
-                    </button>
                 </form>
 
 

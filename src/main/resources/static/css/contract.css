@@ -551,36 +551,28 @@
     padding: 0 16px;
 }
 
-.contract-submit-admin-card {
+.contract-form-action-strip {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    border-color: #b9e6cd;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0 18px;
+    padding: 12px;
+    border: 1px solid #b9e6cd;
+    border-radius: 8px;
     background: #f0fbf5;
 }
 
-.contract-submit-admin-card strong {
-    display: block;
-    color: #101923;
-    font-size: 16px;
-    font-weight: 900;
-}
-
-.contract-submit-admin-card p {
-    margin: 5px 0 0;
-    color: #536271;
-    font-size: 13px;
-    line-height: 1.45;
-}
-
-.contract-submit-admin-card form {
-    flex: 0 0 auto;
-}
-
-.contract-submit-admin-card .contract-primary-button {
+.contract-form-action-strip .contract-primary-button {
     margin-top: 0;
-    min-width: 190px;
+}
+
+.contract-form-action-strip .submit-admin {
+    background: #005f30;
+}
+
+.contract-form-action-strip .submit-admin:hover {
+    background: #004d28;
 }
 .contract-detail-side {
     position: sticky;
@@ -941,15 +933,15 @@ body.print-body .btn-secondary:hover {
 }
 
 @media (max-width: 768px) {
-    .contract-submit-admin-card {
+    .contract-form-action-strip {
         align-items: stretch;
         flex-direction: column;
     }
 
-    .contract-submit-admin-card form,
-    .contract-submit-admin-card .contract-primary-button {
+    .contract-form-action-strip .contract-primary-button {
         width: 100%;
     }
+
 
     .contract-taskbar,
     .contract-detail-header,
