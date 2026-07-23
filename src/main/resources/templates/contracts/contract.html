@@ -126,6 +126,23 @@
                     </div>
                 </section>
 
+                <section class="contract-detail-card contract-submit-admin-card"
+                         th:if="${contract.status == 'DRAFT'}"
+                         sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')">
+                    <div>
+                        <strong>Gửi Admin Office nhập điều khoản</strong>
+                        <p>Lưu thông tin bên mua nếu có chỉnh sửa, rồi gửi hợp đồng sang hành chính hợp đồng để xử lý điều khoản.</p>
+                    </div>
+                    <form th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}"
+                          method="post"
+                          onsubmit="return confirm('Bạn đã lưu/xác nhận thông tin bên mua trước khi gửi hành chính hợp đồng?');">
+                        <button class="contract-primary-button" type="submit">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Gửi Admin Office</span>
+                        </button>
+                    </form>
+                </section>
+
                 <form class="contract-detail-card contract-rule-form"
                       th:if="${contract.status == 'DRAFT'}"
                       sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
@@ -214,6 +231,7 @@
                         <span>Lưu thông tin nháp</span>
                     </button>
                 </form>
+
 
                 <section class="contract-detail-card">
                     <div class="contract-card-title">
@@ -589,13 +607,6 @@
             <aside class="contract-detail-side">
                 <section class="contract-action-card">
                     <h2>Thao tác nhanh</h2>
-                    <form th:if="${contract.status == 'DRAFT'}"
-                          sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
-                          th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}"
-                          method="post"
-                          onsubmit="return confirm('Bạn đã lưu/xác nhận thông tin bên mua trước khi gửi hành chính hợp đồng?');">
-                        <button type="submit"><i class="fas fa-user-shield"></i> Gửi hành chính hợp đồng</button>
-                    </form>
 
                     <form th:if="${contract.status == 'ADMIN_REVIEWED'}"
                           sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
