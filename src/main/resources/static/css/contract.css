@@ -459,6 +459,21 @@
     color: #657386;
 }
 
+.contract-rule-form {
+    position: relative;
+    z-index: 2;
+    overflow: visible;
+    pointer-events: auto;
+}
+
+.contract-rule-form input,
+.contract-rule-form textarea,
+.contract-rule-form select,
+.contract-rule-form button {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+}
 .contract-rule-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
