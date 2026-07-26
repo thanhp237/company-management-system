@@ -25,7 +25,6 @@ public class VnPayService {
     private final PaymentTransactionRepository transactionRepository;
     private final EmailService emailService;
     private final NotificationService notificationService;
-    private final UserRepository userRepository;
     @Value("${vnpay.tmn-code:}") private String tmnCode;
     @Value("${vnpay.hash-secret:}") private String hashSecret;
     @Value("${vnpay.payment-url}") private String paymentUrl;
@@ -64,29 +63,52 @@ public class VnPayService {
         if (tx == null) return Map.of("RspCode", "01", "Message", "Order not found");
         BigDecimal callback = new BigDecimal(p.getOrDefault("vnp_Amount", "0")).divide(BigDecimal.valueOf(100));
         if (tx.getAmount().compareTo(callback) != 0) return Map.of("RspCode", "04", "Message", "Invalid amount");
-        if (tx.getStatus() != PaymentTransaction.Status.PENDING) return Map.of("RspCode", "02", "Message", "Already confirmed");
+        if (tx.getStatus() != PaymentTransaction.Status.PENDING) {
+            if (tx.getStatus() == PaymentTransaction.Status.SUCCESS_PENDING_REVIEW) {
+                tx.setStatus(PaymentTransaction.Status.SUCCESS);
+                markInvoicePaid(tx.getInvoice());
+                return Map.of("RspCode", "00", "Message", "Confirm Success");
+            }
+            return tx.getStatus() == PaymentTransaction.Status.SUCCESS
+                    ? Map.of("RspCode", "00", "Message", "Confirm Success")
+                    : Map.of("RspCode", "02", "Message", "Already confirmed");
+        }
         boolean ok = "00".equals(p.get("vnp_ResponseCode")) && "00".equals(p.get("vnp_TransactionStatus"));
-        tx.setStatus(ok ? PaymentTransaction.Status.SUCCESS_PENDING_REVIEW : PaymentTransaction.Status.FAILED);
+        tx.setStatus(ok ? PaymentTransaction.Status.SUCCESS : PaymentTransaction.Status.FAILED);
         tx.setResponseCode(p.get("vnp_ResponseCode"));
         tx.setVnpTransactionNo(p.get("vnp_TransactionNo"));
         tx.setCompletedAt(LocalDateTime.now());
         if (ok) {
-            Invoice inv = tx.getInvoice();
-            inv.setStatus(Invoice.InvoiceStatus.PAYMENT_PENDING);
-            sendPaymentPendingNotification(inv);
+            markInvoicePaid(tx.getInvoice());
         }
         return Map.of("RspCode", "00", "Message", "Confirm Success");
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public boolean confirmFromReturn(Map<String, String> p) {
         if (!valid(p)) return false;
         PaymentTransaction tx = transactionRepository.findByTxnRef(p.get("vnp_TxnRef")).orElse(null);
         if (tx == null) return false;
         BigDecimal callback = new BigDecimal(p.getOrDefault("vnp_Amount", "0")).divide(BigDecimal.valueOf(100));
         if (tx.getAmount().compareTo(callback) != 0) return false;
-        return "00".equals(p.get("vnp_ResponseCode"))
+        boolean ok = "00".equals(p.get("vnp_ResponseCode"))
                 && "00".equals(p.getOrDefault("vnp_TransactionStatus", p.get("vnp_ResponseCode")));
+        if (!ok) return false;
+
+        if (tx.getStatus() == PaymentTransaction.Status.SUCCESS) {
+            return true;
+        }
+        if (tx.getStatus() != PaymentTransaction.Status.PENDING
+                && tx.getStatus() != PaymentTransaction.Status.SUCCESS_PENDING_REVIEW) {
+            return false;
+        }
+
+        tx.setStatus(PaymentTransaction.Status.SUCCESS);
+        tx.setResponseCode(p.get("vnp_ResponseCode"));
+        tx.setVnpTransactionNo(p.get("vnp_TransactionNo"));
+        tx.setCompletedAt(LocalDateTime.now());
+        markInvoicePaid(tx.getInvoice());
+        return true;
     }
 
     @Transactional
@@ -100,10 +122,7 @@ public class VnPayService {
                 .findTopByInvoiceIdAndStatusOrderByCreatedAtDesc(invoiceId, PaymentTransaction.Status.SUCCESS_PENDING_REVIEW)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch VNPAY thành công đang chờ xử lý."));
         tx.setStatus(PaymentTransaction.Status.SUCCESS);
-        inv.setPaidAmount(inv.getTotalAmount());
-        inv.setOutstandingAmount(BigDecimal.ZERO);
-        inv.setStatus(Invoice.InvoiceStatus.PAID);
-        sendInvoicePaidNotification(inv);
+        markInvoicePaid(inv);
     }
 
     private String query(Map<String, String> p) {
@@ -122,28 +141,14 @@ public class VnPayService {
         }
     }
 
-    private void sendPaymentPendingNotification(Invoice inv) {
-        try {
-            if (inv.getContract() != null && inv.getContract().getCustomer() != null) {
-                notificationService.createCustomerNotification(
-                        inv.getContract().getCustomer().getId(),
-                        "Đã ghi nhận thanh toán VNPAY - " + inv.getInvoiceCode(),
-                        "Giao dịch VNPAY cho hóa đơn " + inv.getInvoiceCode() + " thành công và đang chờ kế toán xử lý."
-                );
-            }
-            for (User accountant : findAccountants()) {
-                notificationService.createNotification(
-                        accountant.getId(),
-                        "Thanh toán VNPAY chờ xử lý",
-                        "Hóa đơn " + inv.getInvoiceCode() + " đã có giao dịch VNPAY thành công, cần đối soát và xác nhận."
-                );
-            }
-        } catch (Exception e) {
-            log.error("Lỗi gửi thông báo thanh toán chờ xử lý: {}", e.getMessage());
+    private void markInvoicePaid(Invoice inv) {
+        if (inv.getStatus() == Invoice.InvoiceStatus.PAID) {
+            return;
         }
-    }
-    private List<User> findAccountants() {
-        return userRepository.findUsersByRoleNames(List.of("ACCOUNTANT"));
+        inv.setPaidAmount(inv.getTotalAmount());
+        inv.setOutstandingAmount(BigDecimal.ZERO);
+        inv.setStatus(Invoice.InvoiceStatus.PAID);
+        sendInvoicePaidNotification(inv);
     }
 
     private void sendInvoicePaidNotification(Invoice inv) {

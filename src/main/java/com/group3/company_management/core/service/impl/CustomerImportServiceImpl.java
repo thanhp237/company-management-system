@@ -226,13 +226,13 @@ public class CustomerImportServiceImpl implements CustomerImportService {
 
     @Override
     public List<User> findSale(String roleName) {
-        return userRepository.findByRole_RoleName(roleName);
+        return userRepository.findActiveUsersByRoleCode(normalizeSalesRoleCode(roleName));
     }
 
     @Override
     public List<User> findSale(String roleName, org.springframework.security.core.Authentication authentication) {
         List<Long> deptUserIds = getDepartmentSaleUserIds(authentication);
-        List<User> allSales = userRepository.findByRole_RoleName(roleName);
+        List<User> allSales = userRepository.findActiveUsersByRoleCode(normalizeSalesRoleCode(roleName));
         return allSales.stream()
                 .filter(u -> {
                     if (u.getRole() != null) {
@@ -248,6 +248,18 @@ public class CustomerImportServiceImpl implements CustomerImportService {
                 })
                 .toList();
     }
+
+    private String normalizeSalesRoleCode(String roleName) {
+        if (roleName == null || roleName.isBlank()) {
+            return "SALES";
+        }
+        String normalized = roleName.trim().replace(" ", "_").toUpperCase(java.util.Locale.ROOT);
+        if ("SALES_STAFF".equals(normalized)) {
+            return "SALES";
+        }
+        return normalized;
+    }
+
     @Override
     public Customer findCustomerById(Long id) {
         return leadRepository.findById(id)

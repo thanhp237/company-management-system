@@ -23,10 +23,10 @@
             Có lỗi xảy ra.
         </div>
         <div th:if="${param.payment != null and param.payment[0] == 'success'}" class="alert alert-success">
-            Thanh toán đã được ghi nhận và đang chờ kế toán xác nhận.
+            Thanh toán VNPAY thành công. Hóa đơn đã được cập nhật sang trạng thái đã thanh toán.
         </div>
         <div th:if="${param.payment != null and param.payment[0] == 'processing'}" class="alert alert-info">
-Kết quả thanh toán đã được ghi nhận và đang chờ kế toán xử lý/đối soát.
+            Kết quả thanh toán đang được xử lý. Nếu tiền đã trừ nhưng trạng thái chưa cập nhật, vui lòng dùng nút Trợ giúp để gửi thông tin hỗ trợ.
         </div>
         <div th:if="${param.payment != null and param.payment[0] == 'failed'}" class="alert alert-warning">
             Giao dịch không thành công hoặc đã bị hủy.

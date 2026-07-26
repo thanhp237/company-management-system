@@ -18,6 +18,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-notifications");
+        registry.addEndpoint("/ws-notifications")
+                .setAllowedOrigins(
+                        "http://localhost:8081",
+                        "http://127.0.0.1:8081",
+                        "https://quinquevalent-tonja-exclamatory.ngrok-free.dev");
     }
 }

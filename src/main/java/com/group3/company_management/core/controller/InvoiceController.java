@@ -47,6 +47,7 @@ public class InvoiceController {
         long totalCount = allInvoices.size();
         long draftCount = allInvoices.stream().filter(inv -> Invoice.InvoiceStatus.DRAFT.equals(inv.getStatus())).count();
         long issuedCount = allInvoices.stream().filter(inv -> Invoice.InvoiceStatus.ISSUED.equals(inv.getStatus())).count();
+        long paymentPendingCount = allInvoices.stream().filter(inv -> Invoice.InvoiceStatus.PAYMENT_PENDING.equals(inv.getStatus())).count();
         long cancelledCount = allInvoices.stream().filter(inv -> Invoice.InvoiceStatus.CANCELLED.equals(inv.getStatus())).count();
 
         List<Invoice> filteredInvoices = invoiceService.getAllInvoicesFiltered(search, status, sortBy, order);
@@ -55,6 +56,7 @@ public class InvoiceController {
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("draftCount", draftCount);
         model.addAttribute("issuedCount", issuedCount);
+        model.addAttribute("paymentPendingCount", paymentPendingCount);
         model.addAttribute("cancelledCount", cancelledCount);
 
         model.addAttribute("search", search);

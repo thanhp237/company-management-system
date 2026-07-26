@@ -173,11 +173,26 @@ public class CustomerReportScopeService {
     }
 
     public boolean canViewInvoice(Long invoiceId, Authentication authentication) {
+        User user = currentUser(authentication);
+        String roleCode = roleCode(user);
+        Employee employee = currentEmployee(authentication);
+
         return invoiceRepository.findById(invoiceId)
-                .map(invoice -> invoice.getContract() != null
-                        && invoice.getContract().getCustomer() != null
-                        && visibleInvoices(invoice.getContract().getCustomer().getId(), authentication).stream()
-                                .anyMatch(scopedInvoice -> Objects.equals(scopedInvoice.getId(), invoiceId)))
+                .map(invoice -> {
+                    if (canViewAll(roleCode)) {
+                        return true;
+                    }
+                    if ("ACCOUNTANT".equals(roleCode)) {
+                        boolean ownsInvoice = employee != null
+                                && (Objects.equals(invoice.getCreatedBy(), employee.getId())
+                                || Objects.equals(invoice.getUpdatedBy(), employee.getId()));
+                        return ownsInvoice || Invoice.InvoiceStatus.PAYMENT_PENDING.equals(invoice.getStatus());
+                    }
+                    return invoice.getContract() != null
+                            && invoice.getContract().getCustomer() != null
+                            && visibleInvoices(invoice.getContract().getCustomer().getId(), authentication).stream()
+                                    .anyMatch(scopedInvoice -> Objects.equals(scopedInvoice.getId(), invoiceId));
+                })
                 .orElse(false);
     }
 
