@@ -90,6 +90,7 @@ public class Invoice {
     }
 
     public enum InvoiceStatus {
-        DRAFT, ISSUED, PARTIALLY_PAID, PAID, CANCELLED
+        DRAFT, ISSUED, PAYMENT_PENDING, PARTIALLY_PAID, PAID, CANCELLED
     }
 }
+

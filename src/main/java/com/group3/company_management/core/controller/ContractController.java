@@ -18,9 +18,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 @Controller
 @RequestMapping("/contracts")
@@ -86,6 +87,7 @@ public class ContractController {
             model.addAttribute("contract", contract);
             model.addAttribute("contractRuleRequest", toRuleRequest(contract));
             model.addAttribute("statusClasses", statusClasses());
+            model.addAttribute("maxIdentityIssuedDate", LocalDate.now());
             return "contracts/contract";
         } catch (RuntimeException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
@@ -392,6 +394,7 @@ public class ContractController {
             model.addAttribute("contract", contract);
             model.addAttribute("contractRuleRequest", request);
             model.addAttribute("statusClasses", statusClasses());
+            model.addAttribute("maxIdentityIssuedDate", LocalDate.now());
             model.addAttribute("errorMessage", errorMessage);
             return "contracts/contract";
         } catch (RuntimeException fallbackException) {

@@ -18,7 +18,7 @@ public class CompanyManagementApplication {
 	@Bean
 	public CommandLineRunner dropCheckConstraint(JdbcTemplate jdbcTemplate) {
 		return args -> {
-			try {
+			try {	
 				jdbcTemplate.execute("ALTER TABLE contracts DROP CONSTRAINT IF EXISTS contracts_status_check");
 				System.out.println("✅ Successfully dropped constraint 'contracts_status_check'");
 			} catch (Exception e) {

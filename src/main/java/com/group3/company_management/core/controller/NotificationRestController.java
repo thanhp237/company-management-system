@@ -1,6 +1,7 @@
 package com.group3.company_management.core.controller;
 
 import com.group3.company_management.core.entity.Notification;
+import com.group3.company_management.core.repository.CustomerRepository;
 import com.group3.company_management.core.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,21 +20,22 @@ public class NotificationRestController {
     private NotificationService notificationService;
 
     @Autowired
-    private com.group3.company_management.core.repository.CustomerRepository customerRepository;
+    private CustomerRepository customerRepository;
 
-    // Lấy nhanh số lượng chưa đọc + 5 thông báo mới nhất cho chiếc chuông trên Navbar
+    // Lấy nhanh số lượng chưa đọc + 10 thông báo mới nhất cho chiếc chuông trên Navbar
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Object>> getNotificationSummary(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+
         String username = principal.getName();
         List<Notification> allNoti = notificationService.getNotificationsByUsername(username);
         long unreadCount = notificationService.getUnreadCount(username);
-        
-        // Chỉ lấy tối đa 10 cái mới nhất để hiển thị nhanh ở dropdown chuông
-        List<Notification> top10 = allNoti.stream().limit(10).toList();
 
         Map<String, Object> response = new HashMap<>();
         response.put("unreadCount", unreadCount);
-        response.put("notifications", top10);
+        response.put("notifications", allNoti.stream().limit(10).toList());
         return ResponseEntity.ok(response);
     }
 
@@ -43,25 +45,43 @@ public class NotificationRestController {
         if (principal == null) {
             return ResponseEntity.status(401).build();
         }
+
         String email = principal.getName();
         return customerRepository.findByEmailAndNotDeleted(email)
                 .map(customer -> {
                     List<Notification> allNoti = notificationService.getNotificationsByCustomerId(customer.getId());
                     long unreadCount = notificationService.getUnreadCountByCustomerId(customer.getId());
-                    List<Notification> top10 = allNoti.stream().limit(10).toList();
 
                     Map<String, Object> response = new HashMap<>();
                     response.put("unreadCount", unreadCount);
-                    response.put("notifications", top10);
+                    response.put("notifications", allNoti.stream().limit(10).toList());
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.ok(Map.of("unreadCount", 0, "notifications", List.of())));
     }
 
-    // Đánh dấu thông báo là đã đọc khi click vào
+    // Đánh dấu thông báo hệ thống là đã đọc, chỉ cho đúng account nhận thông báo
     @PostMapping("/{id}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable("id") Long id) {
-        notificationService.markAsRead(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Void> markAsRead(@PathVariable("id") Long id, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        boolean updated = notificationService.markAsReadForUsername(id, principal.getName());
+        return updated ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+    }
+
+    // Đánh dấu thông báo khách hàng là đã đọc, chỉ cho đúng customer nhận thông báo
+    @PostMapping("/customer/{id}/read")
+    public ResponseEntity<Void> markCustomerAsRead(@PathVariable("id") Long id, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        return customerRepository.findByEmailAndNotDeleted(principal.getName())
+                .map(customer -> notificationService.markAsReadForCustomer(id, customer.getId())
+                        ? ResponseEntity.ok().<Void>build()
+                        : ResponseEntity.notFound().<Void>build())
+                .orElse(ResponseEntity.status(403).build());
     }
 }

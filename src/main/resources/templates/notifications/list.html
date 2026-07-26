@@ -5,43 +5,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thông báo của tôi - Company Management System</title>
+    <title>Thông báo của tôi - CompanyMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/main.css}">
     <link rel="stylesheet" th:href="@{/css/user.css}">
-    <style>
-        /* Tùy chỉnh nhẹ để tối ưu hóa hiển thị thẻ thông báo theo chuẩn shell hệ thống */
-        .notification-card-item {
-            border-bottom: 1px solid #edf2f7;
-            transition: background-color 0.2s ease;
-        }
-        .notification-card-item.unread {
-            background-color: #f7fafc;
-            border-left: 3px solid #3182ce;
-        }
-        .notification-card-item:hover {
-            background-color: #f8fafc;
-        }
-        .noti-icon-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            background-color: #edf2f7;
-            color: #4a5568;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .unread .noti-icon-wrapper {
-            background-color: #ebf8ff;
-            color: #3182ce;
-        }
-    </style>
 </head>
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>
@@ -50,60 +21,52 @@
 </div>
 
 <main class="admin-workspace with-sidebar user-workspace">
-    <div class="management-page user-management-page">
-        
-        <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="management-page user-management-page notification-page">
+        <div class="notification-page-head">
             <div>
-                <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem;">
-                    <i class="fas fa-bell text-success me-2"></i>Thông báo của tôi
-                </h2>
-                <span class="text-muted small">Xem và quản lý các hoạt động cập nhật trong hệ thống</span>
+                <span class="notification-eyebrow">Hệ thống / Thông báo</span>
+                <h1>Thông báo của tôi</h1>
+                <p>Các cập nhật liên quan trực tiếp tới tài khoản của bạn.</p>
             </div>
-            <a href="/dashboard" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-                <i class="fas fa-arrow-left me-1"></i> Quay lại bảng điều khiển
+            <a href="/dashboard" class="btn btn-outline-secondary notification-back-btn">
+                <i class="fas fa-arrow-left"></i> Bảng điều khiển
             </a>
         </div>
 
-        <section class="management-table-shell user-table-shell p-0 overflow-hidden">
-            
-            <div th:if="${#lists.isEmpty(notifications)}" class="p-5 text-center">
-                <div class="empty-state py-4">
-                    <i class="fas fa-bell-slash fa-3x mb-3 text-muted"></i>
-                    <span class="d-block text-secondary fw-medium">Hộp thông báo của bạn đang trống.</span>
-                </div>
+        <section class="notification-list-shell">
+            <div th:if="${#lists.isEmpty(notifications)}" class="notification-empty-state">
+                <i class="far fa-bell-slash"></i>
+                <strong>Chưa có thông báo</strong>
+                <span>Khi có cập nhật mới, hệ thống sẽ hiển thị tại đây.</span>
             </div>
 
-            <div th:if="${!#lists.isEmpty(notifications)}">
-                <div th:each="noti : ${notifications}" 
-                     th:id="'noti-row-' + ${noti.id}"
-                     class="notification-card-item p-3 d-flex justify-content-between align-items-center"
-                     th:classappend="${!noti.isRead} ? 'unread' : ''">
-                    
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="noti-icon-wrapper">
-                            <i th:class="${!noti.isRead} ? 'fas fa-bell' : 'far fa-bell'"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2">
-                                <strong class="text-dark" th:text="${noti.title}">Tiêu đề</strong>
-                                <span th:if="${!noti.isRead}" class="badge bg-primary rounded-pill" style="font-size: 9px; padding: 3px 6px;">Mới</span>
-                            </div>
-                            <p class="text-secondary m-0 mt-1" style="font-size: 13.5px;" th:text="${noti.message}">Nội dung chi tiết</p>
-                            <span class="text-muted d-block mt-1" style="font-size: 11px;">
-                                <i class="far fa-clock me-1"></i>
-                                <span th:text="${#temporals.format(noti.createdAt, 'HH:mm - dd/MM/yyyy')}">Thời gian</span>
-                            </span>
-                        </div>
+            <div th:if="${!#lists.isEmpty(notifications)}" class="notification-list">
+                <article th:each="noti : ${notifications}"
+                         th:id="'noti-row-' + ${noti.id}"
+                         class="notification-list-item"
+                         th:classappend="${!noti.isRead} ? ' unread' : ''">
+                    <div class="notification-list-icon">
+                        <i th:class="${!noti.isRead} ? 'fas fa-bell' : 'far fa-bell'"></i>
                     </div>
-
-                    <div th:if="${!noti.isRead}" class="pe-2">
-                        <button th:onclick="'markAsReadInPage(' + ${noti.id} + ')'" 
-                                class="btn btn-sm btn-light text-success border border-success-subtle rounded-pill px-3 fw-medium"
-                                style="font-size: 12px;">
-                            <i class="fas fa-check me-1"></i> Đọc xong
-                        </button>
+                    <div class="notification-list-body">
+                        <div class="notification-list-title-row">
+                            <strong th:text="${noti.title}">Tiêu đề</strong>
+                            <span th:if="${!noti.isRead}" class="badge rounded-pill text-bg-primary">Mới</span>
+                        </div>
+                        <p th:text="${noti.message}">Nội dung chi tiết</p>
+                        <time>
+                            <i class="far fa-clock"></i>
+                            <span th:text="${#temporals.format(noti.createdAt, 'HH:mm - dd/MM/yyyy')}">Thời gian</span>
+                        </time>
                     </div>
-                </div>
+                    <button th:if="${!noti.isRead}"
+                            type="button"
+                            data-notification-read-action
+                            th:onclick="'window.AppNotifications ? window.AppNotifications.markEmployeeInPage(' + ${noti.id} + ') : markAsReadInPage(' + ${noti.id} + ')'"
+                            class="btn btn-sm btn-outline-success notification-read-btn">
+                        <i class="fas fa-check"></i> Đã đọc
+                    </button>
+                </article>
             </div>
         </section>
     </div>
@@ -112,23 +75,19 @@
 <script>
 function markAsReadInPage(notiId) {
     fetch('/api/notifications/' + notiId + '/read', { method: 'POST' })
-        .then(response => {
-            if (response.ok) {
-                const row = document.getElementById('noti-row-' + notiId);
-                if (row) {
-                    row.classList.remove('unread');
-                    const btn = row.querySelector('button');
-                    if (btn) btn.remove();
-                    const badge = row.querySelector('.badge');
-                    if (badge) badge.remove();
-                    const icon = row.querySelector('.noti-icon-wrapper i');
-                    if (icon) {
-                        icon.className = 'far fa-bell';
-                    }
-                }
-            }
+        .then(function(response) {
+            if (!response.ok) return;
+            const row = document.getElementById('noti-row-' + notiId);
+            if (!row) return;
+            row.classList.remove('unread');
+            const action = row.querySelector('[data-notification-read-action]');
+            if (action) action.remove();
+            const badge = row.querySelector('.badge');
+            if (badge) badge.remove();
+            const icon = row.querySelector('.notification-list-icon i');
+            if (icon) icon.className = 'far fa-bell';
         })
-        .catch(err => console.error('Lỗi cập nhật trạng thái:', err));
+        .catch(function(error) { console.error('Lỗi cập nhật trạng thái:', error); });
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
