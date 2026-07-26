@@ -270,84 +270,84 @@
         width: fit-content;
     }
 }
-.user-workspace {
+.department-workspace {
     padding: 34px 32px;
 }
 
-.management-taskbar,
-.management-filterbar {
+.department-page .management-taskbar,
+.department-page .management-filterbar {
     display: grid;
 }
 
-.management-taskbar {
+.department-page .management-taskbar {
     grid-template-columns: 1fr auto;
 }
 
-.management-filterbar {
+.department-page .management-filterbar {
     border: 1px solid #dfe7e2;
     border-radius: 8px;
 }
 
-.management-filterbar label {
+.department-page .management-filterbar label {
     display: grid;
     gap: 8px;
 }
 
-.management-table-shell {
+.department-page .management-table-shell {
     overflow: hidden;
     border: 1px solid #dfe7e2;
     border-radius: 8px;
     background: #fff;
 }
 
-.management-table {
+.department-page .management-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.management-table th,
-.management-table td {
+.department-page .management-table th,
+.department-page .management-table td {
     border-bottom: 1px solid #edf1ee;
 }
 
-.identity-wrap {
+.department-page .identity-wrap {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.identity-wrap strong,
-.identity-wrap span {
+.department-page .identity-wrap strong,
+.department-page .identity-wrap span {
     display: block;
 }
 
-.muted-text {
+.department-page .muted-text {
     margin-top: 4px;
     color: #657386;
     font-size: 13px;
 }
 
-.row-actions {
+.department-page .row-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
 }
 
-.management-pagination {
+.department-page .management-pagination {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
 }
 
-.pagination-buttons {
+.department-page .pagination-buttons {
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.pagination-buttons a {
+.department-page .pagination-buttons a {
     min-width: 36px;
     height: 36px;
     border: 1px solid #d8e1dc;
@@ -359,7 +359,7 @@
     text-decoration: none;
 }
 
-.pagination-buttons a.active {
+.department-page .pagination-buttons a.active {
     color: #fff;
     background: #007a3d;
     border-color: #007a3d;
@@ -376,15 +376,15 @@
     line-height: 24px;
     text-transform: uppercase;
 }
-.user-filterbar {
+.department-page .user-filterbar {
     grid-template-columns: minmax(260px, 1fr) minmax(220px, 280px) 44px 118px;
 }
 
-.user-table .status-form {
+.department-page .user-table .status-form {
     margin: 0;
 }
 
-.user-table .row-actions {
+.department-page .user-table .row-actions {
     justify-content: flex-end;
 }
 .department-form-textarea {
@@ -562,4 +562,71 @@
     .department-card-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.department-employee-field {
+    grid-column: 1 / -1;
+    margin-top: 15px;
+    min-width: 0;
+}
+
+.department-employee-title {
+    display: block;
+    margin-bottom: 8px;
+    color: #536271;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.employee-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    max-height: 250px;
+    margin: 0;
+    padding: 15px;
+    overflow-y: auto;
+    border: 1px solid #d8e1dc;
+    border-radius: 8px;
+    background: #f8faf8;
+}
+
+.employee-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid #eef2f5;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.employee-checkbox-input {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+}
+
+.employee-checkbox-label {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: #333;
+    font-size: 13px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+.department-full-field {
+    grid-column: 1 / -1;
 }

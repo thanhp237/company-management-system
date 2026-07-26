@@ -9,108 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared/main.css}">
     <link rel="stylesheet" th:href="@{/css/roles/sales/contract.css}">
-    <style>
-        body {
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-
-        .customer-contract-page {
-            min-height: calc(100vh - 72px);
-            padding: 80px 28px 28px 28px;
-            background: #f5f8fb;
-        }
-        .customer-contract-shell {
-            width: min(1060px, 100%);
-            margin: 0 auto;
-        }
-
-        .customer-sign-panel {
-            margin-top: 18px;
-            padding: 18px;
-            border: 1px solid #dfe7e2;
-            border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 18px 42px rgba(31, 45, 57, 0.08);
-        }
-
-        .customer-sign-panel button,
-        .customer-link-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            min-height: 40px;
-            padding: 0 16px;
-            border: 0;
-            border-radius: 8px;
-            background: #007a3d;
-            color: #fff;
-            font-size: 13px;
-            font-weight: 900;
-            text-decoration: none;
-        }
-
-        .customer-link-button {
-            background: #e8f3ff;
-            color: #1c69b3;
-        }
-
-        .contract-read-section {
-            display: grid;
-            gap: 14px;
-        }
-
-        .contract-read-section + .contract-read-section {
-            margin-top: 22px;
-            padding-top: 18px;
-            border-top: 1px solid #edf1ee;
-        }
-
-        .contract-read-section h3 {
-            margin: 0;
-            color: #101923;
-            font-size: 18px;
-            font-weight: 900;
-        }
-
-        .contract-read-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .contract-read-item {
-            min-width: 0;
-        }
-
-        .contract-read-item.wide {
-            grid-column: 1 / -1;
-        }
-
-        .contract-read-item span {
-            display: block;
-            margin-bottom: 6px;
-            color: #657386;
-            font-size: 13px;
-            font-weight: 900;
-        }
-
-        .contract-read-item strong,
-        .contract-read-item p {
-            margin: 0;
-            color: #101923;
-            font-size: 15px;
-            font-weight: 700;
-            line-height: 1.55;
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-        }
-
-        @media (max-width: 720px) {
-            .contract-read-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/roles/customer/portal.css}">
 </head>
 <body>
 <th:block th:insert="~{layouts/customer-sidebar :: customerLayout}"></th:block>
@@ -122,7 +21,7 @@
         <!-- Nút Quay lại và Tải PDF dạng khối đơn giản chuẩn Bootstrap -->
         <div class="mb-3">
             <!-- Nút Quay lại bên trái -->
-            <a class="customer-link-button" th:href="@{/customer/portal/contracts}" style="background: #e8f3ff; color: #1c69b3; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+            <a class="customer-link-button extracted-customer-contract-detail-e1b01150" th:href="@{/customer/portal/contracts}">
                 <i class="fas fa-arrow-left"></i>
                 Quay lại
             </a>
@@ -130,8 +29,8 @@
             <!-- Nút tải PDF bên phải (Dùng màu xanh lá cây mặc định của Bootstrap btn-outline-success) -->
             <a th:if="${contract.status == 'SIGNED'}"
                th:href="@{/customer/portal/contracts/{id}/export-pdf(id=${contract.id})}"
-               class="btn btn-outline-success ms-2"
-               style="border-color: #007a3d; color: #007a3d; font-weight: 600; min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; border-radius: 8px;"
+               class="btn btn-outline-success ms-2 extracted-customer-contract-detail-4b614334"
+              
                target="_blank">
                 <i class="fas fa-file-pdf"></i>
                 Tải hợp đồng (PDF)
@@ -192,18 +91,18 @@
                     <tbody>
                     <tr th:each="item : ${contract.items}">
                         <td>
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                            <div class="extracted-customer-contract-detail-16f2d512">
+                                <img class="extracted-customer-contract-detail-5dd012c9" th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
                                      th:src="${item.imageUrl}"
                                      alt="Ảnh sản phẩm"
-                                     style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">
-                                <span th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
-                                      style="width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;">
+                                    >
+                                <span class="extracted-customer-contract-detail-0ded3ece" th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
+                                     >
                                     <i class="fas fa-box"></i>
                                 </span>
                                 <div>
                                     <strong th:text="${item.productName}">Sản phẩm</strong>
-                                    <small style="display:block;" th:text="${item.productCode}">P001</small>
+                                    <small class="extracted-customer-contract-detail-21d91b70" th:text="${item.productCode}">P001</small>
                                 </div>
                             </div>
                         </td>

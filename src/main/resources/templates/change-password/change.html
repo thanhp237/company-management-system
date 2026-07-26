@@ -9,39 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared/main.css}">
     <link rel="stylesheet" th:href="@{/css/roles/admin/user.css}">
-    <style>
-        body {
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f4f8f6;
-        }
-        .change-password-container {
-            max-width: 500px;
-            margin: 40px auto;
-            padding: 30px;
-            background: #fff;
-            border-radius: 12px;
-            border: 1px solid #dfe7e2;
-            box-shadow: 0 18px 44px rgba(31, 45, 57, 0.08);
-        }
-        .form-label {
-            font-weight: 700;
-            color: #405366;
-            font-size: 13px;
-        }
-        .submit-btn {
-            background: #008a45;
-            color: #fff;
-            font-weight: 900;
-            border: 0;
-            height: 44px;
-            border-radius: 8px;
-            width: 100%;
-            transition: all 0.3s;
-        }
-        .submit-btn:hover {
-            background: #006b35;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/features/auth.css}">
 </head>
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>

@@ -10,66 +10,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f5f7fb;
-            font-family: 'Roboto', Arial, sans-serif;
-            color: #1f2937;
-        }
-        .card {
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 24px;
-        }
-        .card-header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            font-weight: 700;
-            color: #111827;
-            padding: 16px 20px;
-            font-size: 16px;
-            border-top-left-radius: 12px !important;
-            border-top-right-radius: 12px !important;
-        }
-        .form-label {
-            font-weight: 700;
-            color: #4b5563;
-            font-size: 13px;
-        }
-        .form-control, .form-select {
-            border: 1px solid #d7dee8;
-            border-radius: 8px;
-            height: 42px;
-            font-size: 14px;
-        }
-        .form-control[readonly] {
-            background-color: #f3f4f6;
-            color: #6b7280;
-        }
-        .table thead th {
-            background-color: #f9fafb;
-            color: #6b7280;
-            font-size: 12px;
-            text-transform: uppercase;
-            font-weight: 700;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 12px 16px;
-        }
-        .table tbody td {
-            padding: 14px 16px;
-            vertical-align: middle;
-            border-bottom: 1px solid #e5e7eb;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/roles/sales/quotation.css}">
 </head>
 <body>
-<div class="container mt-4 mb-5" style="max-width: 1000px;">
+<div class="container mt-4 mb-5 extracted-quotation-create-f0d63185">
 
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold m-0" style="color: #111827;" th:text="${isEdit != null and isEdit} ? 'Chỉnh Sửa Báo Giá' : 'Tạo Báo Giá Mới'">Tạo Báo Giá Mới</h2>
+            <h2 class="fw-bold m-0 extracted-quotation-create-fc33dc27" th:text="${isEdit != null and isEdit} ? 'Chỉnh Sửa Báo Giá' : 'Tạo Báo Giá Mới'">Tạo Báo Giá Mới</h2>
             <p class="text-muted m-0 small" th:text="${isEdit != null and isEdit} ? 'Cập nhật sản phẩm, số lượng, voucher và điều khoản của báo giá nháp.' : 'Chọn các sản phẩm và áp dụng voucher cho khách hàng.'">Chọn các sản phẩm và áp dụng voucher cho khách hàng.</p>
         </div>
     </div>
@@ -88,7 +37,7 @@
 
         <!-- THÔNG TIN KHÁCH HÀNG -->
         <div class="card">
-            <div class="card-header"><i class="fa-solid fa-user-tie me-2" style="color: #2563eb;"></i> Thông tin khách hàng</div>
+            <div class="card-header"><i class="fa-solid fa-user-tie me-2 extracted-quotation-create-e715bc26"></i> Thông tin khách hàng</div>
 
             <div class="card-body row">
                 <div class="col-md-6 mb-3">
@@ -134,7 +83,7 @@
 
         <!-- THÔNG TIN BÁO GIÁ -->
         <div class="card">
-            <div class="card-header"><i class="fa-solid fa-file-invoice-dollar me-2" style="color: #10b981;"></i> Thông tin báo giá</div>
+            <div class="card-header"><i class="fa-solid fa-file-invoice-dollar me-2 extracted-quotation-create-139f2fc8"></i> Thông tin báo giá</div>
             <div class="card-body row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Mã báo giá</label>
@@ -168,23 +117,23 @@
 
         <!-- CHỌN SẢN PHẨM / DỊCH VỤ -->
         <div class="card">
-            <div class="card-header"><i class="fa-solid fa-boxes-stacked me-2" style="color: #f59e0b;"></i> Chọn sản phẩm / dịch vụ báo giá</div>
+            <div class="card-header"><i class="fa-solid fa-boxes-stacked me-2 extracted-quotation-create-aba882c6"></i> Chọn sản phẩm / dịch vụ báo giá</div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table align-middle">
                         <thead>
                         <tr>
-                            <th style="width: 60px; text-align: center;">Chọn</th>
+                            <th class="extracted-quotation-create-d5536f04">Chọn</th>
                             <th>Sản phẩm / Dịch vụ</th>
                             <th>Mô tả</th>
                             <th>Đơn giá</th>
-                            <th style="width: 120px;">Số lượng</th>
+                            <th class="extracted-quotation-create-3b338459">Số lượng</th>
                         </tr>
                         </thead>
                         <tbody>
                         <!-- Thymeleaf Loop tĩnh hiển thị checkbox và ô nhập số lượng -->
                         <tr th:each="item, stat : *{details}">
-                            <td style="text-align: center;">
+                            <td class="extracted-quotation-create-72a68ac3">
                                 <input type="checkbox"
                                        th:field="*{details[__${stat.index}__].selected}"
                                        class="form-check-input">
@@ -193,12 +142,12 @@
                             <td>
                                 <div class="d-flex align-items-center gap-3">
                                     <!-- Hiển thị ảnh sản phẩm lấy tương ứng 1-1 từ products list -->
-                                    <img th:if="${products[stat.index].imageUrl != null && !products[stat.index].imageUrl.isEmpty()}"
+                                    <img class="extracted-quotation-create-53ee8e01" th:if="${products[stat.index].imageUrl != null && !products[stat.index].imageUrl.isEmpty()}"
                                          th:src="${products[stat.index].imageUrl}"
                                          alt="Product Image"
-                                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid #e5e7eb;">
-                                    <span th:if="${products[stat.index].imageUrl == null || products[stat.index].imageUrl.isEmpty()}"
-                                          style="width: 40px; height: 40px; border-radius: 6px; border: 1px solid #e5e7eb; background: #f3f4f6; display: inline-flex; align-items: center; justify-content: center; color: #9ca3af;">
+                                        >
+                                    <span class="extracted-quotation-create-f241187e" th:if="${products[stat.index].imageUrl == null || products[stat.index].imageUrl.isEmpty()}"
+                                         >
                                         <i class="fa-solid fa-box"></i>
                                     </span>
                                     <div>
@@ -212,9 +161,9 @@
                             <td>
                                 <input type="number"
                                        th:field="*{details[__${stat.index}__].quantity}"
-                                       class="form-control"
+                                       class="form-control extracted-quotation-create-807e5119"
                                        min="1"
-                                       style="width: 100px;">
+                                      >
                             </td>
                         </tr>
                         </tbody>
@@ -225,7 +174,7 @@
 
         <!-- VOUCHER -->
         <div class="card">
-            <div class="card-header"><i class="fa-solid fa-tags me-2" style="color: #8b5cf6;"></i> Khuyến mãi & Tổng giá trị</div>
+            <div class="card-header"><i class="fa-solid fa-tags me-2 extracted-quotation-create-a63dbafc"></i> Khuyến mãi & Tổng giá trị</div>
 
             <div class="card-body row">
                 <div class="col-md-6 mb-3">
@@ -251,7 +200,7 @@
 
         <!-- GHI CHÚ -->
         <div class="card">
-            <div class="card-header"><i class="fa-solid fa-note-sticky me-2" style="color: #6b7280;"></i> Ghi chú báo giá</div>
+            <div class="card-header"><i class="fa-solid fa-note-sticky me-2 extracted-quotation-create-a186f472"></i> Ghi chú báo giá</div>
 
             <div class="card-body">
                 <textarea class="form-control" rows="3" th:field="*{note}" placeholder="Nhập ghi chú hoặc điều khoản riêng cho báo giá này..."></textarea>

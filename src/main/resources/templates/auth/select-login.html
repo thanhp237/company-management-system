@@ -15,51 +15,7 @@
           rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap"
           rel="stylesheet">
-
-    <style>
-
-        body{
-            background:#f5f7fb;
-            height:100vh;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            font-family:'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-
-        .login-container{
-            width:900px;
-            max-width:95%;
-        }
-
-        .login-card{
-            border:none;
-            border-radius:18px;
-            transition:.25s;
-            cursor:pointer;
-            box-shadow:0 10px 25px rgba(0,0,0,.08);
-        }
-
-        .login-card:hover{
-            transform:translateY(-6px);
-            box-shadow:0 15px 35px rgba(0,0,0,.15);
-        }
-
-        .icon{
-            font-size:60px;
-            color:#0d6efd;
-        }
-
-        .btn-login{
-            width:100%;
-        }
-
-        h1{
-            font-weight:700;
-        }
-
-    </style>
-
+    <link rel="stylesheet" th:href="@{/css/features/auth.css}">
 </head>
 
 <body>

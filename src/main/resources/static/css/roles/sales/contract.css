@@ -944,3 +944,55 @@ body.print-body .btn-secondary:hover {
         grid-column: span 1;
     }
 }
+
+/* Extracted template styles */
+/* Extracted from templates/contracts\contract.html */
+body:not(.print-body) .sidebar {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        body:not(.print-body) .contract-workspace {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            min-height: calc(100vh - 72px) !important;
+            padding: 28px 22px 42px !important;
+            transform: none !important;
+        }
+        body:not(.print-body) .contract-detail-page,
+        body:not(.print-body) .contract-detail-layout,
+        body:not(.print-body) .contract-detail-main,
+        body:not(.print-body) .contract-detail-side,
+        body:not(.print-body) .contract-detail-card,
+        body:not(.print-body) .contract-action-card,
+        body:not(.print-body) .contract-summary-card {
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+
+/* Extracted inline styles from templates/contracts\contract.html */
+.extracted-contracts-contract-8ab68562 {
+    border-color: #007a3d; color: #007a3d; font-weight: 600; background-color: transparent;
+}
+
+/* Extracted inline styles from templates/contracts\contract.html */
+.extracted-contracts-contract-16f2d512 {
+    display:flex;align-items:center;gap:12px;
+}
+
+/* Extracted inline styles from templates/contracts\contract.html */
+.extracted-contracts-contract-5dd012c9 {
+    width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;
+}
+
+/* Extracted inline styles from templates/contracts\contract.html */
+.extracted-contracts-contract-0ded3ece {
+    width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;
+}
+
+/* Extracted inline styles from templates/contracts\contract.html */
+.extracted-contracts-contract-21d91b70 {
+    display:block;
+}

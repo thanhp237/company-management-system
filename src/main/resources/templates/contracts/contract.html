@@ -13,32 +13,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared/main.css}">
     <link rel="stylesheet" th:href="@{/css/roles/sales/contract.css}">
-    <style>
-        body:not(.print-body) .sidebar {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-        body:not(.print-body) .contract-workspace {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            min-height: calc(100vh - 72px) !important;
-            padding: 28px 22px 42px !important;
-            transform: none !important;
-        }
-        body:not(.print-body) .contract-detail-page,
-        body:not(.print-body) .contract-detail-layout,
-        body:not(.print-body) .contract-detail-main,
-        body:not(.print-body) .contract-detail-side,
-        body:not(.print-body) .contract-detail-card,
-        body:not(.print-body) .contract-action-card,
-        body:not(.print-body) .contract-summary-card {
-            visibility: visible !important;
-            opacity: 1 !important;
-            transform: none !important;
-        }
-    </style>
 </head>
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>
@@ -59,8 +33,8 @@
             <!-- Nút in hợp đồng mới (Đã đổi sang màu xanh lá trùng màu web) -->
             <a th:if="${contract.status == 'SIGNED'}"
                th:href="@{/contracts/export-pdf/{id}(id=${contract.id})}"
-               class="btn"
-               style="border-color: #007a3d; color: #007a3d; font-weight: 600; background-color: transparent;"
+               class="btn extracted-contracts-contract-8ab68562"
+              
                target="_blank"
                onmouseover="this.style.backgroundColor='#eaffef'"
                onmouseout="this.style.backgroundColor='transparent'">
@@ -271,18 +245,18 @@
                             <tbody>
                             <tr th:each="item : ${contract.items}">
                                 <td>
-                                    <div style="display:flex;align-items:center;gap:12px;">
-                                        <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                                    <div class="extracted-contracts-contract-16f2d512">
+                                        <img class="extracted-contracts-contract-5dd012c9" th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
                                              th:src="${item.imageUrl}"
                                              alt="Ảnh sản phẩm"
-                                             style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">
-                                        <span th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
-                                              style="width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;">
+                                            >
+                                        <span class="extracted-contracts-contract-0ded3ece" th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
+                                             >
                                             <i class="fas fa-box"></i>
                                         </span>
                                         <div>
                                             <strong th:text="${item.productName}">Sản phẩm</strong>
-                                            <small style="display:block;" th:text="${item.productCode}">P001</small>
+                                            <small class="extracted-contracts-contract-21d91b70" th:text="${item.productCode}">P001</small>
                                         </div>
                                     </div>
                                 </td>

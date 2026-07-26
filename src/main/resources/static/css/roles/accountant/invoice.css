@@ -4,11 +4,10 @@
    ========================================== */
 
 /* Layout & Workspace */
-.invoice-workspace {
-    padding: 24px;
-    min-height: 100vh;
-    background: #f5f7fb;
-    color: #1f2937;
+
+
+.customer-invoice-workspace {
+    padding-top: 96px;
 }
 
 .with-sidebar {
@@ -725,4 +724,676 @@ textarea.form-control {
 .color-red {
     color: #dc2626;
     font-weight: 700;
+}
+
+/* Extracted template styles */
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-d1cc5713 {
+    margin-right: 8px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-d1cc5713 {
+    margin-right: 8px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-434fc32e {
+    display: inline;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-434fc32e {
+    display: inline;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-aad6d72a {
+    color: #2563eb; text-decoration: none;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-aad6d72a {
+    color: #2563eb; text-decoration: none;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-c2990739 {
+    width: 50px; text-align: center;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-13cbe03b {
+    text-align: right;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-13cbe03b {
+    text-align: right;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-72a68ac3 {
+    text-align: center;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-16f2d512 {
+    display:flex;align-items:center;gap:12px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-5dd012c9 {
+    width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-0ded3ece {
+    width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-13cbe03b {
+    text-align: right;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-789d52a0 {
+    text-align: right; font-weight: 700; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-b458150c {
+    border-top: 1px solid #e5e7eb; padding-top: 20px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-5add6c6e {
+    font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 15px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-daf980cc {
+    color: #16a34a; margin-right: 8px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-88ac07a4 {
+    max-width: 600px; margin-left: auto;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-df67104f {
+    font-size: 14px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-c580443a {
+    font-weight: 600; width: 60%; color: #4b5563;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-faf10744 {
+    text-align: right; font-weight: bold; width: 40%;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-bd6c5330 {
+    font-weight: 600; color: #dc2626;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-bf44d511 {
+    text-align: right; font-weight: bold; color: #dc2626;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-7a9d05f9 {
+    background-color: #f9fafb;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-cef9b883 {
+    font-weight: 700; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-48ef042b {
+    text-align: right; font-weight: 700; color: #0f766e;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-5a98e4f0 {
+    font-weight: 600; color: #4b5563;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-dd61e83b {
+    text-align: right; font-weight: bold; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-5a98e4f0 {
+    font-weight: 600; color: #4b5563;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-dd61e83b {
+    text-align: right; font-weight: bold; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-8a291e94 {
+    background-color: #f0fdf4;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-a93085b3 {
+    font-weight: 700; color: #15803d; font-size: 15px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-320f5b0e {
+    text-align: right; font-weight: 800; color: #15803d; font-size: 16px;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-93348bab {
+    color: #6b7280; font-style: italic;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-5c05f4af {
+    font-weight: 600;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-13cbe03b {
+    text-align: right;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-5a98e4f0 {
+    font-weight: 600; color: #4b5563;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-6ce411ef {
+    text-align: right; font-weight: bold; text-decoration: underline; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-5a98e4f0 {
+    font-weight: 600; color: #4b5563;
+}
+
+/* Extracted inline styles from templates/Invoice\detail.html */
+.extracted-invoice-detail-b5131774 {
+    text-align: left; font-weight: normal; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-897bb62e {
+    color: #059669; font-size: 1.15rem;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-13cbe03b {
+    text-align: right;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-c8be1ccb {
+    display:none;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-c8be1ccb {
+    display:none;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-16f2d512 {
+    display:flex;align-items:center;gap:12px;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-5dd012c9 {
+    width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-0ded3ece {
+    width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-789d52a0 {
+    text-align: right; font-weight: 700; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-25a1cbac {
+    width: 100%; max-width: 400px; margin-left: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background-color: #fafafa;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-b31127a6 {
+    display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e5e7eb; font-size: 14px;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-7b1b4ca9 {
+    display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e5e7eb; font-size: 14px; color: #dc2626;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-6b026b7c {
+    display: flex; justify-content: space-between; padding: 8px 0; font-size: 16px; font-weight: 700; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\invoice-form.html */
+.extracted-invoice-invoice-form-2082a79b {
+    color: #0f766e;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-72a68ac3 {
+    text-align: center;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-13cbe03b {
+    text-align: right;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-2ad17b1c {
+    text-align: center; width: 140px;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-6d5e708d {
+    text-decoration: none; color: #2563eb; font-weight: 700;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-72a68ac3 {
+    text-align: center;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-789d52a0 {
+    text-align: right; font-weight: 700; color: #111827;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-72a68ac3 {
+    text-align: center;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-434fc32e {
+    display: inline;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-434fc32e {
+    display: inline;
+}
+
+/* Extracted inline styles from templates/Invoice\list.html */
+.extracted-invoice-list-434fc32e {
+    display: inline;
+}
+
+/* Extracted from templates/Invoice\print.html */
+/* Thiết lập khổ giấy A4 khi in */
+        @page {
+            size: A4;
+            margin: 0; /* Ẩn toàn bộ Header/Footer mặc định của trình duyệt */
+        }
+
+        body {
+            background-color: #f3f4f6; /* Nền xám khi xem preview */
+            margin: 0;
+            padding: 40px 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .print-container {
+            background: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            padding: 20mm 15mm 20mm 20mm; /* Lề chuẩn A4 */
+            width: 210mm;
+            min-height: 297mm;
+            box-sizing: border-box;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            color: #000000;
+            position: relative;
+        }
+
+        /* Thanh công cụ in phía trên */
+        .no-print-bar {
+            background-color: #ffffff;
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-family: sans-serif;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+        }
+        .btn {
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background-color: #000000;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #374151;
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            border: none;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        /* Đầu trang hóa đơn */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .header-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .company-logo {
+            font-weight: bold;
+            font-size: 16pt;
+            color: #000000;
+            text-transform: uppercase;
+        }
+        .company-info {
+            text-align: right;
+            font-size: 11pt;
+            color: #000000;
+        }
+
+        /* Tiêu đề chính */
+        .title-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .title-section h1 {
+            font-size: 20pt;
+            margin: 0;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .title-section p {
+            margin: 5px 0 0 0;
+            font-size: 12pt;
+            font-style: italic;
+        }
+
+        /* Khối thông tin khách hàng và hợp đồng */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        .info-table td {
+            padding: 4px 0;
+            vertical-align: top;
+        }
+        .info-table td.label {
+            width: 25%;
+            font-weight: bold;
+        }
+        .info-table td.value {
+            width: 75%;
+        }
+
+        /* Bảng sản phẩm */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid #000000;
+            padding: 8px;
+            text-align: left;
+        }
+        .items-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-align: center;
+        }
+        .items-table td.center {
+            text-align: center;
+        }
+        .items-table td.right {
+            text-align: right;
+        }
+
+        /* Bảng tổng kết tài chính hợp đồng */
+        .financial-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        .financial-summary-table td {
+            padding: 8px 12px;
+            border: 1px solid #000000;
+        }
+        .financial-summary-table td.label {
+            font-weight: bold;
+            width: 60%;
+        }
+        .financial-summary-table td.value {
+            text-align: right;
+            font-weight: bold;
+            width: 40%;
+        }
+
+        /* Phần chữ ký ở cuối trang */
+        .signature-section {
+            width: 100%;
+            margin-top: 40px;
+            border-collapse: collapse;
+            page-break-inside: avoid;
+        }
+        .signature-section td {
+            width: 50%;
+            text-align: center;
+            vertical-align: top;
+            padding: 10px 0;
+        }
+        .signature-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .signature-name {
+            font-weight: bold;
+        }
+        .signature-handwritten {
+            font-family: 'Dancing Script', cursive;
+            font-size: 24pt;
+            color: #000000; /* Đổi thành màu đen */
+            margin: 15px 0;
+            display: inline-block;
+            transform: rotate(-3deg);
+            letter-spacing: 1px;
+        }
+
+        /* Ẩn thanh công cụ khi in ra giấy/PDF */
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .no-print-bar {
+                display: none !important;
+            }
+            .print-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 15mm 10mm 15mm 15mm; /* Tối ưu lề in thực tế */
+            }
+        }
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-02f408b0 {
+    font-size: 16px; font-weight: bold; color: #1f2937;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-cf9d22d3 {
+    color: #ef4444; margin-right: 8px;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-d5f7d6cc {
+    display: flex; gap: 10px;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-b66dea20 {
+    font-size: 11pt; color: #555555; margin-top: 5px;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-f6dcd119 {
+    border: 0; border-top: 1.5px solid #000000; margin-bottom: 25px;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-a7756e25 {
+    font-weight: bold; font-size: 13pt; margin-top: 25px; margin-bottom: 5px; text-decoration: underline;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-b26e4cf8 {
+    width: 8%;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-682bee64 {
+    width: 42%;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-ff9ca79a {
+    width: 15%; text-align: center;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-e974e6ca {
+    width: 15%; text-align: right;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-57622116 {
+    width: 20%; text-align: right;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-e3f61041 {
+    display:flex;align-items:center;gap:8px;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-b219bd7f {
+    width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #dddddd;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-3b3e2c81 {
+    color: #666666;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-78d7af8b {
+    font-weight: bold;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-a7756e25 {
+    font-weight: bold; font-size: 13pt; margin-top: 25px; margin-bottom: 5px; text-decoration: underline;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-6e512bc4 {
+    color: #dc2626;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-6e512bc4 {
+    color: #dc2626;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-dbe4620c {
+    background-color: #fafafa;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-62c7c1aa {
+    color: #000000;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-44c96b6f {
+    background-color: #f0fdf4; font-size: 14pt;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-eada5370 {
+    color: #16a34a; font-weight: bold; border-width: 2px;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-2bf1d70e {
+    color: #16a34a; font-weight: bold; font-size: 15pt; border-width: 2px;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-93348bab {
+    color: #6b7280; font-style: italic;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-744734e4 {
+    text-decoration: underline;
+}
+
+/* Extracted inline styles from templates/Invoice\print.html */
+.extracted-invoice-print-47587fa8 {
+    font-style: normal; font-weight: normal; text-align: left;
 }

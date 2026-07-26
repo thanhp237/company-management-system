@@ -140,10 +140,10 @@
                         <th>Mã hóa đơn</th>
                         <th>Mã hợp đồng</th>
                         <th>Khách hàng</th>
-                        <th style="text-align: center;">Trạng thái</th>
-                        <th style="text-align: right;">Tổng tiền</th>
+                        <th class="extracted-invoice-list-72a68ac3">Trạng thái</th>
+                        <th class="extracted-invoice-list-13cbe03b">Tổng tiền</th>
                         <th>Ngày tạo</th>
-                        <th style="text-align: center; width: 140px;">Thao tác</th>
+                        <th class="extracted-invoice-list-2ad17b1c">Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -159,8 +159,8 @@
                     <!-- Loop hiển thị hóa đơn -->
                     <tr th:each="invoice : ${invoices}">
                         <td>
-                            <a th:href="@{/invoices/detail/{id}(id=${invoice.id})}"
-                               style="text-decoration: none; color: #2563eb; font-weight: 700;"
+                            <a class="extracted-invoice-list-6d5e708d" th:href="@{/invoices/detail/{id}(id=${invoice.id})}"
+                              
                                th:text="${invoice.invoiceCode}">
                                 INV001
                             </a>
@@ -172,7 +172,7 @@
                             Khách hàng ABC
                         </td>
 
-                        <td style="text-align: center;">
+                        <td class="extracted-invoice-list-72a68ac3">
                             <!-- Trạng thái nháp -->
                             <span th:if="${invoice.status.name() == 'DRAFT'}" class="status-badge st-draft">Bản nháp</span>
                             <!-- Trạng thái chốt -->
@@ -183,18 +183,18 @@
                             <!-- Trạng thái hủy -->
                             <span th:if="${invoice.status.name() == 'CANCELLED'}" class="status-badge st-cancelled">Đã hủy</span>
                         </td>
-                        <td style="text-align: right; font-weight: 700; color: #111827;"
+                        <td class="extracted-invoice-list-789d52a0"
                             th:text="${#numbers.formatDecimal(invoice.totalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">
                             0 đ
                         </td>
                         <td th:text="${#temporals.format(invoice.createdAt, 'dd/MM/yyyy HH:mm')}">09/07/2026</td>
-                        <td style="text-align: center;">
+                        <td class="extracted-invoice-list-72a68ac3">
                             <div class="row-actions justify-content-center">
                                 <!-- Xem chi tiết -->
                                 <a th:href="@{/invoices/detail/{id}(id=${invoice.id})}" class="icon-action" title="Xem chi tiết">
                                     <i class="fa-regular fa-eye"></i>
                                 </a>
-                                <form th:if="${invoice.status.name() == 'PAYMENT_PENDING'}" th:action="@{/invoices/{id}/confirm-payment(id=${invoice.id})}" method="post" style="display: inline;" onsubmit="return confirm('Xác nhận hoàn tất thanh toán hóa đơn này?')">
+                                <form class="extracted-invoice-list-434fc32e" th:if="${invoice.status.name() == 'PAYMENT_PENDING'}" th:action="@{/invoices/{id}/confirm-payment(id=${invoice.id})}" method="post" onsubmit="return confirm('Xác nhận hoàn tất thanh toán hóa đơn này?')">
                                     <button type="submit" class="icon-action" title="Xác nhận thanh toán">
                                         <i class="fa-solid fa-circle-check"></i>
                                     </button>
@@ -204,12 +204,12 @@
                                     <a th:href="@{/invoices/edit/{id}(id=${invoice.id})}" class="icon-action" title="Chỉnh sửa hóa đơn nháp">
                                         <i class="fa-regular fa-pen-to-square"></i>
                                     </a>
-                                    <form th:action="@{/invoices/{id}/issue(id=${invoice.id})}" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc muốn phát hành hóa đơn này?')">
+                                    <form class="extracted-invoice-list-434fc32e" th:action="@{/invoices/{id}/issue(id=${invoice.id})}" method="post" onsubmit="return confirm('Bạn có chắc muốn phát hành hóa đơn này?')">
                                         <button type="submit" class="icon-action" title="Phát hành hóa đơn">
                                             <i class="fa-solid fa-circle-check"></i>
                                         </button>
                                     </form>
-                                    <form th:action="@{/invoices/{id}/delete(id=${invoice.id})}" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản nháp hóa đơn này?')">
+                                    <form class="extracted-invoice-list-434fc32e" th:action="@{/invoices/{id}/delete(id=${invoice.id})}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản nháp hóa đơn này?')">
                                         <button type="submit" class="icon-action danger" title="Xóa bản nháp">
                                             <i class="fa-regular fa-trash-can"></i>
                                         </button>

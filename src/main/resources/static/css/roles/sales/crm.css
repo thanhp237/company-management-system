@@ -761,11 +761,10 @@
     overflow: hidden;
 }
 
-.rule-meter span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: #007a3d;
+
+
+.rule-meter-fill {
+    width: 0;
 }
 
 .rule-two-col {
@@ -853,7 +852,7 @@
 }
 
 .score-ring {
-    --score: 82;
+    --score: 0;
     display: grid;
     place-items: center;
     width: 148px;
@@ -1033,4 +1032,142 @@
     .voucher-config-table {
         min-width: 760px;
     }
+}
+
+/* Extracted template styles */
+/* Extracted inline styles from templates/customers\list.html */
+.extracted-customers-list-45efc571 {
+    background-color: #007a3d; border-color: #007a3d;
+}
+
+/* Extracted from templates/customers\portal.html */
+.customer-portal {
+            min-height: calc(100vh - 72px);
+            padding: 28px;
+            background: #f5f8fb;
+        }
+
+        .customer-shell {
+            width: min(1060px, 100%);
+            margin: 0 auto;
+        }
+
+        .customer-panel {
+            border: 1px solid #dfe7e2;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 18px 42px rgba(31, 45, 57, 0.08);
+        }
+
+        .customer-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 22px;
+            margin-bottom: 18px;
+        }
+
+        .customer-header h1 {
+            margin: 0;
+            color: #101923;
+            font-size: 30px;
+            font-weight: 900;
+        }
+
+        .customer-header p {
+            margin: 8px 0 0;
+            color: #657386;
+        }
+
+        .customer-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .customer-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 38px;
+            padding: 0 14px;
+            border-radius: 8px;
+            background: #007a3d;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 900;
+            text-decoration: none;
+        }
+
+        .customer-button.secondary {
+            background: #e8f3ff;
+            color: #1c69b3;
+        }
+
+        .customer-table-wrap {
+            overflow: hidden;
+        }
+
+        .customer-table {
+            width: 100%;
+            margin: 0;
+        }
+
+        .customer-table th {
+            padding: 14px 16px;
+            background: #f7faf8;
+            color: #405366;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .customer-table td {
+            padding: 14px 16px;
+            border-top: 1px solid #edf1ee;
+            vertical-align: middle;
+        }
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-e7055bba {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 16px; padding: 14px; border: 1px solid #dfe7e2; border-radius: 8px; background: #fff;
+}
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-11d00d64 {
+    flex: 0 1 240px; display: flex; flex-direction: column; gap: 8px;
+}
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-4197bbe5 {
+    color: #536271; font-size: 11px; font-weight: 900; text-transform: uppercase;
+}
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-c1f5ba62 {
+    width: 100%; min-height: 42px; border: 1px solid #d8e1dc; border-radius: 8px; background: #f8faf8; color: #17202b; font-size: 14px; padding: 0 12px; outline: none;
+}
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-11d00d64 {
+    flex: 0 1 240px; display: flex; flex-direction: column; gap: 8px;
+}
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-4197bbe5 {
+    color: #536271; font-size: 11px; font-weight: 900; text-transform: uppercase;
+}
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-c1f5ba62 {
+    width: 100%; min-height: 42px; border: 1px solid #d8e1dc; border-radius: 8px; background: #f8faf8; color: #17202b; font-size: 14px; padding: 0 12px; outline: none;
+}
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-05111bbd {
+    display: flex; align-items: center; height: 42px;
+}
+
+/* Extracted inline styles from templates/lead\import.html */
+.extracted-lead-import-bc605c49 {
+    text-decoration: none;
 }

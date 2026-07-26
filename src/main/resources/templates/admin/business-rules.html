@@ -63,7 +63,7 @@
                         <input form="businessRuleForm" type="number" name="commissionRate" min="0" max="100" th:value="${commissionRate}" required>
                     </label>
                     <div class="rule-meter">
-                        <span th:style="${'width: ' + commissionRate + '%'}"></span>
+                        <span class="rule-meter-fill" th:attr="data-meter-rate=${commissionRate}"></span>
                     </div>
                     <small class="rule-note" th:text="${'Tỷ lệ hiện tại: ' + commissionRate + '%. Thay đổi được lưu lại khi bấm Lưu cấu hình.'}">
                         Tỷ lệ hiện tại: 5%.
@@ -189,6 +189,7 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/ui-dynamic-values.js}"></script>
 </body>
 </html>
 

@@ -1,0 +1,81 @@
+
+
+/* Extracted template styles */
+/* Extracted from templates/appointments\form.html */
+/* Đồng bộ hóa giao diện thẻ form theo đúng form nội bộ hệ thống */
+        .app-form-container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        .app-form-label {
+            font-weight: 500;
+            color: #334155;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .app-form-control {
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .app-form-control:focus {
+            border-color: #3182ce;
+            box-shadow: 0 0 0 1px #3182ce;
+        }
+
+/* Extracted inline styles from templates/appointments\form.html */
+.extracted-appointments-form-cdabf8c1 {
+    font-size: 1.5rem;
+}
+
+/* Extracted inline styles from templates/appointments\form.html */
+.extracted-appointments-form-7a459431 {
+    font-size: 12px;
+}
+
+/* Extracted from templates/appointments\list.html */
+/* Tùy chỉnh nhẹ để giữ nguyên phong cách nổi bật cho dòng được nhắc hẹn trước 1 ngày */
+        .management-table tbody tr.reminder-highlight {
+            background-color: #fffbeb !important;
+        }
+        .management-table tbody tr.reminder-highlight td {
+            background-color: #fffbeb !important;
+            border-left: 3px solid #f59e0b;
+        }
+        .appointment-status-select {
+            padding: 4px 8px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #475569;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .appointment-status-select:hover {
+            border-color: #94a3b8;
+        }
+
+/* Extracted inline styles from templates/appointments\list.html */
+.extracted-appointments-list-cdabf8c1 {
+    font-size: 1.5rem;
+}
+
+/* Extracted inline styles from templates/appointments\list.html */
+.extracted-appointments-list-8ea6624a {
+    max-width: 280px;
+}
+
+/* Extracted inline styles from templates/appointments\list.html */
+.extracted-appointments-list-dc5d3d39 {
+    font-size: 10px; padding: 2px 6px;
+}
+
+/* Extracted inline styles from templates/appointments\list.html */
+.extracted-appointments-list-7a459431 {
+    font-size: 12px;
+}

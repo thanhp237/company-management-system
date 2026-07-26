@@ -152,26 +152,26 @@
         <!-- Bộ lọc và sắp xếp (Sử dụng Flexbox chống méo) -->
         <form th:action="@{/customer}" method="get" id="filterForm">
             <input type="hidden" name="size" th:value="${size}">
-            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 16px; padding: 14px; border: 1px solid #dfe7e2; border-radius: 8px; background: #fff;">
-                <label style="flex: 0 1 240px; display: flex; flex-direction: column; gap: 8px;">
-                    <span style="color: #536271; font-size: 11px; font-weight: 900; text-transform: uppercase;">Trạng thái phân bổ</span>
-                    <select name="status" onchange="document.getElementById('filterForm').submit()" style="width: 100%; min-height: 42px; border: 1px solid #d8e1dc; border-radius: 8px; background: #f8faf8; color: #17202b; font-size: 14px; padding: 0 12px; outline: none;">
+            <div class="extracted-lead-import-e7055bba">
+                <label class="extracted-lead-import-11d00d64">
+                    <span class="extracted-lead-import-4197bbe5">Trạng thái phân bổ</span>
+                    <select class="extracted-lead-import-c1f5ba62" name="status" onchange="document.getElementById('filterForm').submit()">
                         <option value="all" th:selected="${currentStatus == 'all'}">Tất cả</option>
                         <option value="unassigned" th:selected="${currentStatus == 'unassigned'}">Chưa phân bổ</option>
                         <option value="assigned" th:selected="${currentStatus == 'assigned'}">Đã phân bổ</option>
                     </select>
                 </label>
 
-                <label style="flex: 0 1 240px; display: flex; flex-direction: column; gap: 8px;">
-                    <span style="color: #536271; font-size: 11px; font-weight: 900; text-transform: uppercase;">Sắp xếp thời gian</span>
-                    <select name="sort" onchange="document.getElementById('filterForm').submit()" style="width: 100%; min-height: 42px; border: 1px solid #d8e1dc; border-radius: 8px; background: #f8faf8; color: #17202b; font-size: 14px; padding: 0 12px; outline: none;">
+                <label class="extracted-lead-import-11d00d64">
+                    <span class="extracted-lead-import-4197bbe5">Sắp xếp thời gian</span>
+                    <select class="extracted-lead-import-c1f5ba62" name="sort" onchange="document.getElementById('filterForm').submit()">
                         <option value="newest" th:selected="${currentSort == 'newest'}">Mới nhất (Tạo sau)</option>
                         <option value="oldest" th:selected="${currentSort == 'oldest'}">Cũ nhất (Tạo trước)</option>
                     </select>
                 </label>
 
-                <div style="display: flex; align-items: center; height: 42px;" th:if="${currentStatus != 'all' or currentSort != 'newest'}">
-                    <a th:href="@{/customer(size=${size})}" class="customer-secondary-button" style="text-decoration: none;">
+                <div class="extracted-lead-import-05111bbd" th:if="${currentStatus != 'all' or currentSort != 'newest'}">
+                    <a th:href="@{/customer(size=${size})}" class="customer-secondary-button extracted-lead-import-bc605c49">
                         <i class="fas fa-undo"></i>
                         <span>Xóa bộ lọc</span>
                     </a>

@@ -1,0 +1,8 @@
+
+
+/* Extracted template styles */
+/* Extracted from templates/profile\index.html */
+body { background-color: #f9fafb; font-family: 'Roboto', sans-serif; }
+        .profile-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .form-label { font-weight: 600; color: #374151; font-size: 14px; }
+        .readonly-field { background-color: #f3f4f6 !important; cursor: not-allowed; }

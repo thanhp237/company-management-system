@@ -13,31 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared/main.css}">
     <link rel="stylesheet" th:href="@{/css/roles/admin/user.css}">
-    <style>
-        /* Tùy chỉnh nhẹ để giữ nguyên phong cách nổi bật cho dòng được nhắc hẹn trước 1 ngày */
-        .management-table tbody tr.reminder-highlight {
-            background-color: #fffbeb !important;
-        }
-        .management-table tbody tr.reminder-highlight td {
-            background-color: #fffbeb !important;
-            border-left: 3px solid #f59e0b;
-        }
-        .appointment-status-select {
-            padding: 4px 8px;
-            font-size: 13px;
-            font-weight: 500;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-            background-color: #ffffff;
-            color: #475569;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.2s;
-        }
-        .appointment-status-select:hover {
-            border-color: #94a3b8;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/features/appointments.css}">
 </head>
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>
@@ -50,7 +26,7 @@
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem;">
+                <h2 class="fw-bold text-dark m-0 extracted-appointments-list-cdabf8c1">
                     <i class="fas fa-calendar-check text-success me-2"></i>Lịch hẹn & nhắc hẹn
                 </h2>
                 <span class="text-muted small">Theo dõi và quản lý lịch hẹn gặp, gọi điện chăm sóc đối tác khách hàng.</span>
@@ -92,8 +68,8 @@
                             <div class="identity-cell p-0 m-0">
                                 <div>
                                     <strong class="text-dark d-block" th:text="${app.title}">Gọi khách hàng</strong>
-                                    <span class="text-muted small text-truncate d-inline-block" style="max-width: 280px;" th:text="${app.description}">Trao đổi chi tiết dự án...</span>
-                                    <span th:if="${app.reminderSent && app.status == 'PENDING'}" class="badge bg-warning text-dark ms-2" style="font-size: 10px; padding: 2px 6px;">
+                                    <span class="text-muted small text-truncate d-inline-block extracted-appointments-list-8ea6624a" th:text="${app.description}">Trao đổi chi tiết dự án...</span>
+                                    <span th:if="${app.reminderSent && app.status == 'PENDING'}" class="badge bg-warning text-dark ms-2 extracted-appointments-list-dc5d3d39">
                                         <i class="fas fa-bell me-1"></i> Sắp diễn ra (&lt; 24h)
                                     </span>
                                 </div>
@@ -123,7 +99,7 @@
                                     </form>
                                 </div>
                                 <div th:if="${app.status != 'PENDING'}" class="text-muted small pe-2">
-                                    <i class="fas fa-lock me-1" style="font-size: 12px;"></i>Khóa dữ liệu
+                                    <i class="fas fa-lock me-1 extracted-appointments-list-7a459431"></i>Khóa dữ liệu
                                 </div>
                             </div>
                         </td>

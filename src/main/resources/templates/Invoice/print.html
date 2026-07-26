@@ -5,237 +5,17 @@
     <title>In Hóa Đơn - CompanyMS</title>
     <!-- Thêm font chữ ký Dancing Script -->
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Thiết lập khổ giấy A4 khi in */
-        @page {
-            size: A4;
-            margin: 0; /* Ẩn toàn bộ Header/Footer mặc định của trình duyệt */
-        }
-
-        body {
-            background-color: #f3f4f6; /* Nền xám khi xem preview */
-            margin: 0;
-            padding: 40px 0;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .print-container {
-            background: #ffffff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin: 0 auto;
-            padding: 20mm 15mm 20mm 20mm; /* Lề chuẩn A4 */
-            width: 210mm;
-            min-height: 297mm;
-            box-sizing: border-box;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 13pt;
-            line-height: 1.5;
-            color: #000000;
-            position: relative;
-        }
-
-        /* Thanh công cụ in phía trên */
-        .no-print-bar {
-            background-color: #ffffff;
-            padding: 15px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-family: sans-serif;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 9999;
-        }
-        .btn {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-primary {
-            background-color: #000000;
-            color: white;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #374151;
-        }
-        .btn-secondary {
-            background-color: #6b7280;
-            color: white;
-            border: none;
-        }
-        .btn-secondary:hover {
-            background-color: #4b5563;
-        }
-
-        /* Đầu trang hóa đơn */
-        .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
-        .header-table td {
-            vertical-align: top;
-            padding: 0;
-        }
-        .company-logo {
-            font-weight: bold;
-            font-size: 16pt;
-            color: #000000;
-            text-transform: uppercase;
-        }
-        .company-info {
-            text-align: right;
-            font-size: 11pt;
-            color: #000000;
-        }
-
-        /* Tiêu đề chính */
-        .title-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .title-section h1 {
-            font-size: 20pt;
-            margin: 0;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-        .title-section p {
-            margin: 5px 0 0 0;
-            font-size: 12pt;
-            font-style: italic;
-        }
-
-        /* Khối thông tin khách hàng và hợp đồng */
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-        }
-        .info-table td {
-            padding: 4px 0;
-            vertical-align: top;
-        }
-        .info-table td.label {
-            width: 25%;
-            font-weight: bold;
-        }
-        .info-table td.value {
-            width: 75%;
-        }
-
-        /* Bảng sản phẩm */
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            margin-bottom: 20px;
-        }
-        .items-table th, .items-table td {
-            border: 1px solid #000000;
-            padding: 8px;
-            text-align: left;
-        }
-        .items-table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-            text-align: center;
-        }
-        .items-table td.center {
-            text-align: center;
-        }
-        .items-table td.right {
-            text-align: right;
-        }
-
-        /* Bảng tổng kết tài chính hợp đồng */
-        .financial-summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
-        }
-        .financial-summary-table td {
-            padding: 8px 12px;
-            border: 1px solid #000000;
-        }
-        .financial-summary-table td.label {
-            font-weight: bold;
-            width: 60%;
-        }
-        .financial-summary-table td.value {
-            text-align: right;
-            font-weight: bold;
-            width: 40%;
-        }
-
-        /* Phần chữ ký ở cuối trang */
-        .signature-section {
-            width: 100%;
-            margin-top: 40px;
-            border-collapse: collapse;
-            page-break-inside: avoid;
-        }
-        .signature-section td {
-            width: 50%;
-            text-align: center;
-            vertical-align: top;
-            padding: 10px 0;
-        }
-        .signature-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .signature-name {
-            font-weight: bold;
-        }
-        .signature-handwritten {
-            font-family: 'Dancing Script', cursive;
-            font-size: 24pt;
-            color: #000000; /* Đổi thành màu đen */
-            margin: 15px 0;
-            display: inline-block;
-            transform: rotate(-3deg);
-            letter-spacing: 1px;
-        }
-
-        /* Ẩn thanh công cụ khi in ra giấy/PDF */
-        @media print {
-            body {
-                background-color: #ffffff;
-                padding: 0;
-            }
-            .no-print-bar {
-                display: none !important;
-            }
-            .print-container {
-                box-shadow: none;
-                margin: 0;
-                padding: 15mm 10mm 15mm 15mm; /* Tối ưu lề in thực tế */
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/roles/accountant/invoice.css}">
 </head>
 <body>
 
 <!-- Thanh công cụ in (Chỉ hiển thị trên trình duyệt, không in ra giấy) -->
 <div class="no-print-bar">
-    <div style="font-size: 16px; font-weight: bold; color: #1f2937;">
-        <i class="fa-solid fa-file-pdf" style="color: #ef4444; margin-right: 8px;"></i>
+    <div class="extracted-invoice-print-02f408b0">
+        <i class="fa-solid fa-file-pdf extracted-invoice-print-cf9d22d3"></i>
         Xem trước Hóa đơn in: <span th:text="${invoice.invoiceCode}">INV-001</span>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div class="extracted-invoice-print-d5f7d6cc">
         <a th:href="@{/invoices/detail/{id}(id=${invoice.id})}" class="btn btn-secondary">
             <i class="fa-solid fa-arrow-left"></i> Quay lại
         </a>
@@ -250,7 +30,7 @@
         <tr>
             <td>
                 <div class="company-logo">CONG TY MANAGEMENT SYSTEM</div>
-                <div style="font-size: 11pt; color: #555555; margin-top: 5px;">Mã số thuế: 0102030405</div>
+                <div class="extracted-invoice-print-b66dea20">Mã số thuế: 0102030405</div>
             </td>
             <td class="company-info">
                 <strong>Địa chỉ:</strong> Số 1 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội<br>
@@ -259,7 +39,7 @@
         </tr>
     </table>
 
-    <hr style="border: 0; border-top: 1.5px solid #000000; margin-bottom: 25px;">
+    <hr class="extracted-invoice-print-f6dcd119">
 
 
 
@@ -303,7 +83,7 @@
         </tr>
     </table>
 
-    <div style="font-weight: bold; font-size: 13pt; margin-top: 25px; margin-bottom: 5px; text-decoration: underline;">
+    <div class="extracted-invoice-print-a7756e25">
         DANH SÁCH CHI TIẾT SẢN PHẨM HỢP ĐỒNG:
     </div>
 
@@ -311,11 +91,11 @@
     <table class="items-table">
         <thead>
         <tr>
-            <th style="width: 8%;">STT</th>
-            <th style="width: 42%;">Sản phẩm / Dịch vụ</th>
-            <th style="width: 15%; text-align: center;">Số lượng</th>
-            <th style="width: 15%; text-align: right;">Đơn giá</th>
-            <th style="width: 20%; text-align: right;">Thành tiền</th>
+            <th class="extracted-invoice-print-b26e4cf8">STT</th>
+            <th class="extracted-invoice-print-682bee64">Sản phẩm / Dịch vụ</th>
+            <th class="extracted-invoice-print-ff9ca79a">Số lượng</th>
+            <th class="extracted-invoice-print-e974e6ca">Đơn giá</th>
+            <th class="extracted-invoice-print-57622116">Thành tiền</th>
         </tr>
         </thead>
         <tbody>
@@ -323,23 +103,23 @@
         <tr th:each="item, stat : ${invoice.contract.quotation != null ? invoice.contract.quotation.details : null}">
             <td class="center" th:text="${stat.index + 1}">1</td>
             <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <img th:if="${item.product != null and item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
+                <div class="extracted-invoice-print-e3f61041">
+                    <img class="extracted-invoice-print-b219bd7f" th:if="${item.product != null and item.product.imageUrl != null and !#strings.isEmpty(item.product.imageUrl)}"
                          th:src="${item.product.imageUrl}"
                          alt="Ảnh sản phẩm"
-                         style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #dddddd;">
+                        >
                     <strong th:text="${item.serviceName}">Sản phẩm</strong>
                 </div>
-                <small style="color: #666666;" th:if="${item.description != null}" th:text="${item.description}"></small>
+                <small class="extracted-invoice-print-3b3e2c81" th:if="${item.description != null}" th:text="${item.description}"></small>
             </td>
             <td class="center" th:text="${item.quantity}">1</td>
             <td class="right" th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</td>
-            <td class="right" style="font-weight: bold;" th:text="${item.totalPrice != null ? #numbers.formatDecimal(item.totalPrice, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</td>
+            <td class="right extracted-invoice-print-78d7af8b" th:text="${item.totalPrice != null ? #numbers.formatDecimal(item.totalPrice, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</td>
         </tr>
         </tbody>
     </table>
 
-    <div style="font-weight: bold; font-size: 13pt; margin-top: 25px; margin-bottom: 5px; text-decoration: underline;">
+    <div class="extracted-invoice-print-a7756e25">
         BẢNG TỔNG HỢP TÀI CHÍNH & TIẾN ĐỘ ĐỢT THANH TOÁN:
     </div>
 
@@ -350,36 +130,36 @@
             <td class="value" th:text="${invoice.contract.contractAmount != null ? #numbers.formatDecimal(invoice.contract.contractAmount, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</td>
         </tr>
         <tr th:if="${invoice.contract.discountAmount != null && invoice.contract.discountAmount > 0}">
-            <td class="label" style="color: #dc2626;">2. Giảm giá Voucher:</td>
-            <td class="value" style="color: #dc2626;" th:text="${'-' + #numbers.formatDecimal(invoice.contract.discountAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+            <td class="label extracted-invoice-print-6e512bc4">2. Giảm giá Voucher:</td>
+            <td class="value extracted-invoice-print-6e512bc4" th:text="${'-' + #numbers.formatDecimal(invoice.contract.discountAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
         </tr>
-        <tr style="background-color: #fafafa;">
+        <tr class="extracted-invoice-print-dbe4620c">
             <td class="label">3. Tổng giá trị thực tế hợp đồng:</td>
             <td class="value" th:text="${#numbers.formatDecimal(invoice.contract.finalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
         </tr>
         <tr>
             <td class="label">4. Đợt yêu cầu thanh toán lần này:</td>
-            <td class="value" style="color: #000000;" th:text="${'Đợt ' + currentNo + ' / ' + totalInstallments + ' (Tỷ lệ: ' + percent + '%)'}">Đợt 1 / 3 (30%)</td>
+            <td class="value extracted-invoice-print-62c7c1aa" th:text="${'Đợt ' + currentNo + ' / ' + totalInstallments + ' (Tỷ lệ: ' + percent + '%)'}">Đợt 1 / 3 (30%)</td>
         </tr>
         <tr>
             <td class="label">5. Tổng số tiền đã thanh toán trước đó:</td>
             <td class="value" th:text="${#numbers.formatDecimal(paidPreviously, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
         </tr>
-        <tr style="background-color: #f0fdf4; font-size: 14pt;">
-            <td class="label" style="color: #16a34a; font-weight: bold; border-width: 2px;">6. SỐ TIỀN YÊU CẦU THANH TOÁN ĐỢT NÀY:</td>
-            <td class="value" style="color: #16a34a; font-weight: bold; font-size: 15pt; border-width: 2px;" th:text="${#numbers.formatDecimal(invoice.totalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
+        <tr class="extracted-invoice-print-44c96b6f">
+            <td class="label extracted-invoice-print-eada5370">6. SỐ TIỀN YÊU CẦU THANH TOÁN ĐỢT NÀY:</td>
+            <td class="value extracted-invoice-print-2bf1d70e" th:text="${#numbers.formatDecimal(invoice.totalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
         </tr>
-        <tr style="color: #6b7280; font-style: italic;">
+        <tr class="extracted-invoice-print-93348bab">
             <td class="label">7. Số tiền còn lại sau đợt thanh toán này:</td>
             <td class="value" th:text="${#numbers.formatDecimal(remainingAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
         </tr>
         <tr>
             <td class="label">8. Hạn cuối thanh toán đợt này:</td>
-            <td class="value" style="text-decoration: underline;" th:text="${#temporals.format(invoice.dueDate, 'dd/MM/yyyy')}">20/07/2026</td>
+            <td class="value extracted-invoice-print-744734e4" th:text="${#temporals.format(invoice.dueDate, 'dd/MM/yyyy')}">20/07/2026</td>
         </tr>
         <tr th:if="${invoice.note != null && !invoice.note.isEmpty()}">
             <td class="label">9. Ghi chú / Điều kiện đợt thanh toán này:</td>
-            <td class="value" style="font-style: normal; font-weight: normal; text-align: left;" th:text="${invoice.note}">-</td>
+            <td class="value extracted-invoice-print-47587fa8" th:text="${invoice.note}">-</td>
         </tr>
     </table>
 

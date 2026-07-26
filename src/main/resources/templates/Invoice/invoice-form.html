@@ -132,7 +132,7 @@
                     </div>
                     <div>
                         <span>Số tiền thanh toán đợt này</span>
-                        <strong style="color: #059669; font-size: 1.15rem;" th:text="${#numbers.formatDecimal(installmentAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
+                        <strong class="extracted-invoice-invoice-form-897bb62e" th:text="${#numbers.formatDecimal(installmentAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
                     </div>
                     <div>
                         <span>Đã thanh toán trước đó</span>
@@ -182,31 +182,31 @@
                             <th>Mô tả</th>
                             <th>Số lượng</th>
                             <th>Đơn giá</th>
-                            <th style="text-align: right;">Thành tiền</th>
+                            <th class="extracted-invoice-invoice-form-13cbe03b">Thành tiền</th>
                         </tr>
                         </thead>
                         <tbody>
                         <!-- Thymeleaf Loop hiển thị sản phẩm, ẩn checkbox và tự động gán selected = true -->
                         <tr th:each="item, stat : *{items}" class="item-row">
-                            <td style="display:none;" th:if="${item.remainingQuantity > 0}">
+                            <td class="extracted-invoice-invoice-form-c8be1ccb" th:if="${item.remainingQuantity > 0}">
                                 <!-- Tự động gán selected = true và số lượng còn lại gửi lên controller -->
                                 <input type="hidden" th:name="'items[' + ${stat.index} + '].selected'" value="true">
                                 <input type="hidden" th:field="*{items[__${stat.index}__].quotationDetailId}">
                                 <input type="hidden" th:name="'items[' + ${stat.index} + '].quantity'" th:value="${item.remainingQuantity}">
                             </td>
-                            <td style="display:none;" th:if="${item.remainingQuantity <= 0}">
+                            <td class="extracted-invoice-invoice-form-c8be1ccb" th:if="${item.remainingQuantity <= 0}">
                                 <!-- Nếu đã xuất hết, gửi selected = false để backend bỏ qua -->
                                 <input type="hidden" th:name="'items[' + ${stat.index} + '].selected'" value="false">
                                 <input type="hidden" th:field="*{items[__${stat.index}__].quotationDetailId}">
                             </td>
                             <td>
-                                <div style="display:flex;align-items:center;gap:12px;">
-                                    <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                                <div class="extracted-invoice-invoice-form-16f2d512">
+                                    <img class="extracted-invoice-invoice-form-5dd012c9" th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
                                          th:src="${item.imageUrl}"
                                          alt="Ảnh sản phẩm"
-                                         style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">
-                                    <span th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
-                                          style="width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;">
+                                        >
+                                    <span class="extracted-invoice-invoice-form-0ded3ece" th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
+                                         >
                                         <i class="fa-solid fa-box"></i>
                                     </span>
                                     <strong th:text="${item.serviceName}">Sản phẩm</strong>
@@ -215,7 +215,7 @@
                             <td class="text-muted" th:text="${item.description != null && !item.description.isEmpty() ? item.description : 'N/A'}">Mô tả</td>
                             <td th:text="${item.contractQuantity}">0</td>
                             <td th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</td>
-                            <td style="text-align: right; font-weight: 700; color: #111827;" th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.contractQuantity * item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</td>
+                            <td class="extracted-invoice-invoice-form-789d52a0" th:text="${item.unitPrice != null ? #numbers.formatDecimal(item.contractQuantity * item.unitPrice, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</td>
                         </tr>
                         </tbody>
                     </table>
@@ -223,18 +223,18 @@
 
                 <!-- Bảng tổng hợp giá trị hợp đồng (Tạm tính, Giảm giá Voucher, Tổng giá trị thực tế) -->
                 <div class="summary-wrapper mt-3">
-                    <div class="summary-box" style="width: 100%; max-width: 400px; margin-left: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background-color: #fafafa;">
-                        <div class="summary-row" style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e5e7eb; font-size: 14px;">
+                    <div class="summary-box extracted-invoice-invoice-form-25a1cbac">
+                        <div class="summary-row extracted-invoice-invoice-form-b31127a6">
                             <span>Tạm tính (Tổng giá trị sản phẩm)</span>
                             <strong th:text="${contract.contractAmount != null ? #numbers.formatDecimal(contract.contractAmount, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</strong>
                         </div>
-                        <div class="summary-row" style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e5e7eb; font-size: 14px; color: #dc2626;">
+                        <div class="summary-row extracted-invoice-invoice-form-7b1b4ca9">
                             <span th:text="${contract.quotation != null && contract.quotation.voucher != null ? 'Voucher áp dụng (' + contract.quotation.voucher.voucherCode + ')' : 'Giảm giá Voucher'}">Giảm giá Voucher</span>
                             <strong th:text="${contract.discountAmount != null ? '-' + #numbers.formatDecimal(contract.discountAmount, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</strong>
                         </div>
-                        <div class="summary-row total-row" style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 16px; font-weight: 700; color: #111827;">
+                        <div class="summary-row total-row extracted-invoice-invoice-form-6b026b7c">
                             <span>Tổng giá trị thực tế hợp đồng</span>
-                            <strong style="color: #0f766e;" th:text="${#numbers.formatDecimal(contract.finalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
+                            <strong class="extracted-invoice-invoice-form-2082a79b" th:text="${#numbers.formatDecimal(contract.finalAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong>
                         </div>
                     </div>
                 </div>

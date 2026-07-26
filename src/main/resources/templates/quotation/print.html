@@ -5,220 +5,16 @@
     <title>Báo giá - CompanyMS</title>
     <!-- Thêm font chữ ký Dancing Script -->
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Thiết lập khổ giấy A4 khi in */
-        @page {
-            size: A4;
-            margin: 0; /* Ẩn toàn bộ Header/Footer mặc định của trình duyệt */
-        }
-
-        body {
-            background-color: #f3f4f6; /* Nền xám khi xem preview */
-            margin: 0;
-            padding: 40px 0;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .print-container {
-            background: #ffffff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            margin: 0 auto;
-            padding: 20mm 15mm 20mm 20mm; /* Lề chuẩn A4 */
-            width: 210mm;
-            min-height: 297mm;
-            box-sizing: border-box;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 13pt;
-            line-height: 1.5;
-            color: #000000;
-            position: relative;
-        }
-
-        /* Thanh công cụ in phía trên */
-        .no-print-bar {
-            background-color: #ffffff;
-            padding: 15px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-family: sans-serif;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 9999;
-        }
-        .btn {
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-primary {
-            background-color: #000000;
-            color: white;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #374151;
-        }
-        .btn-secondary {
-            background-color: #6b7280;
-            color: white;
-            border: none;
-        }
-        .btn-secondary:hover {
-            background-color: #4b5563;
-        }
-
-        /* Bố cục đầu trang báo giá */
-        .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
-        .header-table td {
-            vertical-align: top;
-            padding: 0;
-        }
-        .company-logo {
-            font-weight: bold;
-            font-size: 16pt;
-            color: #000000;
-            text-transform: uppercase;
-        }
-        .company-info {
-            text-align: right;
-            font-size: 11pt;
-            color: #000000;
-        }
-
-        /* Tiêu đề bảng báo giá */
-        .title-section {
-            text-align: center;
-            margin: 20px 0 30px 0;
-        }
-        .title-section h1 {
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 18pt;
-            margin: 0 0 8px 0;
-            letter-spacing: 0.5px;
-        }
-        .title-section p {
-            margin: 0;
-            font-style: italic;
-        }
-
-        /* Thông tin khách hàng gửi đến */
-        .customer-section {
-            margin-bottom: 25px;
-        }
-        .info-row {
-            margin: 8px 0;
-            display: flex;
-            align-items: flex-end;
-        }
-        .info-label {
-            white-space: nowrap;
-        }
-        .info-value {
-            flex-grow: 1;
-            border-bottom: 1px dotted #000000;
-            padding-left: 8px;
-            min-height: 20px;
-            display: inline-block;
-        }
-
-        /* Bảng hàng hóa dịch vụ */
-        .item-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 25px 0;
-            font-size: 12pt;
-        }
-        .item-table th,
-        .item-table td {
-            border: 1px solid #000000;
-            padding: 8px 10px;
-            color: #000000;
-        }
-        .item-table th {
-            font-weight: bold;
-            text-align: center;
-            background-color: #ffffff;
-        }
-        .text-center {
-            text-align: center !important;
-        }
-        .text-right {
-            text-align: right !important;
-        }
-
-        /* Ghi chú & Điều khoản */
-        .note-section {
-            margin-top: 30px;
-            font-size: 12pt;
-        }
-        .note-title {
-            font-weight: bold;
-            text-decoration: underline;
-            margin-bottom: 8px;
-        }
-        .note-section ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-        .note-section li {
-            margin-bottom: 6px;
-        }
-
-        /* CSS khi in thực tế */
-        @media print {
-            .no-print-bar {
-                display: none !important;
-            }
-            body {
-                background-color: #ffffff !important;
-                margin: 0 !important;
-                padding: 20mm 15mm 20mm 20mm !important;
-            }
-            .print-container {
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
-                box-shadow: none !important;
-                min-height: auto !important;
-            }
-        }
-
-        .signature-handwritten {
-            font-family: 'Dancing Script', cursive;
-            font-size: 24pt;
-            color: #000000;
-            margin: 15px 0;
-            display: inline-block;
-            transform: rotate(-3deg);
-            letter-spacing: 1px;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/features/print.css}">
 </head>
 <body>
 
 <!-- Thanh công cụ in (Chỉ hiển thị trên web) -->
 <div class="no-print-bar">
-    <div style="padding-left: 20px;">
-        <span style="font-weight: bold; color: #374151; font-family: sans-serif;">Xem trước bản in Báo giá</span>
+    <div class="extracted-quotation-print-c3e06919">
+        <span class="extracted-quotation-print-9f4f4850">Xem trước bản in Báo giá</span>
     </div>
-    <div style="display: flex; gap: 10px; padding-right: 20px;">
+    <div class="extracted-quotation-print-254b2f85">
         <a th:href="@{/quotation/detail/{id}(id=${quotation.id})}" class="btn btn-secondary">
             Quay lại chi tiết
         </a>
@@ -234,7 +30,7 @@
         <tr>
             <td>
                 <div class="company-logo">CONG TY MANAGEMENT SYSTEM</div>
-                <div style="font-size: 11pt; color: #555555; margin-top: 5px;">Mã số thuế: 0102030405</div>
+                <div class="extracted-quotation-print-b66dea20">Mã số thuế: 0102030405</div>
             </td>
             <td class="company-info">
                 <strong>Địa chỉ:</strong> Số 1 Trịnh Văn Bô, Nam Từ Liêm, Hà Nội<br>
@@ -243,7 +39,7 @@
         </tr>
     </table>
 
-    <hr style="border: 0; border-top: 1.5px solid #000000; margin-bottom: 25px;">
+    <hr class="extracted-quotation-print-f6dcd119">
 
     <!-- Tiêu đề báo giá -->
     <div class="title-section">
@@ -256,7 +52,7 @@
     <div class="customer-section">
         <div class="info-row">
             <span class="info-label">Kính gửi: </span>
-            <span class="info-value" style="font-weight: bold;" th:text="${quotation.customerName != null ? quotation.customerName : '………………………………………………………………'}"></span>
+            <span class="info-value extracted-quotation-print-78d7af8b" th:text="${quotation.customerName != null ? quotation.customerName : '………………………………………………………………'}"></span>
         </div>
         <div class="info-row">
             <span class="info-label">Địa chỉ: </span>
@@ -264,18 +60,18 @@
         </div>
 
         <!-- Chia đôi Điện thoại và Email để không bị chồng hàng lên nhau -->
-        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-            <div style="width: 48%; display: flex; align-items: flex-end;">
+        <div class="extracted-quotation-print-af7d49c5">
+            <div class="extracted-quotation-print-8fb4c95c">
                 <span class="info-label">Điện thoại: </span>
                 <span class="info-value" th:text="${quotation.customerPhone != null && !quotation.customerPhone.isEmpty() ? quotation.customerPhone : '…………………………………………'}"></span>
             </div>
-            <div style="width: 48%; display: flex; align-items: flex-end;">
+            <div class="extracted-quotation-print-8fb4c95c">
                 <span class="info-label">Email: </span>
                 <span class="info-value" th:text="${quotation.customerEmail != null && !quotation.customerEmail.isEmpty() ? quotation.customerEmail : '…………………………………………'}"></span>
             </div>
         </div>
 
-        <div style="margin-top: 15px;">
+        <div class="extracted-quotation-print-b62ee557">
             Công ty Management System xin trân trọng gửi tới Quý khách hàng bảng báo giá dịch vụ/sản phẩm chi tiết như sau:
         </div>
     </div>
@@ -284,26 +80,26 @@
     <table class="item-table">
         <thead>
         <tr>
-            <th style="width: 50px;">STT</th>
+            <th class="extracted-quotation-print-5f3eb38a">STT</th>
             <th>Nội dung công việc / Sản phẩm</th>
-            <th style="width: 80px;">ĐVT</th>
-            <th style="width: 80px;">Số lượng</th>
-            <th style="width: 130px;">Đơn giá (VNĐ)</th>
-            <th style="width: 150px;">Thành tiền (VNĐ)</th>
+            <th class="extracted-quotation-print-1b3b3079">ĐVT</th>
+            <th class="extracted-quotation-print-1b3b3079">Số lượng</th>
+            <th class="extracted-quotation-print-3854f2e9">Đơn giá (VNĐ)</th>
+            <th class="extracted-quotation-print-5cb57137">Thành tiền (VNĐ)</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="item, stat : ${quotation.details}">
             <td class="text-center" th:text="${stat.count}">1</td>
             <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                <div class="extracted-quotation-print-e3f61041">
+                    <img class="extracted-quotation-print-b219bd7f" th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
                          th:src="${item.imageUrl}"
                          alt="Ảnh sản phẩm"
-                         style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #dddddd;">
+                        >
                     <strong th:text="${item.productName}">SmartDoor</strong>
                 </div>
-                <div style="font-size: 10pt; color: #000000;" th:if="${item.description != null}" th:text="${item.description}">Mô tả</div>
+                <div class="extracted-quotation-print-d69ae4f1" th:if="${item.description != null}" th:text="${item.description}">Mô tả</div>
             </td>
             <td class="text-center">Chiếc</td>
             <td class="text-center" th:text="${item.quantity}">1</td>
@@ -315,20 +111,20 @@
 
         <!-- Tạm tính -->
         <tr>
-            <td colspan="5" style="text-align: right; font-weight: bold;">Tạm tính:</td>
+            <td class="extracted-quotation-print-ecbf082f" colspan="5">Tạm tính:</td>
             <td class="text-right" th:text="${quotation.subTotal != null ? #numbers.formatDecimal(quotation.subTotal, 0, 'POINT', 0, 'COMMA') : (quotation.finalAmount != null ? #numbers.formatDecimal(quotation.finalAmount, 0, 'POINT', 0, 'COMMA') : '0')}">0</td>
         </tr>
 
         <!-- Giảm giá (Voucher nếu có) -->
         <tr th:if="${quotation.discountAmount != null && quotation.discountAmount > 0}">
-            <td colspan="5" style="text-align: right; font-weight: bold;">Giảm giá (Khuyến mãi):</td>
+            <td class="extracted-quotation-print-ecbf082f" colspan="5">Giảm giá (Khuyến mãi):</td>
             <td class="text-right" th:text="${'- ' + #numbers.formatDecimal(quotation.discountAmount, 0, 'POINT', 0, 'COMMA')}">0</td>
         </tr>
 
         <!-- Tổng cộng -->
         <tr>
-            <td colspan="5" style="text-align: right; font-weight: bold; font-size: 13pt;">TỔNG CỘNG (Chưa VAT):</td>
-            <td class="text-right" style="font-weight: bold; font-size: 13pt;" th:text="${quotation.finalAmount != null ? #numbers.formatDecimal(quotation.finalAmount, 0, 'POINT', 0, 'COMMA') : '0'}">0</td>
+            <td class="extracted-quotation-print-eade166b" colspan="5">TỔNG CỘNG (Chưa VAT):</td>
+            <td class="text-right extracted-quotation-print-0d567d69" th:text="${quotation.finalAmount != null ? #numbers.formatDecimal(quotation.finalAmount, 0, 'POINT', 0, 'COMMA') : '0'}">0</td>
         </tr>
         </tbody>
     </table>
@@ -336,7 +132,7 @@
     <!-- Bằng chữ -->
     <div class="info-row">
         <span class="info-label">Bằng chữ: </span>
-        <span class="info-value" id="amount-in-words" style="font-style: italic; font-weight: bold;">………………………………………………………………………………</span>
+        <span class="info-value extracted-quotation-print-2d198b43" id="amount-in-words">………………………………………………………………………………</span>
     </div>
 
     <!-- Ghi chú và điều khoản -->
@@ -352,29 +148,29 @@
     </div>
 
     <!-- Layout Liên hệ (Bên trái) và Ký tên đóng dấu (Bên phải) đúng theo mẫu yêu cầu -->
-    <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-start; page-break-inside: avoid;">
+    <div class="extracted-quotation-print-594b97f7">
         <!-- Phần liên hệ (Bên trái) -->
-        <div style="width: 55%; font-size: 12pt;">
-            <div style="margin-bottom: 8px;">Mọi chi tiết vui lòng xin liên hệ:</div>
-            <div style="margin-bottom: 25px;">
+        <div class="extracted-quotation-print-d8d5a074">
+            <div class="extracted-quotation-print-7f3cbaf6">Mọi chi tiết vui lòng xin liên hệ:</div>
+            <div class="extracted-quotation-print-39ffb623">
                 Nhân viên kinh doanh phụ trách
             </div>
             <div>Trân trọng kính chào!</div>
         </div>
 
         <!-- Phần ký tên công ty (Bên phải) -->
-        <div style="width: 40%; text-align: center; font-size: 12pt;">
-            <div style="font-style: italic; margin-bottom: 8px;">
+        <div class="extracted-quotation-print-7430ccbe">
+            <div class="extracted-quotation-print-ad1d074d">
                 Hà Nội, ngày <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'dd') : '……'}"></span>
                 tháng <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'MM') : '……'}"></span>
                 năm <span th:text="${quotation.createdAt != null ? #temporals.format(quotation.createdAt, 'yyyy') : '2024'}"></span>
             </div>
-            <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 5px;"> Công ty Management System </div>
-            <div style="font-style: italic; color: #6b7280; font-size: 11pt; margin-bottom: 5px;">(Ký, đóng dấu)</div>
+            <div class="extracted-quotation-print-6c870701"> Công ty Management System </div>
+            <div class="extracted-quotation-print-29cd9995">(Ký, đóng dấu)</div>
 
             <!-- Chữ ký viết tay và Tên đầy đủ người duyệt thực tế -->
             <div class="signature-handwritten" th:text="${approverName}">Ban Giám Đốc</div>
-            <div style="font-weight: bold;" th:text="${approverName}">Ban Giám Đốc</div>
+            <div class="extracted-quotation-print-78d7af8b" th:text="${approverName}">Ban Giám Đốc</div>
         </div>
     </div>
 

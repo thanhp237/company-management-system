@@ -8,19 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared/main.css}">
-    <style>
-        body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        .support-shell { max-width: 820px; }
-        .support-card { border: 1px solid #dfe7e2; border-radius: 8px; background: #fff; padding: 24px; box-shadow: 0 18px 42px rgba(31, 45, 57, 0.08); }
-        .support-card h1 { margin: 0; font-size: 28px; font-weight: 900; color: #101923; }
-        .support-card p { color: #657386; }
-        .support-invoice { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0; padding: 16px; border-radius: 8px; background: #f7faf8; }
-        .support-invoice span { display: block; color: #657386; font-size: 12px; font-weight: 800; text-transform: uppercase; }
-        .support-invoice strong { display: block; margin-top: 4px; color: #101923; }
-        .support-form label { display: block; margin-bottom: 16px; font-weight: 800; color: #263746; }
-        .support-form input, .support-form textarea { margin-top: 8px; }
-        @media (max-width: 720px) { .support-invoice { grid-template-columns: 1fr; } }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/roles/customer/portal.css}">
 </head>
 <body>
 <th:block th:insert="~{layouts/customer-sidebar :: customerLayout}"></th:block>

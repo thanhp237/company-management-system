@@ -16,15 +16,7 @@
 
     <link rel="stylesheet" th:href="@{/css/shared/main.css}">
     <link rel="stylesheet" th:href="@{/css/roles/sales/contract.css}">
-    <style>
-        body,
-        button,
-        input,
-        textarea,
-        select {
-            font-family: 'Roboto', Arial, sans-serif;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/roles/sales/quotation.css}">
 </head>
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>
@@ -182,20 +174,20 @@
                             <tbody>
                             <tr th:each="item : ${quotation.details}">
                                 <td>
-                                    <div style="display:flex;align-items:center;gap:12px;">
-                                        <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                                    <div class="extracted-quotation-detail-16f2d512">
+                                        <img class="extracted-quotation-detail-5dd012c9" th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
                                              th:src="${item.imageUrl}"
                                              alt="Ảnh sản phẩm"
-                                             style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">
-                                        <span th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
-                                              style="width:48px;height:48px;border-radius:8px;border:1px solid #e5e7eb;background:#f3f4f6;display:inline-flex;align-items:center;justify-content:center;color:#9ca3af;">
+                                            >
+                                        <span class="extracted-quotation-detail-0ded3ece" th:if="${item.imageUrl == null or #strings.isEmpty(item.imageUrl)}"
+                                             >
                                             <i class="fas fa-box"></i>
                                         </span>
                                         <div>
                                             <strong th:text="${item.productName != null ? item.productName : 'Chưa có'}">
                                                 Sản phẩm
                                             </strong>
-                                            <small style="display:block;" th:text="${item.productCode != null ? item.productCode : 'Chưa có'}">
+                                            <small class="extracted-quotation-detail-21d91b70" th:text="${item.productCode != null ? item.productCode : 'Chưa có'}">
                                                 P001
                                             </small>
                                         </div>
@@ -254,9 +246,9 @@
                 <section class="contract-action-card">
                     <h2>Thao tác nhanh</h2>
 
-                    <a th:if="${quotation.status != null and #strings.toUpperCase(quotation.status) == 'DRAFT'}"
+                    <a class="extracted-quotation-detail-f5efc0ee" th:if="${quotation.status != null and #strings.toUpperCase(quotation.status) == 'DRAFT'}"
                        th:href="@{/quotation/edit/{id}(id=${quotation.id})}"
-                       style="display: flex; align-items: center; justify-content: center; gap: 8px; border: none; background: #f59e0b; color: #fff; border-radius: 8px; padding: 9px 14px; text-decoration: none; font-size: 14px; font-weight: 700; margin-bottom: 8px;">
+                      >
                         <i class="fas fa-edit"></i>
                         Sửa báo giá
                     </a>

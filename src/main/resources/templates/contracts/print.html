@@ -5,15 +5,16 @@
     <title>In Hợp Đồng - CompanyMS</title>
     <!-- Nhúng file CSS chung của Hợp đồng chứa tất cả cấu hình print/A4 -->
     <link rel="stylesheet" th:href="@{/css/roles/sales/contract.css}">
+    <link rel="stylesheet" th:href="@{/css/features/print.css}">
 </head>
 <body class="print-body">
 
 <!-- Thanh công cụ in (Chỉ hiển thị khi xem ở Web, tự động ẩn khi in/xuất PDF) -->
 <div class="no-print-bar">
-    <div style="padding-left: 20px;">
-        <span style="font-weight: bold; color: #374151; font-family: sans-serif;">Xem trước bản in Hợp đồng</span>
+    <div class="extracted-contracts-print-c3e06919">
+        <span class="extracted-contracts-print-9f4f4850">Xem trước bản in Hợp đồng</span>
     </div>
-    <div style="display: flex; gap: 10px; padding-right: 20px;">
+    <div class="extracted-contracts-print-254b2f85">
         <a th:href="${backUrl}" class="btn btn-secondary">
             Quay lại chi tiết
         </a>
@@ -71,32 +72,32 @@
     <div class="info-row">
         <span class="info-label">Người đại diện theo pháp luật: </span>
         <span class="info-value" th:text="${contract.sellerRepresentativeName}"></span>
-        <span class="info-label" style="margin-left: 15px;">Chức danh: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">Chức danh: </span>
         <span class="info-value" th:text="${contract.sellerRepresentativeTitle}"></span>
     </div>
     <div class="info-row">
         <span class="info-label">CMND/CCCD/Hộ chiếu số: </span>
         <span class="info-value" th:text="${contract.sellerIdentityNumber}"></span>
-        <span class="info-label" style="margin-left: 15px;">cấp ngày: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">cấp ngày: </span>
         <span class="info-value" th:text="${contract.sellerIdentityIssuedDate != null ? #temporals.format(contract.sellerIdentityIssuedDate, 'dd/MM/yyyy') : ''}"></span>
-        <span class="info-label" style="margin-left: 15px;">nơi cấp: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">nơi cấp: </span>
         <span class="info-value" th:text="${contract.sellerIdentityIssuedPlace}"></span>
     </div>
     <div class="info-row">
         <span class="info-label">Số điện thoại: </span>
         <span class="info-value" th:text="${contract.sellerPhone}"></span>
-        <span class="info-label" style="margin-left: 15px;">Fax: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">Fax: </span>
         <span class="info-value" th:text="${contract.sellerFax}"></span>
     </div>
     <div class="info-row">
         <span class="info-label">Tài khoản ngân hàng số: </span>
         <span class="info-value" th:text="${contract.sellerBankAccount}"></span>
-        <span class="info-label" style="margin-left: 15px;">Mở tại ngân hàng: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">Mở tại ngân hàng: </span>
         <span class="info-value" th:text="${contract.sellerBankName}"></span>
     </div>
 
     <!-- BÊN MUA (Bên B) -->
-    <div class="party-title" style="margin-top: 20px;">Bên Mua (Bên B):</div>
+    <div class="party-title extracted-contracts-print-5fa693f3">Bên Mua (Bên B):</div>
 
     <div class="info-row">
         <span class="info-label">Tên doanh nghiệp: </span>
@@ -113,41 +114,41 @@
     <div class="info-row">
         <span class="info-label">Người đại diện theo pháp luật: </span>
         <span class="info-value" th:text="${contract.buyerRepresentativeName}"></span>
-        <span class="info-label" style="margin-left: 15px;">Chức danh: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">Chức danh: </span>
         <span class="info-value" th:text="${contract.buyerRepresentativeTitle}"></span>
     </div>
     <div class="info-row">
         <span class="info-label">CMND/CCCD/Hộ chiếu số: </span>
         <span class="info-value" th:text="${contract.buyerIdentityNumber}"></span>
-        <span class="info-label" style="margin-left: 15px;">cấp ngày: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">cấp ngày: </span>
         <span class="info-value" th:text="${contract.buyerIdentityIssuedDate != null ? #temporals.format(contract.buyerIdentityIssuedDate, 'dd/MM/yyyy') : ''}"></span>
-        <span class="info-label" style="margin-left: 15px;">nơi cấp: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">nơi cấp: </span>
         <span class="info-value" th:text="${contract.buyerIdentityIssuedPlace}"></span>
     </div>
     <div class="info-row">
         <span class="info-label">Số điện thoại: </span>
         <span class="info-value" th:text="${buyerPhone}"></span>
-        <span class="info-label" style="margin-left: 15px;">Fax: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">Fax: </span>
         <span class="info-value" th:text="${contract.buyerFax}"></span>
     </div>
     <div class="info-row">
         <span class="info-label">Tài khoản ngân hàng số: </span>
         <span class="info-value" th:text="${contract.buyerBankAccount}"></span>
-        <span class="info-label" style="margin-left: 15px;">Mở tại ngân hàng: </span>
+        <span class="info-label extracted-contracts-print-0db2942d">Mở tại ngân hàng: </span>
         <span class="info-value" th:text="${contract.buyerBankName}"></span>
     </div>
 
     <!-- Mở đầu điều khoản -->
-    <p style="margin-top: 25px; text-indent: 30px;">Trên cơ sở thỏa thuận hoàn toàn tự nguyện, hai bên thống nhất ký kết hợp đồng mua bán hàng hóa với các điều khoản như sau:</p>
+    <p class="extracted-contracts-print-ffa801ad">Trên cơ sở thỏa thuận hoàn toàn tự nguyện, hai bên thống nhất ký kết hợp đồng mua bán hàng hóa với các điều khoản như sau:</p>
 
     <!-- ĐIỀU 1 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 1: Tên hàng hóa, số lượng, chất lượng, giá trị hợp đồng</h4>
-    <p style="margin: 5px 0;">Bên A bán cho bên B hàng hóa sau đây:</p>
+    <h4 class="extracted-contracts-print-da18188d">Điều 1: Tên hàng hóa, số lượng, chất lượng, giá trị hợp đồng</h4>
+    <p class="extracted-contracts-print-b3a67f61">Bên A bán cho bên B hàng hóa sau đây:</p>
 
     <table class="item-table">
         <thead>
         <tr>
-            <th style="width: 80px;">STT</th>
+            <th class="extracted-contracts-print-1b3b3079">STT</th>
             <th>Tên hàng hóa</th>
             <th>Đơn vị</th>
             <th>Số lượng</th>
@@ -160,11 +161,11 @@
         <tr th:each="item, stat : ${contract.items}">
             <td class="text-center" th:text="${stat.count}">1</td>
             <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                <div class="extracted-contracts-print-e3f61041">
+                    <img class="extracted-contracts-print-b219bd7f" th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
                          th:src="${item.imageUrl}"
                          alt="Ảnh sản phẩm"
-                         style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #dddddd;">
+                        >
                     <span th:text="${item.productName}">Sản phẩm</span>
                 </div>
             </td>
@@ -175,8 +176,8 @@
             <td th:text="${item.description}">N/A</td>
         </tr>
         <tr>
-            <td colspan="5" style="font-weight: bold; text-align: right;">Tổng cộng:</td>
-            <td class="text-right" style="font-weight: bold;" th:text="${#numbers.formatDecimal(contract.finalAmount, 0, 'POINT', 0, 'COMMA')}">0</td>
+            <td class="extracted-contracts-print-95061729" colspan="5">Tổng cộng:</td>
+            <td class="text-right extracted-contracts-print-78d7af8b" th:text="${#numbers.formatDecimal(contract.finalAmount, 0, 'POINT', 0, 'COMMA')}">0</td>
             <td></td>
         </tr>
         </tbody>
@@ -184,30 +185,30 @@
 
     <div class="info-row">
         <span class="info-label">Bằng chữ: </span>
-        <span class="info-value" style="font-style: italic;" th:text="${contract.amountInWords != null && !contract.amountInWords.isEmpty() ? contract.amountInWords : '………………………………………………………………………………'}"></span>
+        <span class="info-value extracted-contracts-print-b9963897" th:text="${contract.amountInWords != null && !contract.amountInWords.isEmpty() ? contract.amountInWords : '………………………………………………………………………………'}"></span>
     </div>
 
     <!-- ĐIỀU 2 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 2. Thanh toán</h4>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <h4 class="extracted-contracts-print-da18188d">Điều 2. Thanh toán</h4>
+    <p class="extracted-contracts-print-384165b6">
         1. Bên B phải thanh toán cho Bên A số tiền ghi tại Điều 1 của Hợp đồng này vào ngày
         <span th:text="${contract.paymentDueDate != null ? #temporals.format(contract.paymentDueDate, 'dd') : '……'}">……</span>
         tháng <span th:text="${contract.paymentDueDate != null ? #temporals.format(contract.paymentDueDate, 'MM') : '……'}">……</span>
         năm <span th:text="${contract.paymentDueDate != null ? #temporals.format(contract.paymentDueDate, 'yyyy') : '……'}">……</span>.
     </p>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <p class="extracted-contracts-print-384165b6">
         2. Bên B thanh toán cho Bên A theo hình thức:
         <span th:text="${contract.paymentMethod != null && !contract.paymentMethod.isEmpty() ? contract.paymentMethod : '…………………………………………'}">…………………………………………</span>
     </p>
 
     <!-- ĐIỀU 3 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 3. Thời gian, địa điểm, phương thức giao hàng</h4>
-    <p style="margin: 5px 0; text-indent: 20px;">1. Bên A giao hàng cho bên B theo lịch sau:</p>
+    <h4 class="extracted-contracts-print-da18188d">Điều 3. Thời gian, địa điểm, phương thức giao hàng</h4>
+    <p class="extracted-contracts-print-384165b6">1. Bên A giao hàng cho bên B theo lịch sau:</p>
 
     <table class="item-table">
         <thead>
         <tr>
-            <th style="width: 80px;">STT</th>
+            <th class="extracted-contracts-print-1b3b3079">STT</th>
             <th>Tên hàng hóa</th>
             <th>Đơn vị</th>
             <th>Số lượng</th>
@@ -220,11 +221,11 @@
         <tr th:each="item, stat : ${contract.items}">
             <td class="text-center" th:text="${stat.count}">1</td>
             <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                    <img th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
+                <div class="extracted-contracts-print-e3f61041">
+                    <img class="extracted-contracts-print-b219bd7f" th:if="${item.imageUrl != null and !#strings.isEmpty(item.imageUrl)}"
                          th:src="${item.imageUrl}"
                          alt="Ảnh sản phẩm"
-                         style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #dddddd;">
+                        >
                     <span th:text="${item.productName}">Sản phẩm</span>
                 </div>
             </td>
@@ -237,73 +238,73 @@
         </tbody>
     </table>
 
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <p class="extracted-contracts-print-384165b6">
         2. Phương tiện vận chuyển và chi phí vận chuyển do bên
-        <span style="font-weight: bold;" th:text="${contract.shippingResponsibility != null && !contract.shippingResponsibility.isEmpty() ? contract.shippingResponsibility : '……'}">……</span> chịu.
+        <span class="extracted-contracts-print-78d7af8b" th:text="${contract.shippingResponsibility != null && !contract.shippingResponsibility.isEmpty() ? contract.shippingResponsibility : '……'}">……</span> chịu.
         Chi phí bốc xếp (mỗi bên chịu một đầu hoặc
         <span th:text="${contract.unloadingCost != null && !contract.unloadingCost.isEmpty() ? contract.unloadingCost : '………'}">………</span>).
     </p>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <p class="extracted-contracts-print-384165b6">
         3. Quy định lịch giao nhận hàng hóa mà bên mua không đến nhận hàng thì phải chịu chi phí lưu kho bãi là
         <span th:text="${contract.storageFeePerDay != null && !contract.storageFeePerDay.isEmpty() ? contract.storageFeePerDay : '…'}">…</span> đồng/ngày.
         Nếu phương tiện vận chuyển bên mua đến mà bên bán không có hàng giao thì bên bán phải chịu chi phí thực tế cho việc điều động phương tiện.
     </p>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <p class="extracted-contracts-print-384165b6">
         4. Khi nhận hàng, bên mua có trách nhiệm kiểm nhận phẩm chất, quy cách hàng hóa tại chỗ. Nếu phát hiện hàng thiếu hoặc không đúng tiêu chuẩn chất lượng… thì lập biên bản tại chỗ, yêu cầu bên bán xác nhận. Hàng đã ra khỏi kho bên bán không chịu trách nhiệm (trừ loại hàng có quy định thời hạn bảo hành).
     </p>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <p class="extracted-contracts-print-384165b6">
         5. Trường hợp giao nhận hàng theo nguyên đai, nguyên kiện, nếu bên mua sau khi chở về nhập kho mới phát hiện có vi phạm thì phải lập biên bản gọi cơ quan kiểm tra trung gian (
-        <span style="font-weight: bold;" th:text="${contract.inspectionAgency != null && !contract.inspectionAgency.isEmpty() ? contract.inspectionAgency : '…………………….'}">15</span>
+        <span class="extracted-contracts-print-78d7af8b" th:text="${contract.inspectionAgency != null && !contract.inspectionAgency.isEmpty() ? contract.inspectionAgency : '…………………….'}">15</span>
         ) đến xác nhận và phải gửi đến bên bán trong hạn …… ngày tính từ khi lập biên bản. Sau  15 ngày nếu bên bán đã nhận được biên bản mà không có ý kiến gì thì coi như đã chịu trách nhiệm bồi thường lô hàng đó.
     </p>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <p class="extracted-contracts-print-384165b6">
         6. Mỗi lô hàng khi giao nhận phải có xác nhận chất lượng bằng phiếu hoặc biên bản kiểm nghiệm; khi đến nhận hàng, người nhận phải có đủ: Giấy giới thiệu của cơ quan bên mua; Phiếu xuất kho của cơ quan bên bán; Giấy chứng minh nhân dân hoặc Căn cước công dân.
     </p>
 
     <!-- ĐIỀU 4 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 4. Trách nhiệm của các bên</h4>
-    <p style="margin: 5px 0; text-indent: 20px;">1. Bên bán không chịu trách nhiệm về bất kỳ khiếm khuyết nào của hàng hoá nếu vào thời điểm giao kết hợp đồng bên mua đã biết hoặc phải biết về những khiếm khuyết đó.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">2. Trừ trường hợp quy định tại khoản 1 Điều này, trong thời hạn khiếu nại theo quy định của Luật Thương mại 2005, bên bán phải chịu trách nhiệm về bất kỳ khiếm khuyết nào của hàng hoá đã có trước thời điểm chuyển rủi ro cho bên mua, kể cả trường hợp khiếm khuyết đó được phát hiện sau thời điểm chuyển rủi ro.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">3. Bên bán phải chịu trách nhiệm về khiếm khuyết của hàng hóa phát sinh sau thời điểm chuyển rủi ro nếu khiếm khuyết đó do bên bán vi phạm hợp đồng.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">4. Bên mua có trách nhiệm thanh toán và nhận hàng theo đúng thời gian đã thỏa thuận.</p>
+    <h4 class="extracted-contracts-print-da18188d">Điều 4. Trách nhiệm của các bên</h4>
+    <p class="extracted-contracts-print-384165b6">1. Bên bán không chịu trách nhiệm về bất kỳ khiếm khuyết nào của hàng hoá nếu vào thời điểm giao kết hợp đồng bên mua đã biết hoặc phải biết về những khiếm khuyết đó.</p>
+    <p class="extracted-contracts-print-384165b6">2. Trừ trường hợp quy định tại khoản 1 Điều này, trong thời hạn khiếu nại theo quy định của Luật Thương mại 2005, bên bán phải chịu trách nhiệm về bất kỳ khiếm khuyết nào của hàng hoá đã có trước thời điểm chuyển rủi ro cho bên mua, kể cả trường hợp khiếm khuyết đó được phát hiện sau thời điểm chuyển rủi ro.</p>
+    <p class="extracted-contracts-print-384165b6">3. Bên bán phải chịu trách nhiệm về khiếm khuyết của hàng hóa phát sinh sau thời điểm chuyển rủi ro nếu khiếm khuyết đó do bên bán vi phạm hợp đồng.</p>
+    <p class="extracted-contracts-print-384165b6">4. Bên mua có trách nhiệm thanh toán và nhận hàng theo đúng thời gian đã thỏa thuận.</p>
 
     <!-- ĐIỀU 5 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 5. Bảo hành và hướng dẫn sử dụng hàng hóa</h4>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <h4 class="extracted-contracts-print-da18188d">Điều 5. Bảo hành và hướng dẫn sử dụng hàng hóa</h4>
+    <p class="extracted-contracts-print-384165b6">
         1. Bên A có trách nhiệm bảo hành chất lượng và giá trị sử dụng loại hàng
-        <span style="font-weight: bold;" th:text="${contract.warrantyProductScope != null && !contract.warrantyProductScope.isEmpty() ? contract.warrantyProductScope : '……'}">……</span>
-        cho bên mua trong thời gian là <span style="font-weight: bold;" th:text="${contract.warrantyMonths != null ? contract.warrantyMonths : '…………'}">…………</span> tháng.
+        <span class="extracted-contracts-print-78d7af8b" th:text="${contract.warrantyProductScope != null && !contract.warrantyProductScope.isEmpty() ? contract.warrantyProductScope : '……'}">……</span>
+        cho bên mua trong thời gian là <span class="extracted-contracts-print-78d7af8b" th:text="${contract.warrantyMonths != null ? contract.warrantyMonths : '…………'}">…………</span> tháng.
     </p>
-    <p style="margin: 5px 0; text-indent: 20px;">2. Bên A phải cung cấp đủ mỗi đơn vị hàng hóa một giấy hướng dẫn sử dụng (nếu cần).</p>
+    <p class="extracted-contracts-print-384165b6">2. Bên A phải cung cấp đủ mỗi đơn vị hàng hóa một giấy hướng dẫn sử dụng (nếu cần).</p>
 
     <!-- ĐIỀU 6 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 6. Ngưng thanh toán tiền mua hàng</h4>
-    <p style="margin: 5px 0;">Việc ngừng thanh toán tiền mua hàng được quy định như sau:</p>
-    <p style="margin: 5px 0; text-indent: 20px;">1. Bên B có bằng chứng về việc bên A lừa dối thì có quyền tạm ngừng việc thanh toán.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">2. Bên B có bằng chứng về việc hàng hóa đang là đối tượng bị tranh chấp thì có quyền tạm ngừng thanh toán cho đến khi việc tranh chấp đã được giải quyết.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">3. Bên B có bằng chứng về việc bên A đã giao hàng không phù hợp với hợp đồng thì có quyền tạm ngừng thanh toán cho đến khi bên A đã khắc phục sự không phù hợp đó.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">4. Trường hợp tạm ngừng thanh toán theo quy định tại khoản 2 và khoản 3 Điều này mà bằng chứng do bên B đưa ra không xác thực, gây thiệt hại cho bên A thì bên B phải bồi thường thiệt hại đó và chịu các chế tài khác theo quy định của pháp luật.</p>
+    <h4 class="extracted-contracts-print-da18188d">Điều 6. Ngưng thanh toán tiền mua hàng</h4>
+    <p class="extracted-contracts-print-b3a67f61">Việc ngừng thanh toán tiền mua hàng được quy định như sau:</p>
+    <p class="extracted-contracts-print-384165b6">1. Bên B có bằng chứng về việc bên A lừa dối thì có quyền tạm ngừng việc thanh toán.</p>
+    <p class="extracted-contracts-print-384165b6">2. Bên B có bằng chứng về việc hàng hóa đang là đối tượng bị tranh chấp thì có quyền tạm ngừng thanh toán cho đến khi việc tranh chấp đã được giải quyết.</p>
+    <p class="extracted-contracts-print-384165b6">3. Bên B có bằng chứng về việc bên A đã giao hàng không phù hợp với hợp đồng thì có quyền tạm ngừng thanh toán cho đến khi bên A đã khắc phục sự không phù hợp đó.</p>
+    <p class="extracted-contracts-print-384165b6">4. Trường hợp tạm ngừng thanh toán theo quy định tại khoản 2 và khoản 3 Điều này mà bằng chứng do bên B đưa ra không xác thực, gây thiệt hại cho bên A thì bên B phải bồi thường thiệt hại đó và chịu các chế tài khác theo quy định của pháp luật.</p>
 
     <!-- ĐIỀU 7 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 7. Điều khoản phạt vi phạm hợp đồng</h4>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <h4 class="extracted-contracts-print-da18188d">Điều 7. Điều khoản phạt vi phạm hợp đồng</h4>
+    <p class="extracted-contracts-print-384165b6">
         1. Hai bên cam kết thực hiện nghiêm túc các điều khoản đã thỏa thuận trên, không được đơn phương thay đổi hoặc hủy bỏ hợp đồng, bên nào không thực hiện hoặc đơn phương đình chỉ thực hiện hợp đồng mà không có lý do chính đáng thì sẽ bị phạt
-        <span style="font-weight: bold;" th:text="${contract.penaltyRate != null && !contract.penaltyRate.isEmpty() ? contract.penaltyRate : '…'}">…</span>% giá trị của hợp đồng bị vi phạm.
+        <span class="extracted-contracts-print-78d7af8b" th:text="${contract.penaltyRate != null && !contract.penaltyRate.isEmpty() ? contract.penaltyRate : '…'}">…</span>% giá trị của hợp đồng bị vi phạm.
     </p>
-    <p style="margin: 5px 0; text-indent: 20px;">2. Bên nào vi phạm các điều khoản trên đây sẽ phải chịu trách nhiệm vật chất theo quy định của các văn bản pháp luật có hiệu lực hiện hành về phạt vi phạm chất lượng, số lượng, thời gian, địa điểm, thanh toán, bảo hành… mức phạt cụ thể do hai bên thỏa thuận dựa trên khung phạt Nhà nước đã quy định trong các văn bản pháp luật về loại hợp đồng này.</p>
+    <p class="extracted-contracts-print-384165b6">2. Bên nào vi phạm các điều khoản trên đây sẽ phải chịu trách nhiệm vật chất theo quy định của các văn bản pháp luật có hiệu lực hiện hành về phạt vi phạm chất lượng, số lượng, thời gian, địa điểm, thanh toán, bảo hành… mức phạt cụ thể do hai bên thỏa thuận dựa trên khung phạt Nhà nước đã quy định trong các văn bản pháp luật về loại hợp đồng này.</p>
 
     <!-- ĐIỀU 8 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 8. Bất khả kháng và giải quyết tranh chấp</h4>
-    <p style="margin: 5px 0; text-indent: 20px;">1. Bất khả kháng nghĩa là các sự kiện xảy ra một cách khách quan, không thể lường trước được và không thể khắc phục được mặc dù đã áp dụng mọi biện pháp cần thiết trong khả năng cho phép, một trong các Bên vẫn không có khả năng thực hiện được nghĩa vụ của mình theo Hợp đồng này; gồm nhưng không giới hạn ở: thiên tai, hỏa hoạn, lũ lụt, chiến tranh, can thiệp của chính quyền bằng vũ trang, cản trở giao thông vận tải và các sự kiện khác tương tự.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">2. Khi xảy ra sự kiện bất khả kháng, bên gặp phải bất khả kháng phải không chậm chễ, thông báo cho bên kia tình trạng thực tế, đề xuất phương án xử lý và nỗ lực giảm thiểu tổn thất, thiệt hại đến mức thấp nhất có thể.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">3. Trừ trường hợp bất khả kháng, hai bên phải thực hiện đầy đủ và đúng thời hạn các nội dung của hợp đồng này. Trong quá trình thực hiện hợp đồng, nếu có vướng mắc từ bất kỳ bên nào, hai bên sẽ cùng nhau giải quyết trên tinh thần hợp tác. Trong trường hợp không tự giải quyết được, hai bên thống nhất đưa ra giải quyết tại Tòa án có thẩm quyền. Phán quyết của tòa án là quyết định cuối cùng, có giá trị ràng buộc các bên. Bên thua phải chịu toàn bộ các chi phí giải quyết tranh chấp.</p>
+    <h4 class="extracted-contracts-print-da18188d">Điều 8. Bất khả kháng và giải quyết tranh chấp</h4>
+    <p class="extracted-contracts-print-384165b6">1. Bất khả kháng nghĩa là các sự kiện xảy ra một cách khách quan, không thể lường trước được và không thể khắc phục được mặc dù đã áp dụng mọi biện pháp cần thiết trong khả năng cho phép, một trong các Bên vẫn không có khả năng thực hiện được nghĩa vụ của mình theo Hợp đồng này; gồm nhưng không giới hạn ở: thiên tai, hỏa hoạn, lũ lụt, chiến tranh, can thiệp của chính quyền bằng vũ trang, cản trở giao thông vận tải và các sự kiện khác tương tự.</p>
+    <p class="extracted-contracts-print-384165b6">2. Khi xảy ra sự kiện bất khả kháng, bên gặp phải bất khả kháng phải không chậm chễ, thông báo cho bên kia tình trạng thực tế, đề xuất phương án xử lý và nỗ lực giảm thiểu tổn thất, thiệt hại đến mức thấp nhất có thể.</p>
+    <p class="extracted-contracts-print-384165b6">3. Trừ trường hợp bất khả kháng, hai bên phải thực hiện đầy đủ và đúng thời hạn các nội dung của hợp đồng này. Trong quá trình thực hiện hợp đồng, nếu có vướng mắc từ bất kỳ bên nào, hai bên sẽ cùng nhau giải quyết trên tinh thần hợp tác. Trong trường hợp không tự giải quyết được, hai bên thống nhất đưa ra giải quyết tại Tòa án có thẩm quyền. Phán quyết của tòa án là quyết định cuối cùng, có giá trị ràng buộc các bên. Bên thua phải chịu toàn bộ các chi phí giải quyết tranh chấp.</p>
 
     <!-- ĐIỀU 9 -->
-    <h4 style="margin: 20px 0 10px 0;">Điều 9. Điều khoản chung</h4>
-    <p style="margin: 5px 0; text-indent: 20px;">1. Hợp đồng này có hiệu lực từ ngày ký và tự động thanh lý hợp đồng kể từ khi Bên B đã nhận đủ hàng và Bên A đã nhận đủ tiền.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">2. Hợp đồng này có giá trị thay thế mọi giao dịch, thỏa thuận trước đây của hai bên. Mọi sự bổ sung, sửa đổi hợp đồng này đều phải có sự đồng ý bằng văn bản của hai bên.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">3. Trừ các trường hợp được quy định ở trên, hợp đồng này không thể bị hủy bỏ nếu không có thỏa thuận bằng văn bản của các bên. Trong trường hợp hủy hợp đồng, trách nhiệm liên quan tới phạt vi phạm hợp đồng và bồi thường thiệt hại được bảo lưu.</p>
-    <p style="margin: 5px 0; text-indent: 20px;">
+    <h4 class="extracted-contracts-print-da18188d">Điều 9. Điều khoản chung</h4>
+    <p class="extracted-contracts-print-384165b6">1. Hợp đồng này có hiệu lực từ ngày ký và tự động thanh lý hợp đồng kể từ khi Bên B đã nhận đủ hàng và Bên A đã nhận đủ tiền.</p>
+    <p class="extracted-contracts-print-384165b6">2. Hợp đồng này có giá trị thay thế mọi giao dịch, thỏa thuận trước đây của hai bên. Mọi sự bổ sung, sửa đổi hợp đồng này đều phải có sự đồng ý bằng văn bản của hai bên.</p>
+    <p class="extracted-contracts-print-384165b6">3. Trừ các trường hợp được quy định ở trên, hợp đồng này không thể bị hủy bỏ nếu không có thỏa thuận bằng văn bản của các bên. Trong trường hợp hủy hợp đồng, trách nhiệm liên quan tới phạt vi phạm hợp đồng và bồi thường thiệt hại được bảo lưu.</p>
+    <p class="extracted-contracts-print-384165b6">
         4. Hợp đồng này được lập thành
         <span th:text="${contract.contractCopies != null ? contract.contractCopies : '…'}">…</span> bản, có giá trị như nhau.
         Mỗi bên giữ <span th:text="${contract.copiesPerParty != null ? contract.copiesPerParty : '…'}">…</span> bản và có giá trị pháp lý như nhau.
@@ -313,12 +314,12 @@
     <div class="signatures-container">
         <div class="signature-box">
             <!-- Thiết lập margin-bottom: 60px để thu nhỏ khoảng trống ký tên vừa vặn -->
-            <div class="title" style="margin-bottom: 60px;">ĐẠI DIỆN BÊN A</div>
+            <div class="title extracted-contracts-print-568af329">ĐẠI DIỆN BÊN A</div>
             <div class="name" th:text="${contract.sellerRepresentativeName}"></div>
         </div>
         <div class="signature-box">
             <!-- Thiết lập margin-bottom: 60px để thu nhỏ khoảng trống ký tên vừa vặn -->
-            <div class="title" style="margin-bottom: 60px;">ĐẠI DIỆN BÊN B</div>
+            <div class="title extracted-contracts-print-568af329">ĐẠI DIỆN BÊN B</div>
             <div class="name" th:text="${buyerRepresentativeName}"></div>
         </div>
     </div>

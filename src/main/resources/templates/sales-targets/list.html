@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/shared/main.css}">
     <link rel="stylesheet" th:href="@{/css/roles/sales/crm.css}">
+    <link rel="stylesheet" th:href="@{/css/roles/sales/targets.css}">
 </head>
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>
@@ -108,15 +109,15 @@
                                 <input type="hidden" name="saleEmployeeId" th:value="${target.saleEmployeeId}">
                                 <input type="hidden" name="targetYear" th:value="${periodYear}">
                                 <input type="hidden" name="targetMonth" th:value="${periodMonth}">
-                                <label class="rule-field" style="min-width: 150px;">
+                                <label class="rule-field extracted-sales-targets-list-c0b1063f">
                                     <span>Target</span>
                                     <input type="number" name="targetAmount" min="0" step="1000000" th:value="${target.targetAmount}" required>
                                 </label>
-                                <label class="rule-field" style="min-width: 120px;">
+                                <label class="rule-field extracted-sales-targets-list-cec9e9ea">
                                     <span>Thưởng (%)</span>
                                     <input type="number" name="bonusRate" min="0" max="100" step="0.01" th:value="${target.bonusRate}" required>
                                 </label>
-                                <label class="rule-field" style="min-width: 180px;">
+                                <label class="rule-field extracted-sales-targets-list-d369d47a">
                                     <span>Ghi chú</span>
                                     <input type="text" name="note" th:value="${target.note}">
                                 </label>
