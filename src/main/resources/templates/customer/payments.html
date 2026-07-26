@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/main.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/main.css}">
     <style>
         body {
             font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -27,10 +27,10 @@
             Có lỗi xảy ra.
         </div>
         <div th:if="${param.payment != null and param.payment[0] == 'success'}" class="alert alert-success">
-            Thanh toán thành công. Hóa đơn đã được cập nhật.
+            Thanh toán đã được ghi nhận và đang chờ kế toán xác nhận.
         </div>
         <div th:if="${param.payment != null and param.payment[0] == 'processing'}" class="alert alert-info">
-            Kết quả đang được xác nhận qua VNPAY IPN. Vui lòng tải lại trang sau vài giây.
+Kết quả thanh toán đã được ghi nhận và đang chờ kế toán xử lý/đối soát.
         </div>
         <div th:if="${param.payment != null and param.payment[0] == 'failed'}" class="alert alert-warning">
             Giao dịch không thành công hoặc đã bị hủy.
@@ -50,6 +50,7 @@
                     <td>
                         <span th:if="${invoice.status.name() == 'DRAFT'}" class="badge text-bg-secondary">Chờ phát hành</span>
                         <span th:if="${invoice.status.name() == 'ISSUED'}" class="badge text-bg-warning">Chờ thanh toán</span>
+                        <span th:if="${invoice.status.name() == 'PAYMENT_PENDING'}" class="badge text-bg-info">Đang xử lý thanh toán</span>
                         <span th:if="${invoice.status.name() == 'PARTIALLY_PAID'}" class="badge text-bg-info">Thanh toán một phần</span>
                         <span th:if="${invoice.status.name() == 'PAID'}" class="badge text-bg-success">Đã thanh toán</span>
                         <span th:if="${invoice.status.name() == 'CANCELLED'}" class="badge text-bg-danger">Đã hủy</span>
@@ -61,19 +62,19 @@
                                 Chi tiết
                             </a>
                             <form th:if="${invoice.status.name() == 'ISSUED'}"
-                              th:action="@{/customer/portal/payments/{id}/pay(id=${invoice.id})}" method="post">
-                            <button class="btn btn-primary" type="submit">Thanh toán VNPAY</button>
-                        </form>
-                        <button th:if="${invoice.status.name() == 'DRAFT'}"
-                                class="btn btn-outline-secondary"
-                                type="button"
-                                disabled>
-                            Chờ kế toán phát hành
-                        </button>
-                        <a class="btn btn-outline-secondary"
-                           th:href="@{/customer/portal/payments/{id}/support(id=${invoice.id})}">
-                            Trợ giúp
-                        </a>
+                                  th:action="@{/customer/portal/payments/{id}/pay(id=${invoice.id})}" method="post">
+                                <button class="btn btn-primary" type="submit">Thanh toán VNPAY</button>
+                            </form>
+                            <button th:if="${invoice.status.name() == 'DRAFT'}"
+                                    class="btn btn-outline-secondary"
+                                    type="button"
+                                    disabled>
+                                Chờ kế toán phát hành
+                            </button>
+                            <a class="btn btn-outline-secondary"
+                               th:href="@{/customer/portal/payments/{id}/support(id=${invoice.id})}">
+                                Trợ giúp
+                            </a>
                         </div>
                     </td>
                 </tr>
@@ -85,3 +86,7 @@
 </main>
 </body>
 </html>
+
+
+
+

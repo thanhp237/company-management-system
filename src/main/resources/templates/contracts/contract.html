@@ -11,8 +11,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/main.css}">
-    <link rel="stylesheet" th:href="@{/css/contract.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/main.css}">
+    <link rel="stylesheet" th:href="@{/css/roles/sales/contract.css}">
+    <style>
+        body:not(.print-body) .sidebar {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        body:not(.print-body) .contract-workspace {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            min-height: calc(100vh - 72px) !important;
+            padding: 28px 22px 42px !important;
+            transform: none !important;
+        }
+        body:not(.print-body) .contract-detail-page,
+        body:not(.print-body) .contract-detail-layout,
+        body:not(.print-body) .contract-detail-main,
+        body:not(.print-body) .contract-detail-side,
+        body:not(.print-body) .contract-detail-card,
+        body:not(.print-body) .contract-action-card,
+        body:not(.print-body) .contract-summary-card {
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    </style>
 </head>
 <body>
 <th:block th:insert="~{layouts/navbar}"></th:block>
@@ -42,9 +68,8 @@
             </a>
 
             <!-- Nhãn hiển thị trạng thái cũ giữ nguyên -->
-            <span class="contract-status detail"
-                  th:classappend="${statusClasses[contract.status] != null ? statusClasses[contract.status] : ' draft'}"
-                  th:text="${contract.status == 'DRAFT' ? 'Bản nháp' : (contract.status == 'PENDING_ADMIN_OFFICER' ? 'Chờ hành chính hợp đồng' : (contract.status == 'ADMIN_REVIEWED' ? 'Đã duyệt điều khoản' : (contract.status == 'SENT_TO_CUSTOMER' ? 'Đã gửi khách hàng' : (contract.status == 'REVISION_REQUESTED' ? 'Khách yêu cầu chỉnh sửa' : (contract.status == 'SIGNED' ? 'Đã ký' : (contract.status == 'CANCELLED' ? 'Đã hủy' : contract.status))))))}">Bản nháp</span>
+            <span class="contract-status detail draft"
+                  th:text="${contract.status == 'DRAFT' ? 'Bản nháp' : contract.status}">Bản nháp</span>
         </div>
 
         <div th:if="${successMessage}" class="management-alert success">
@@ -125,7 +150,6 @@
                         </div>
                     </div>
                 </section>
-
                 <form class="contract-detail-card contract-rule-form"
                       th:if="${contract.status == 'DRAFT'}"
                       sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
@@ -141,6 +165,18 @@
                         Sản phẩm và giá trị vẫn lấy từ báo giá.
                     </p>
 
+                    <div class="contract-form-action-strip">
+                        <button class="contract-primary-button" type="submit">
+                            <i class="fas fa-floppy-disk"></i>
+                            <span>Lưu thông tin nháp</span>
+                        </button>
+                        <button class="contract-primary-button submit-admin" type="submit"
+                                th:formaction="@{/contracts/{id}/submit-admin(id=${contract.id})}"
+                                formmethod="post">
+                            <i class="fas fa-user-shield"></i>
+                            <span>Lưu &amp; gửi Admin Office</span>
+                        </button>
+                    </div>
                     <div class="contract-rule-section">
                         <h3>Thông tin doanh nghiệp / khách hàng</h3>
                         <div class="contract-rule-grid">
@@ -196,7 +232,7 @@
                             </label>
                             <label>
                                 <span>Ngày cấp</span>
-                                <input type="date" th:field="*{buyerIdentityIssuedDate}" th:attr="max=${T(java.time.LocalDate).now()}">
+                                <input type="date" th:field="*{buyerIdentityIssuedDate}" th:attr="max=${maxIdentityIssuedDate}">
                             </label>
                             <label>
                                 <span>Nơi ký dự kiến</span>
@@ -214,6 +250,7 @@
                         <span>Lưu thông tin nháp</span>
                     </button>
                 </form>
+
 
                 <section class="contract-detail-card">
                     <div class="contract-card-title">
@@ -413,7 +450,7 @@
                             </label>
                             <label>
                                 <span>Ngày cấp</span>
-                                <input type="date" th:field="*{sellerIdentityIssuedDate}" th:attr="max=${T(java.time.LocalDate).now()}" required>
+                                <input type="date" th:field="*{sellerIdentityIssuedDate}" th:attr="max=${maxIdentityIssuedDate}" required>
                             </label>
                             <label class="wide">
                                 <span>Giấy ủy quyền</span>
@@ -471,7 +508,7 @@
                             </label>
                             <label>
                                 <span>Ngày cấp</span>
-                                <input type="date" th:field="*{buyerIdentityIssuedDate}" th:attr="max=${T(java.time.LocalDate).now()}" required>
+                                <input type="date" th:field="*{buyerIdentityIssuedDate}" th:attr="max=${maxIdentityIssuedDate}" required>
                             </label>
                             <label class="wide">
                                 <span>Giấy ủy quyền</span>
@@ -589,13 +626,6 @@
             <aside class="contract-detail-side">
                 <section class="contract-action-card">
                     <h2>Thao tác nhanh</h2>
-                    <form th:if="${contract.status == 'DRAFT'}"
-                          sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
-                          th:action="@{/contracts/{id}/submit-admin(id=${contract.id})}"
-                          method="post"
-                          onsubmit="return confirm('Bạn đã lưu/xác nhận thông tin bên mua trước khi gửi hành chính hợp đồng?');">
-                        <button type="submit"><i class="fas fa-user-shield"></i> Gửi hành chính hợp đồng</button>
-                    </form>
 
                     <form th:if="${contract.status == 'ADMIN_REVIEWED'}"
                           sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
@@ -696,3 +726,5 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+

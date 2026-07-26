@@ -156,10 +156,19 @@ public class CustomerReportScopeService {
     }
 
     public boolean canViewContract(Long contractId, Authentication authentication) {
+        User user = currentUser(authentication);
+        String roleCode = roleCode(user);
+        if ("ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode) || "ACCOUNTANT".equals(roleCode)) {
+            return true;
+        }
+
+        Employee employee = currentEmployee(authentication);
+        if (employee == null) {
+            return false;
+        }
+
         return contractRepository.findById(contractId)
-                .map(contract -> contract.getCustomer() != null
-                        && visibleContracts(contract.getCustomer().getId(), authentication).stream()
-                                .anyMatch(scopedContract -> Objects.equals(scopedContract.getId(), contractId)))
+                .map(contract -> canViewScopedContract(contract, user, employee, roleCode))
                 .orElse(false);
     }
 
@@ -229,6 +238,36 @@ public class CustomerReportScopeService {
         return userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(user.getDepartmentId())
                 .stream()
                 .filter(deptUser -> "SALES".equals(roleCode(deptUser)))
+                .map(User::getEmployee)
+                .filter(employee -> employee != null && employee.getId() != null)
+                .map(Employee::getId)
+                .toList();
+    }
+
+    private boolean canViewScopedContract(Contract contract, User user, Employee employee, String roleCode) {
+        if ("SALES".equals(roleCode)) {
+            return contract.getSale() != null && Objects.equals(contract.getSale().getId(), employee.getId());
+        }
+        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+            List<Long> employeeIds = departmentEmployeeIds(user);
+            return !employeeIds.isEmpty()
+                    && ((contract.getSale() != null && employeeIds.contains(contract.getSale().getId()))
+                    || (contract.getAdminOfficer() != null && employeeIds.contains(contract.getAdminOfficer().getId())));
+        }
+        if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
+            return (contract.getAdminOfficer() != null && Objects.equals(contract.getAdminOfficer().getId(), employee.getId()))
+                    || ADMIN_OFFICER_POOLED_STATUSES.contains(contract.getStatus());
+        }
+
+        return false;
+    }
+
+    private List<Long> departmentEmployeeIds(User user) {
+        if (user == null || user.getDepartmentId() == null) {
+            return List.of();
+        }
+        return userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(user.getDepartmentId())
+                .stream()
                 .map(User::getEmployee)
                 .filter(employee -> employee != null && employee.getId() != null)
                 .map(Employee::getId)

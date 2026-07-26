@@ -17,5 +17,6 @@ public class PaymentTransaction {
     private String responseCode;
     @Builder.Default private LocalDateTime createdAt=LocalDateTime.now();
     private LocalDateTime completedAt;
-    public enum Status { PENDING, SUCCESS, FAILED }
+    public enum Status { PENDING, SUCCESS_PENDING_REVIEW, SUCCESS, FAILED }
 }
+

@@ -15,8 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- Link CSS dùng chung -->
-    <link rel="stylesheet" th:href="@{/main.css}">
-    <link rel="stylesheet" th:href="@{/css/invoice.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/main.css}">
+    <link rel="stylesheet" th:href="@{/css/roles/accountant/invoice.css}">
 </head>
 <body>
 
@@ -97,6 +97,7 @@
                         <option value="">Tất cả</option>
                         <option value="DRAFT" th:selected="${status == 'DRAFT'}">Bản nháp</option>
                         <option value="ISSUED" th:selected="${status == 'ISSUED'}">Đã chốt</option>
+                        <option value="PAYMENT_PENDING" th:selected="${status == 'PAYMENT_PENDING'}">Đang xử lý thanh toán</option>
                         <option value="PAID" th:selected="${status == 'PAID'}">Đã thanh toán</option>
                         <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">Đã hủy</option>
                     </select>
@@ -176,6 +177,7 @@
                             <span th:if="${invoice.status.name() == 'DRAFT'}" class="status-badge st-draft">Bản nháp</span>
                             <!-- Trạng thái chốt -->
                             <span th:if="${invoice.status.name() == 'ISSUED'}" class="status-badge st-issued">Đã phát hành</span>
+                            <span th:if="${invoice.status.name() == 'PAYMENT_PENDING'}" class="status-badge st-issued">Đang xử lý thanh toán</span>
                             <!-- Trạng thái đã thanh toán -->
                             <span th:if="${invoice.status.name() == 'PAID'}" class="status-badge st-paid">Đã thanh toán</span>
                             <!-- Trạng thái hủy -->
@@ -192,6 +194,11 @@
                                 <a th:href="@{/invoices/detail/{id}(id=${invoice.id})}" class="icon-action" title="Xem chi tiết">
                                     <i class="fa-regular fa-eye"></i>
                                 </a>
+                                <form th:if="${invoice.status.name() == 'PAYMENT_PENDING'}" th:action="@{/invoices/{id}/confirm-payment(id=${invoice.id})}" method="post" style="display: inline;" onsubmit="return confirm('Xác nhận hoàn tất thanh toán hóa đơn này?')">
+                                    <button type="submit" class="icon-action" title="Xác nhận thanh toán">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    </button>
+                                </form>
                                 <!-- Nút xóa bản nháp (Chỉ hiển thị và hoạt động khi hóa đơn là DRAFT) -->
                                 <th:block th:if="${invoice.status.name() == 'DRAFT'}">
                                     <a th:href="@{/invoices/edit/{id}(id=${invoice.id})}" class="icon-action" title="Chỉnh sửa hóa đơn nháp">
@@ -222,3 +229,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+
+

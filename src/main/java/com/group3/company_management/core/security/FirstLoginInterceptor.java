@@ -44,7 +44,7 @@ public class FirstLoginInterceptor implements HandlerInterceptor {
             requestURI.startsWith("/images/") || 
             requestURI.startsWith("/uploads/") || 
             requestURI.startsWith("/webjars/") || 
-            requestURI.equals("/main.css") ||
+            requestURI.equals("/css/shared/main.css") ||
             requestURI.startsWith("/api/")) {
             return true;
         }
@@ -65,3 +65,4 @@ public class FirstLoginInterceptor implements HandlerInterceptor {
         return true;
     }
 }
+

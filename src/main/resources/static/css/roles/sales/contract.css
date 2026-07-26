@@ -492,6 +492,21 @@
     line-height: 1.55;
 }
 
+.contract-form-action-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 18px;
+}
+
+.contract-form-action-strip .contract-primary-button {
+    margin-top: 0;
+}
+
+.contract-primary-button.submit-admin {
+    background: #0f5f9f;
+}
+
 .contract-rule-grid .wide {
     grid-column: span 2;
 }

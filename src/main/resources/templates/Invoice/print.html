@@ -349,7 +349,7 @@
             <td class="label">1. Tổng giá trị sản phẩm hợp đồng (Tạm tính):</td>
             <td class="value" th:text="${invoice.contract.contractAmount != null ? #numbers.formatDecimal(invoice.contract.contractAmount, 0, 'POINT', 0, 'COMMA') + ' đ' : '0 đ'}">0 đ</td>
         </tr>
-        <tr th:if="${invoice.contract.discountAmount != null && invoice.contract.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+        <tr th:if="${invoice.contract.discountAmount != null && invoice.contract.discountAmount > 0}">
             <td class="label" style="color: #dc2626;">2. Giảm giá Voucher:</td>
             <td class="value" style="color: #dc2626;" th:text="${'-' + #numbers.formatDecimal(invoice.contract.discountAmount, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</td>
         </tr>
