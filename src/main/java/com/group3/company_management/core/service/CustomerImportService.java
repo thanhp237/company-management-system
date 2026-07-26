@@ -13,12 +13,18 @@ import java.util.List;
 public interface CustomerImportService {
     void importCustomer(MultipartFile file,String name);
     List<User> findSale(String roleName);
+    List<User> findSale(String roleName, org.springframework.security.core.Authentication authentication);
     public Customer findCustomerById(Long id);
     public User findUser(Long id);
     void assignCustomersToSale(List<Long> customerIds, Long saleId);
     Page<Customer> allCustomer(String status, Pageable pageable);
+    Page<Customer> allCustomer(String status, Pageable pageable, org.springframework.security.core.Authentication authentication);
 
     long countTotalCustomers();
     long countUnassignedCustomers();
     long countAssignedCustomers();
+
+    long countTotalCustomers(org.springframework.security.core.Authentication authentication);
+    long countUnassignedCustomers(org.springframework.security.core.Authentication authentication);
+    long countAssignedCustomers(org.springframework.security.core.Authentication authentication);
 }

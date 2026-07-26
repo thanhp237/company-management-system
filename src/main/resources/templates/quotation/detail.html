@@ -254,6 +254,13 @@
                 <section class="contract-action-card">
                     <h2>Thao tác nhanh</h2>
 
+                    <a th:if="${quotation.status != null and #strings.toUpperCase(quotation.status) == 'DRAFT'}"
+                       th:href="@{/quotation/edit/{id}(id=${quotation.id})}"
+                       style="display: flex; align-items: center; justify-content: center; gap: 8px; border: none; background: #f59e0b; color: #fff; border-radius: 8px; padding: 9px 14px; text-decoration: none; font-size: 14px; font-weight: 700; margin-bottom: 8px;">
+                        <i class="fas fa-edit"></i>
+                        Sửa báo giá
+                    </a>
+
                     <form th:if="${quotation.status != null and #strings.toUpperCase(quotation.status) == 'DRAFT'}"
                           th:action="@{/quotation/{id}/accept(id=${quotation.id})}"
                           method="post"

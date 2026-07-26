@@ -42,10 +42,10 @@ public class DepartmentController {
     public String getListDepartment(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(defaultValue = "all") String status,
-            @RequestParam(defaultValue = "0")int page,
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            Model model){
-        Pageable  pageable = PageRequest.of(page,size, Sort.by("id").ascending());
+            Model model) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<DepartmentResponse> departmentPage = departmentService.search(keyword, status, pageable);
 
         model.addAttribute("departments", departmentPage);
@@ -86,9 +86,12 @@ public class DepartmentController {
     @PreAuthorize("hasAnyRole('ADMIN')")
     public String saveDepartment(@ModelAttribute("department") DepartmentRequest departmentRequest,
                                  Authentication authentication,
+                                 org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes,
                                  Model model) {
         try {
             departmentService.saveDepartment(departmentRequest, authentication.getName());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    departmentRequest.getId() == null ? "Thêm phòng ban mới thành công!" : "Cập nhật thông tin phòng ban thành công!");
             return "redirect:/departments";
         } catch (RuntimeException e) {
             model.addAttribute("err", e.getMessage());

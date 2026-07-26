@@ -69,14 +69,18 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold m-0" style="color: #111827;">Tạo Báo Giá Mới</h2>
-            <p class="text-muted m-0 small">Chọn các sản phẩm và áp dụng voucher cho khách hàng.</p>
+            <h2 class="fw-bold m-0" style="color: #111827;" th:text="${isEdit != null and isEdit} ? 'Chỉnh Sửa Báo Giá' : 'Tạo Báo Giá Mới'">Tạo Báo Giá Mới</h2>
+            <p class="text-muted m-0 small" th:text="${isEdit != null and isEdit} ? 'Cập nhật sản phẩm, số lượng, voucher và điều khoản của báo giá nháp.' : 'Chọn các sản phẩm và áp dụng voucher cho khách hàng.'">Chọn các sản phẩm và áp dụng voucher cho khách hàng.</p>
         </div>
     </div>
 
+    <div th:if="${errorMessage}" class="alert alert-danger mb-4">
+        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+        <span th:text="${errorMessage}">Có lỗi xảy ra.</span>
+    </div>
 
-    <!-- Form gửi trực tiếp dữ liệu về Server (Không cần Javascript) -->
-    <form th:action="@{/quotation/save}" th:object="${quotationRequest}" method="post">
+    <!-- Form gửi trực tiếp dữ liệu về Server -->
+    <form th:action="${isEdit != null and isEdit} ? @{/quotation/update/{id}(id=${quotationId})} : @{/quotation/save}" th:object="${quotationRequest}" method="post">
         <input type="hidden" th:field="*{customerId}">
         <input type="hidden" th:field="*{opportunityId}">
         <input type="hidden" th:field="*{quotationCode}">
@@ -256,10 +260,11 @@
 
         <!-- ĐIỀU HƯỚNG -->
         <div class="d-flex justify-content-end gap-2">
-
-            <a th:href="@{/customers}" class="btn btn-secondary px-4">Hủy bỏ</a>
-            <button type="submit" class="btn btn-success px-4">Lưu báo giá</button>
-
+            <a th:if="${isEdit != null and isEdit}" th:href="@{/quotation/detail/{id}(id=${quotationId})}" class="btn btn-secondary px-4">Hủy bỏ</a>
+            <a th:if="${isEdit == null or !isEdit}" th:href="@{/customers}" class="btn btn-secondary px-4">Hủy bỏ</a>
+            <button type="submit"
+                    th:class="${isEdit != null and isEdit} ? 'btn btn-warning px-4 text-white fw-bold' : 'btn btn-success px-4'"
+                    th:text="${isEdit != null and isEdit} ? 'Cập nhật báo giá' : 'Lưu báo giá'">Lưu báo giá</button>
         </div>
     </form>
 </div>

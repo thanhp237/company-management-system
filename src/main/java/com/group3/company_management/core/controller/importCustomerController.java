@@ -48,7 +48,7 @@ public class importCustomerController {
                 : Sort.by("createdAt").descending();
 
         Pageable pageable = PageRequest.of(page, size, sortObj);
-        Page<Customer> customerPage = customerImportService.allCustomer(status, pageable);
+        Page<Customer> customerPage = customerImportService.allCustomer(status, pageable, authentication);
         addCommonAttributes(model, customerPage, page, size, status, sort, authentication);
         return "lead/import";
     }
@@ -73,7 +73,7 @@ public class importCustomerController {
                     ? Sort.by("createdAt").ascending()
                     : Sort.by("createdAt").descending();
             Pageable pageable = PageRequest.of(page, size, sortObj);
-            Page<Customer> customerPage = customerImportService.allCustomer(status, pageable);
+            Page<Customer> customerPage = customerImportService.allCustomer(status, pageable, authentication);
             addCommonAttributes(model, customerPage, page, size, status, sort, authentication);
             return "lead/import";
         }
@@ -81,7 +81,7 @@ public class importCustomerController {
 
         Sort sortObj = Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(0, size, sortObj);
-        Page<Customer> customerPage = customerImportService.allCustomer("all", pageable);
+        Page<Customer> customerPage = customerImportService.allCustomer("all", pageable, authentication);
         addCommonAttributes(model, customerPage, 0, size, "all", "newest", authentication);
 
         return "lead/import";
@@ -105,7 +105,7 @@ public class importCustomerController {
                 ? Sort.by("createdAt").ascending()
                 : Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page, size, sortObj);
-        Page<Customer> customerPage = customerImportService.allCustomer(status, pageable);
+        Page<Customer> customerPage = customerImportService.allCustomer(status, pageable, authentication);
 
         model.addAttribute("nameSale", name);
         addCommonAttributes(model, customerPage, page, size, status, sort, authentication);
@@ -146,15 +146,15 @@ public class importCustomerController {
     private void addCommonAttributes(Model model, Page<Customer> customerPage, int page, int size, String status, String sort, Authentication authentication) {
         model.addAttribute("customerPage", customerPage);
         model.addAttribute("customer", customerPage.getContent());
-        model.addAttribute("sales", customerImportService.findSale("Sales Staff"));
+        model.addAttribute("sales", customerImportService.findSale("Sales Staff", authentication));
         model.addAttribute("currentPage", page);
         model.addAttribute("size", size);
         model.addAttribute("currentStatus", status);
         model.addAttribute("currentSort", sort);
 
-        model.addAttribute("totalCustomers", customerImportService.countTotalCustomers());
-        model.addAttribute("unassignedCustomers", customerImportService.countUnassignedCustomers());
-        model.addAttribute("assignedCustomers", customerImportService.countAssignedCustomers());
+        model.addAttribute("totalCustomers", customerImportService.countTotalCustomers(authentication));
+        model.addAttribute("unassignedCustomers", customerImportService.countUnassignedCustomers(authentication));
+        model.addAttribute("assignedCustomers", customerImportService.countAssignedCustomers(authentication));
         if (canViewTargets(authentication)) {
             model.addAttribute("targetSummaries", salesTargetService.getTargetSummaries(authentication.getName(), YearMonth.now()));
         }

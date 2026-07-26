@@ -7,6 +7,8 @@ public interface QuotationService {
 
     Long createQuotation(QuotationRequest request, String username);
 
+    Long updateQuotation(Long id, QuotationRequest request, String username);
+
     QuotationResponse getQuotationDetail(Long id);
 
     void acceptQuotation(Long id, String username);

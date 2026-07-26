@@ -79,7 +79,7 @@ public class QuotationController {
 
         model.addAttribute("salesPerson", authentication != null ? authentication.getName() : "");
         model.addAttribute("status", "Draft");
-
+        model.addAttribute("isEdit", false);
 
         return "quotation/create";
     }
@@ -98,6 +98,89 @@ public class QuotationController {
                     + (request.getOpportunityId() == null ? "" : "?opportunityId=" + request.getOpportunityId());
         }
 
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editPage(@PathVariable Long id,
+                           Authentication authentication,
+                           Model model,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            QuotationResponse quotation = quotationService.getQuotationDetail(id);
+
+            if (quotation.getStatus() == null || !"DRAFT".equalsIgnoreCase(quotation.getStatus())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Chỉ báo giá ở trạng thái nháp (DRAFT) mới có thể chỉnh sửa.");
+                return "redirect:/quotation/detail/" + id;
+            }
+
+            Customer customer = customerRepository.findById(quotation.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khách hàng"));
+
+            QuotationRequest quotationRequest = new QuotationRequest();
+            quotationRequest.setCustomerId(quotation.getCustomerId());
+            quotationRequest.setOpportunityId(quotation.getOpportunityId());
+            quotationRequest.setQuotationCode(quotation.getQuotationCode());
+            quotationRequest.setValidUntil(quotation.getValidUntil());
+            quotationRequest.setVoucherId(quotation.getVoucherId());
+            quotationRequest.setNote(quotation.getNote());
+            quotationRequest.setStatus(quotation.getStatus());
+
+            List<Product> products = productRepository.findByActiveTrue();
+            List<QuotationDetailRequest> details = new ArrayList<>();
+
+            for (Product p : products) {
+                QuotationDetailRequest item = new QuotationDetailRequest();
+                item.setProductId(p.getId());
+
+                Optional<com.group3.company_management.core.dto.QuotationDetailResponse> existingDetail =
+                        quotation.getDetails() != null ?
+                        quotation.getDetails().stream()
+                                .filter(d -> d.getProductId() != null && d.getProductId().equals(p.getId()))
+                                .findFirst() : Optional.empty();
+
+                if (existingDetail.isPresent()) {
+                    item.setSelected(true);
+                    item.setQuantity(existingDetail.get().getQuantity() != null ? existingDetail.get().getQuantity() : 1);
+                } else {
+                    item.setSelected(false);
+                    item.setQuantity(1);
+                }
+                details.add(item);
+            }
+            quotationRequest.setDetails(details);
+
+            model.addAttribute("vouchers", voucherRepository.findUsableVouchers(LocalDateTime.now()));
+            model.addAttribute("quotationRequest", quotationRequest);
+            model.addAttribute("quotationId", id);
+            model.addAttribute("customer", customer);
+            model.addAttribute("products", products);
+            model.addAttribute("quotationCode", quotation.getQuotationCode());
+            model.addAttribute("opportunities", opportunityRepository.findFirstOpportunityByCustomerId(quotation.getCustomerId()));
+            model.addAttribute("quotationDate", quotation.getCreatedAt() != null ? quotation.getCreatedAt().toLocalDate() : LocalDate.now());
+            model.addAttribute("salesPerson", authentication != null ? authentication.getName() : "");
+            model.addAttribute("status", quotation.getStatus());
+            model.addAttribute("isEdit", true);
+
+            return "quotation/create";
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/quotation/detail/" + id;
+        }
+    }
+
+    @PostMapping("/update/{id}")
+    public String update(@PathVariable Long id,
+                         @ModelAttribute("quotationRequest") QuotationRequest request,
+                         Authentication authentication,
+                         RedirectAttributes redirectAttributes) {
+        try {
+            Long quotationId = quotationService.updateQuotation(id, request, authentication.getName());
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật báo giá thành công.");
+            return "redirect:/quotation/detail/" + quotationId;
+        } catch (RuntimeException exception) {
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/quotation/edit/" + id;
+        }
     }
 
     @GetMapping("/detail/{id}")

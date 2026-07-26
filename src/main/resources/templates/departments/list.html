@@ -41,6 +41,11 @@
             </a>
         </div>
 
+        <div class="alert alert-success d-flex align-items-center gap-2 mb-3" th:if="${successMessage}">
+            <i class="fa-solid fa-circle-check"></i>
+            <span th:text="${successMessage}">Thao tác thành công</span>
+        </div>
+
         <form class="management-filterbar user-filterbar" th:action="@{/departments}" method="get">
             <label>
                 <span>Tìm kiếm</span>

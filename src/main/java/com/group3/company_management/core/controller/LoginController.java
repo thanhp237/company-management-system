@@ -56,12 +56,4 @@ public class LoginController {
         
         return "auth/login"; // customuserdetailsservice will get the username and password from the form and authenticate before redirecting to LoginController
     }
-
-    @GetMapping("/forgot-password")
-    public String showForgotPasswordPage(Model model) {
-        model.addAttribute("title", "Quên mật khẩu");
-        return "auth/forgot-password";
-    }
-    
-
 }

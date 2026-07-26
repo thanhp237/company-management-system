@@ -137,9 +137,50 @@ public class CustomerImportServiceImpl implements CustomerImportService {
         } else if ("assigned".equalsIgnoreCase(status)) {
             return leadRepository.findByAssignedSalesIdIsNotNull(pageable);
         }
-        return leadRepository.findAll(pageable);
+        return leadRepository.findAllOrderUnassignedFirst(pageable);
     }
 
+    private List<Long> getDepartmentSaleUserIds(org.springframework.security.core.Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return null;
+        }
+        String username = authentication.getName();
+        String role = authentication.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElse("");
+
+        if ("SALES_MANAGER".equals(role) || "MANAGER".equals(role)) {
+            User currentManager = userRepository.findByUsername(username).orElse(null);
+            if (currentManager != null && currentManager.getDepartmentId() != null) {
+                Long deptId = currentManager.getDepartmentId();
+                return userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId)
+                        .stream()
+                        .map(User::getId)
+                        .toList();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Page<Customer> allCustomer(String status, Pageable pageable, org.springframework.security.core.Authentication authentication) {
+        List<Long> deptUserIds = getDepartmentSaleUserIds(authentication);
+        if (deptUserIds != null) {
+            if ("unassigned".equalsIgnoreCase(status)) {
+                return leadRepository.findByAssignedSalesIdIsNull(pageable);
+            } else if ("assigned".equalsIgnoreCase(status)) {
+                if (deptUserIds.isEmpty()) return Page.empty(pageable);
+                return leadRepository.findByAssignedSalesIdInOrderDesc(deptUserIds, pageable);
+            }
+            if (deptUserIds.isEmpty()) {
+                return leadRepository.findByAssignedSalesIdIsNull(pageable);
+            }
+            return leadRepository.findUnassignedOrAssignedSalesIdInOrderUnassignedFirst(deptUserIds, pageable);
+        }
+
+        return allCustomer(status, pageable);
+    }
 
     @Override
     public long countTotalCustomers() {
@@ -155,9 +196,57 @@ public class CustomerImportServiceImpl implements CustomerImportService {
     public long countAssignedCustomers() {
         return leadRepository.countByAssignedSalesIdIsNotNull();
     }
+
+    @Override
+    public long countTotalCustomers(org.springframework.security.core.Authentication authentication) {
+        List<Long> deptUserIds = getDepartmentSaleUserIds(authentication);
+        if (deptUserIds != null) {
+            if (deptUserIds.isEmpty()) {
+                return leadRepository.countByAssignedSalesIdIsNull();
+            }
+            return leadRepository.countUnassignedOrAssignedSalesIdIn(deptUserIds);
+        }
+        return countTotalCustomers();
+    }
+
+    @Override
+    public long countUnassignedCustomers(org.springframework.security.core.Authentication authentication) {
+        return countUnassignedCustomers();
+    }
+
+    @Override
+    public long countAssignedCustomers(org.springframework.security.core.Authentication authentication) {
+        List<Long> deptUserIds = getDepartmentSaleUserIds(authentication);
+        if (deptUserIds != null) {
+            if (deptUserIds.isEmpty()) return 0;
+            return leadRepository.countByAssignedSalesIdIn(deptUserIds);
+        }
+        return countAssignedCustomers();
+    }
+
     @Override
     public List<User> findSale(String roleName) {
         return userRepository.findByRole_RoleName(roleName);
+    }
+
+    @Override
+    public List<User> findSale(String roleName, org.springframework.security.core.Authentication authentication) {
+        List<Long> deptUserIds = getDepartmentSaleUserIds(authentication);
+        List<User> allSales = userRepository.findByRole_RoleName(roleName);
+        return allSales.stream()
+                .filter(u -> {
+                    if (u.getRole() != null) {
+                        String r = u.getRole().getRoleCode();
+                        if ("ADMIN".equalsIgnoreCase(r) || "DIRECTOR".equalsIgnoreCase(r) || "SALES_MANAGER".equalsIgnoreCase(r) || "MANAGER".equalsIgnoreCase(r) || "ADMIN_OFFICER".equalsIgnoreCase(r) || "ADMINOFFICER".equalsIgnoreCase(r)) {
+                            return false;
+                        }
+                    }
+                    if (deptUserIds != null) {
+                        return u.getDepartmentId() != null && deptUserIds.contains(u.getId());
+                    }
+                    return true;
+                })
+                .toList();
     }
     @Override
     public Customer findCustomerById(Long id) {

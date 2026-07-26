@@ -278,16 +278,28 @@
 
         .helper-row {
             display: flex;
-            justify-content: flex-end;
-            margin: 2px 0 18px;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0 18px;
+            width: 100%;
         }
 
         .helper-row a,
         .link-btn {
+            color: var(--green);
+            font-size: 13.5px;
+            font-weight: 800;
+            text-decoration: underline;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
+            padding: 4px 0;
+            transition: color 0.2s ease;
+        }
+
+        .helper-row a:hover,
+        .link-btn:hover {
             color: var(--green-dark);
-            font-size: 13px;
-            font-weight: 900;
-            text-decoration: none;
         }
 
         .submit-btn {
@@ -452,11 +464,12 @@
                 <i class="fa-solid fa-circle-exclamation"></i>
                 <span th:text="${customerError}">Email hoặc mật khẩu không đúng.</span>
             </div>
-            <div class="alert alert-success" data-alert-mode="customer" th:if="${customerLogout}">
+            <div class="alert alert-success" th:if="${successMessage}">
                 <i class="fa-solid fa-check-circle"></i>
-                <span th:text="${customerLogout}">Bạn đã đăng xuất thành công.</span>
+                <span th:text="${successMessage}">Thông báo thành công</span>
             </div>
 
+            <!-- Employee Form -->
             <form id="employee-form" class="login-form" method="post" th:action="@{/login}" data-mode="employee" novalidate>
                 <div class="form-group">
                     <label for="username">Tên đăng nhập</label>
@@ -474,8 +487,8 @@
                     </div>
                 </div>
 
-                <div class="helper-row">
-                    <a th:href="@{/change-password}">Đổi mật khẩu?</a>
+                <div class="helper-row" style="display: flex; justify-content: flex-end;">
+                    <a th:href="@{/forgot-password}">Quên mật khẩu?</a>
                 </div>
 
                 <button class="submit-btn" type="submit">
@@ -484,6 +497,7 @@
                 </button>
             </form>
 
+            <!-- Customer Form -->
             <form id="customer-form" class="login-form" method="post" th:action="@{/customer/login}" data-mode="customer" novalidate>
                 <div class="form-group">
                     <label for="email">Email khách hàng</label>
@@ -502,6 +516,7 @@
                 </div>
 
                 <div class="helper-row">
+                    <a th:href="@{/forgot-password}">Quên mật khẩu?</a>
                     <a class="link-btn" th:href="@{/login(mode='employee')}">Dùng tài khoản nhân viên</a>
                 </div>
 

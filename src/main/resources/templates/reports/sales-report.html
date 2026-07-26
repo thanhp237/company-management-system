@@ -423,6 +423,19 @@
 
                 <!-- Filter Controls Form -->
                 <form method="get" th:action="@{/reports/sales}" class="filter-form">
+                    <div class="date-input-group" th:if="${salesOptions != null and !salesOptions.isEmpty()}">
+                        <i class="fa-solid fa-user-tie text-success"></i>
+                        <label>Lọc Sale:</label>
+                        <select name="saleId" style="border: none; outline: none; font-size: 13px; font-weight: 600; color: var(--text-dark); background: transparent;">
+                            <option value="">-- Tất cả Sale --</option>
+                            <option th:each="s : ${salesOptions}"
+                                    th:value="${s.saleId}"
+                                    th:text="${s.fullName + ' (' + (s.employeeCode != null ? s.employeeCode : 'N/A') + ')'}"
+                                    th:selected="${selectedSaleId != null and selectedSaleId == s.saleId}">
+                            </option>
+                        </select>
+                    </div>
+
                     <div class="date-input-group">
                         <i class="fa-regular fa-calendar-minus text-success"></i>
                         <label>Từ ngày:</label>
@@ -438,10 +451,10 @@
                         <i class="fa-solid fa-filter"></i> Lọc dữ liệu
                     </button>
                     
-                    <a th:href="@{/reports/sales/export/excel(startDate=${startDate}, endDate=${endDate})}" class="btn-action btn-excel">
+                    <a th:href="@{/reports/sales/export/excel(startDate=${startDate}, endDate=${endDate}, saleId=${selectedSaleId})}" class="btn-action btn-excel">
                         <i class="fa-solid fa-file-excel"></i> Excel
                     </a>
-                    <a th:href="@{/reports/sales/export/pdf(startDate=${startDate}, endDate=${endDate})}" class="btn-action btn-pdf">
+                    <a th:href="@{/reports/sales/export/pdf(startDate=${startDate}, endDate=${endDate}, saleId=${selectedSaleId})}" class="btn-action btn-pdf">
                         <i class="fa-solid fa-file-pdf"></i> PDF
                     </a>
                 </form>
@@ -468,7 +481,7 @@
                 <!-- ==================== TAB 1: STATISTIC (THỐNG KÊ - BIỂU ĐỒ) ==================== -->
                 <div class="tab-pane fade show active" id="pane-statistic" role="tabpanel">
 
-                    <!-- 4 KPI Stat Cards -->
+                    <!-- KPI Stat Cards -->
                     <div class="kpi-grid">
                         <div class="kpi-card-custom">
                             <div class="kpi-head">
