@@ -47,8 +47,8 @@ public class SalesReportController {
             endDate = LocalDate.now();
         }
 
-        SalesSummaryDTO summary = reportService.getSalesSummary(startDate, endDate, authentication);
-        List<MonthlyRevenueDTO> chartData = reportService.getMonthlyRevenueChartData(authentication);
+        SalesSummaryDTO summary = reportService.getSalesSummary(startDate, endDate, saleId, authentication);
+        List<MonthlyRevenueDTO> chartData = reportService.getMonthlyRevenueChartData(saleId, authentication);
         List<SalesReportRowDTO> rows = reportService.getSalesReportRows(startDate, endDate, saleId, status, authentication);
 
         List<String> chartLabels = chartData.stream().map(MonthlyRevenueDTO::getMonthLabel).toList();
@@ -65,6 +65,8 @@ public class SalesReportController {
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("selectedStatus", status != null ? status : "ALL");
+        model.addAttribute("selectedSaleId", saleId);
+        model.addAttribute("salesOptions", reportService.getSalesOptionsForUser(authentication));
 
         return "reports/sales-report";
     }

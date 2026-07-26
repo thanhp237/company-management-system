@@ -66,32 +66,46 @@ public class ReportServiceImpl implements ReportService {
     private final UserRepository userRepository;
 
     @Override
-    public SalesSummaryDTO getSalesSummary(LocalDate startDate, LocalDate endDate, Authentication authentication) {
+    public SalesSummaryDTO getSalesSummary(LocalDate startDate, LocalDate endDate, Long saleIdFilter, Authentication authentication) {
         LocalDateTime startDT = startDate.atStartOfDay();
         LocalDateTime endDT = endDate.atTime(LocalTime.MAX);
 
-        List<Long> allowedSaleIds = resolveAllowedSaleIds(authentication);
+        List<Long> targetSaleIds = resolveTargetSaleIds(saleIdFilter, authentication);
 
         BigDecimal signedRevenue;
         List<Contract> contracts;
+        BigDecimal paidAmount;
+        BigDecimal outstandingAmount;
 
-        if (allowedSaleIds != null) {
-            if (allowedSaleIds.isEmpty()) {
+        if (targetSaleIds != null) {
+            if (targetSaleIds.isEmpty()) {
                 signedRevenue = BigDecimal.ZERO;
                 contracts = List.of();
+                paidAmount = BigDecimal.ZERO;
+                outstandingAmount = BigDecimal.ZERO;
             } else {
-                signedRevenue = contractRepository.sumFinalAmountBySaleIdInAndStatusAndCreatedAtBetween(allowedSaleIds, Contract.ContractStatus.SIGNED, startDT, endDT);
-                contracts = contractRepository.findBySaleIdInAndCreatedAtBetweenOrderByCreatedAtDesc(allowedSaleIds, startDT, endDT);
+                signedRevenue = contractRepository.sumFinalAmountBySaleIdInAndStatusAndCreatedAtBetween(targetSaleIds, Contract.ContractStatus.SIGNED, startDT, endDT);
+                contracts = contractRepository.findBySaleIdInAndCreatedAtBetweenOrderByCreatedAtDesc(targetSaleIds, startDT, endDT);
+                paidAmount = invoiceRepository.sumPaidAmountBySaleIdInBetween(targetSaleIds, startDT, endDT);
+                outstandingAmount = invoiceRepository.sumOutstandingAmountBySaleIdInBetween(targetSaleIds, startDT, endDT);
             }
         } else {
             signedRevenue = contractRepository.sumFinalAmountByStatusAndCreatedAtBetween(Contract.ContractStatus.SIGNED, startDT, endDT);
             contracts = contractRepository.findByCreatedAtBetweenOrderByCreatedAtDesc(startDT, endDT);
+            paidAmount = invoiceRepository.sumPaidAmountBetween(startDT, endDT);
+            outstandingAmount = invoiceRepository.sumOutstandingAmountBetween(startDT, endDT);
         }
 
-        BigDecimal paidAmount = invoiceRepository.sumPaidAmountBetween(startDT, endDT);
-        BigDecimal outstandingAmount = invoiceRepository.sumOutstandingAmountBetween(startDT, endDT);
-
         long signedContractsCount = contracts.stream().filter(c -> c.getStatus() == Contract.ContractStatus.SIGNED).count();
+
+        long approvedContractsCount = contracts.stream()
+                .filter(c -> c.getStatus() == Contract.ContractStatus.ADMIN_REVIEWED || c.getStatus() == Contract.ContractStatus.SENT_TO_CUSTOMER || c.getStatus() == Contract.ContractStatus.SIGNED)
+                .count();
+
+        BigDecimal approvedContractsAmount = contracts.stream()
+                .filter(c -> (c.getStatus() == Contract.ContractStatus.ADMIN_REVIEWED || c.getStatus() == Contract.ContractStatus.SENT_TO_CUSTOMER || c.getStatus() == Contract.ContractStatus.SIGNED) && c.getFinalAmount() != null)
+                .map(Contract::getFinalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal aov = BigDecimal.ZERO;
         if (signedContractsCount > 0) {
@@ -106,14 +120,16 @@ public class ReportServiceImpl implements ReportService {
                 .averageOrderValue(aov)
                 .totalContractsCount(contracts.size())
                 .totalInvoicesCount(invoiceRepository.count())
+                .approvedContractsCount(approvedContractsCount)
+                .approvedContractsAmount(approvedContractsAmount)
                 .build();
     }
 
     @Override
-    public List<MonthlyRevenueDTO> getMonthlyRevenueChartData(Authentication authentication) {
+    public List<MonthlyRevenueDTO> getMonthlyRevenueChartData(Long saleIdFilter, Authentication authentication) {
         List<MonthlyRevenueDTO> chartData = new ArrayList<>();
         LocalDate now = LocalDate.now();
-        List<Long> allowedSaleIds = resolveAllowedSaleIds(authentication);
+        List<Long> targetSaleIds = resolveTargetSaleIds(saleIdFilter, authentication);
 
         // 6 months timeline data calculation
         for (int i = 5; i >= 0; i--) {
@@ -125,17 +141,20 @@ public class ReportServiceImpl implements ReportService {
             LocalDateTime endDT = end.atTime(LocalTime.MAX);
 
             BigDecimal signed;
-            if (allowedSaleIds != null) {
-                if (allowedSaleIds.isEmpty()) {
+            BigDecimal paid;
+
+            if (targetSaleIds != null) {
+                if (targetSaleIds.isEmpty()) {
                     signed = BigDecimal.ZERO;
+                    paid = BigDecimal.ZERO;
                 } else {
-                    signed = contractRepository.sumFinalAmountBySaleIdInAndStatusAndCreatedAtBetween(allowedSaleIds, Contract.ContractStatus.SIGNED, startDT, endDT);
+                    signed = contractRepository.sumFinalAmountBySaleIdInAndStatusAndCreatedAtBetween(targetSaleIds, Contract.ContractStatus.SIGNED, startDT, endDT);
+                    paid = invoiceRepository.sumPaidAmountBySaleIdInBetween(targetSaleIds, startDT, endDT);
                 }
             } else {
                 signed = contractRepository.sumFinalAmountByStatusAndCreatedAtBetween(Contract.ContractStatus.SIGNED, startDT, endDT);
+                paid = invoiceRepository.sumPaidAmountBetween(startDT, endDT);
             }
-
-            BigDecimal paid = invoiceRepository.sumPaidAmountBetween(startDT, endDT);
 
             String label = "Tháng " + monthDate.getMonthValue() + "/" + monthDate.getYear();
             chartData.add(MonthlyRevenueDTO.builder()
@@ -183,11 +202,20 @@ public class ReportServiceImpl implements ReportService {
             BigDecimal paidAmount = BigDecimal.ZERO;
             BigDecimal outstandingAmount = totalAmount;
 
+            String saleName = "Chưa gán Sale";
+            try {
+                if (c.getSale() != null && c.getSale().getUser() != null) {
+                    saleName = c.getSale().getUser().getFullName();
+                }
+            } catch (Exception ex) {
+                saleName = c.getSale() != null ? "Sale #" + c.getSale().getId() : "Chưa gán Sale";
+            }
+
             rows.add(SalesReportRowDTO.builder()
                     .contractId(c.getId())
                     .contractCode(c.getContractCode())
                     .customerName(c.getCustomer() != null ? c.getCustomer().getCompanyName() : "Khách hàng cá nhân/N/A")
-                    .saleName(c.getSale() != null && c.getSale().getUser() != null ? c.getSale().getUser().getFullName() : "Chưa gán Sale")
+                    .saleName(saleName)
                     .signedDate(c.getSignedAt() != null ? c.getSignedAt().toLocalDate() : c.getCreatedAt().toLocalDate())
                     .finalAmount(totalAmount)
                     .paidAmount(paidAmount)
@@ -394,5 +422,85 @@ public class ReportServiceImpl implements ReportService {
 
         // For DIRECTOR, ACCOUNTANT, ADMIN, ADMIN_OFFICER, MARKETING -> Return null (All company data)
         return null;
+    }
+
+    private List<Long> resolveTargetSaleIds(Long saleIdFilter, Authentication authentication) {
+        List<Long> allowedSaleIds = resolveAllowedSaleIds(authentication);
+        if (saleIdFilter != null) {
+            if (allowedSaleIds != null && !allowedSaleIds.contains(saleIdFilter)) {
+                return List.of();
+            }
+            return List.of(saleIdFilter);
+        }
+        return allowedSaleIds;
+    }
+
+    @Override
+    public List<com.group3.company_management.core.dto.report.SalesReportSaleOptionDTO> getSalesOptionsForUser(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return List.of();
+        }
+
+        String username = authentication.getName();
+        String role = authentication.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElse("");
+
+        Employee currentEmployee = employeeRepository.findByUser_Username(username).orElse(null);
+        List<Employee> eligibleEmployees = new ArrayList<>();
+
+        if ("ADMIN".equals(role) || "DIRECTOR".equals(role)) {
+            eligibleEmployees = employeeRepository.findAll();
+        } else if ("SALES_MANAGER".equals(role) || "MANAGER".equals(role)) {
+            if (currentEmployee != null && currentEmployee.getUser() != null && currentEmployee.getUser().getDepartmentId() != null) {
+                Long deptId = currentEmployee.getUser().getDepartmentId();
+                List<User> usersInDept = userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(deptId);
+                eligibleEmployees = usersInDept.stream()
+                        .map(User::getEmployee)
+                        .filter(e -> e != null && e.getId() != null)
+                        .toList();
+            }
+        } else if ("SALES".equals(role)) {
+            if (currentEmployee != null) {
+                eligibleEmployees = List.of(currentEmployee);
+            }
+        } else {
+            eligibleEmployees = employeeRepository.findAll();
+        }
+
+        return eligibleEmployees.stream()
+                .filter(e -> {
+                    try {
+                        if (e.getUser() != null && e.getUser().getRole() != null) {
+                            String roleCode = e.getUser().getRole().getRoleCode();
+                            return !"ADMIN".equalsIgnoreCase(roleCode)
+                                    && !"DIRECTOR".equalsIgnoreCase(roleCode)
+                                    && !"SALES_MANAGER".equalsIgnoreCase(roleCode)
+                                    && !"MANAGER".equalsIgnoreCase(roleCode)
+                                    && !"ADMIN_OFFICER".equalsIgnoreCase(roleCode)
+                                    && !"ADMINOFFICER".equalsIgnoreCase(roleCode);
+                        }
+                    } catch (Exception ex) {
+                        return true;
+                    }
+                    return true;
+                })
+                .map(e -> {
+                    String name = "Sale #" + e.getId();
+                    try {
+                        if (e.getUser() != null) {
+                            name = e.getUser().getFullName();
+                        }
+                    } catch (Exception ex) {
+                        name = "Sale #" + (e.getEmployeeCode() != null ? e.getEmployeeCode() : e.getId());
+                    }
+                    return com.group3.company_management.core.dto.report.SalesReportSaleOptionDTO.builder()
+                            .saleId(e.getId())
+                            .fullName(name)
+                            .employeeCode(e.getEmployeeCode() != null ? e.getEmployeeCode() : "")
+                            .build();
+                })
+                .toList();
     }
 }

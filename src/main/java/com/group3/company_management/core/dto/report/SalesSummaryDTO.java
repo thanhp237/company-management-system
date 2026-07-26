@@ -18,4 +18,6 @@ public class SalesSummaryDTO {
     private BigDecimal averageOrderValue;
     private long totalContractsCount;
     private long totalInvoicesCount;
+    private long approvedContractsCount;
+    private BigDecimal approvedContractsAmount;
 }

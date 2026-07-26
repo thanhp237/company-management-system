@@ -73,6 +73,12 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     @Query("select coalesce(sum(i.outstandingAmount), 0) from Invoice i where i.createdAt >= :startDate and i.createdAt <= :endDate")
     BigDecimal sumOutstandingAmountBetween(@Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
 
+    @Query("select coalesce(sum(i.paidAmount), 0) from Invoice i where i.contract.sale.id in :saleIds and i.createdAt >= :startDate and i.createdAt <= :endDate")
+    BigDecimal sumPaidAmountBySaleIdInBetween(@Param("saleIds") java.util.List<Long> saleIds, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
+    @Query("select coalesce(sum(i.outstandingAmount), 0) from Invoice i where i.contract.sale.id in :saleIds and i.createdAt >= :startDate and i.createdAt <= :endDate")
+    BigDecimal sumOutstandingAmountBySaleIdInBetween(@Param("saleIds") java.util.List<Long> saleIds, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+
     @Query("""
             select coalesce(sum(i.outstandingAmount), 0)
             from Invoice i

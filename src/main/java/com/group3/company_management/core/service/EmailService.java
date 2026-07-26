@@ -51,5 +51,33 @@ public class EmailService {
         message.setText(text);
         mailSender.send(message);
     }
+
+    public void sendOtpEmail(String to, String otpCode, int expiryMinutes) {
+        System.out.println("\n==================================================================");
+        System.out.println("  [GMAIL OTP SYSTEM] MÃ OTP CỦA BẠN LÀ: " + otpCode + " (HẠN 5 PHÚT)");
+        System.out.println("  [EMAIL NGƯỜI NHẬN]: " + to);
+        System.out.println("==================================================================\n");
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("[OTIO System] Mã xác nhận OTP khôi phục mật khẩu");
+            message.setText("""
+                    Xin chào,
+
+                    Mã OTP để khôi phục mật khẩu của bạn là: %s
+
+                    Mã OTP này có hiệu lực trong vòng %d phút kể từ khi gửi.
+                    Vì lý do bảo mật, vui lòng không chia sẻ mã này cho người khác.
+
+                    Trân trọng,
+                    Hệ thống Quản lý Doanh nghiệp OTIO
+                    """.formatted(otpCode, expiryMinutes));
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(EmailService.class).warn("Failed to send email via SMTP. Generated OTP code: {}", otpCode);
+        }
+    }
 }
 
