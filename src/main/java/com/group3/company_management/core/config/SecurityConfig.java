@@ -120,7 +120,7 @@ public class SecurityConfig {
                                                                 "/images/**",
                                                                 "/uploads/**",
                                                                 "/webjars/**",
-                                                                "/main.css")
+                                                                "/css/shared/main.css")
                                                 .permitAll()
                                                 .requestMatchers("/payments/vnpay/ipn", "/payments/vnpay/return")
                                                 .permitAll()
@@ -230,4 +230,5 @@ public class SecurityConfig {
                 return http.build();
         }
 }
+
 

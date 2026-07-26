@@ -58,7 +58,7 @@ if (
         path.startsWith("/js/") ||
         path.startsWith("/images/") ||
         path.startsWith("/webjars/") ||
-        path.equals("/main.css") ||
+        path.equals("/css/shared/main.css") ||
         path.equals("/api/v1/auth/login") ||
         path.equals("/api/v1/auth/health")
 ) {
@@ -103,3 +103,4 @@ if (
         return null;
     }
 }
+
