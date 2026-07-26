@@ -27,6 +27,15 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CustomerReportScopeService {
 
+    private static final String ROLE_ACCOUNTANT = "ACCOUNTANT";
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_ADMIN_OFFICER = "ADMIN_OFFICER";
+    private static final String ROLE_ADMINOFFICER = "ADMINOFFICER";
+    private static final String ROLE_DIRECTOR = "DIRECTOR";
+    private static final String ROLE_MANAGER = "MANAGER";
+    private static final String ROLE_MARKETING = "MARKETING";
+    private static final String ROLE_SALES = "SALES";
+    private static final String ROLE_SALES_MANAGER = "SALES_MANAGER";
     private static final List<Contract.ContractStatus> ADMIN_OFFICER_POOLED_STATUSES =
             List.of(Contract.ContractStatus.PENDING_ADMIN_OFFICER);
 
@@ -48,19 +57,19 @@ public class CustomerReportScopeService {
         if (employee == null) {
             return List.of();
         }
-        if ("ACCOUNTANT".equals(roleCode)) {
+        if (ROLE_ACCOUNTANT.equals(roleCode)) {
             return contractRepository.findByCustomerIdAndHasScopedInvoiceOrderByCreatedAtDesc(customerId, employee.getId());
         }
-        if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
+        if (ROLE_ADMIN_OFFICER.equals(roleCode) || ROLE_ADMINOFFICER.equals(roleCode)) {
             return contractRepository.findByCustomerIdAndAdminOfficerScopeOrderByCreatedAtDesc(
                     customerId,
                     employee.getId(),
                     ADMIN_OFFICER_POOLED_STATUSES);
         }
-        if ("SALES".equals(roleCode)) {
+        if (ROLE_SALES.equals(roleCode)) {
             return contractRepository.findByCustomerIdAndSaleIdOrderByCreatedAtDesc(customerId, employee.getId());
         }
-        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+        if (ROLE_MANAGER.equals(roleCode) || ROLE_SALES_MANAGER.equals(roleCode)) {
             List<Long> saleIds = departmentSaleEmployeeIds(user);
             return saleIds.isEmpty()
                     ? List.of()
@@ -81,10 +90,10 @@ public class CustomerReportScopeService {
         if (employee == null) {
             return List.of();
         }
-        if ("ACCOUNTANT".equals(roleCode)) {
+        if (ROLE_ACCOUNTANT.equals(roleCode)) {
             return invoiceRepository.findByContractCustomerIdAndAccountantOrderByCreatedAtDesc(customerId, employee.getId());
         }
-        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+        if (ROLE_MANAGER.equals(roleCode) || ROLE_SALES_MANAGER.equals(roleCode)) {
             List<Long> saleIds = departmentSaleEmployeeIds(user);
             return saleIds.isEmpty()
                     ? List.of()
@@ -99,22 +108,22 @@ public class CustomerReportScopeService {
         String roleCode = roleCode(user);
         Employee employee = currentEmployee(authentication);
 
-        if (canViewAll(roleCode) || "MARKETING".equals(roleCode)) {
+        if (canViewAll(roleCode) || ROLE_MARKETING.equals(roleCode)) {
             return activityRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
         }
         if (employee == null) {
             return List.of();
         }
-        if ("SALES".equals(roleCode)) {
+        if (ROLE_SALES.equals(roleCode)) {
             return activityRepository.findByCustomerIdAndEmployeeIdOrderByCreatedAtDesc(customerId, employee.getId());
         }
-        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+        if (ROLE_MANAGER.equals(roleCode) || ROLE_SALES_MANAGER.equals(roleCode)) {
             List<Long> employeeIds = departmentSaleEmployeeIds(user);
             return employeeIds.isEmpty()
                     ? List.of()
                     : activityRepository.findByCustomerIdAndEmployeeIdInOrderByCreatedAtDesc(customerId, employeeIds);
         }
-        if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
+        if (ROLE_ADMIN_OFFICER.equals(roleCode) || ROLE_ADMINOFFICER.equals(roleCode)) {
             return customerRepository.existsContractForAdminOfficerScopeAndCustomer(
                     employee.getId(),
                     customerId,
@@ -122,7 +131,7 @@ public class CustomerReportScopeService {
                     ? activityRepository.findByCustomerIdOrderByCreatedAtDesc(customerId)
                     : List.of();
         }
-        if ("ACCOUNTANT".equals(roleCode)) {
+        if (ROLE_ACCOUNTANT.equals(roleCode)) {
             return customerRepository.existsInvoiceForCustomerId(customerId, employee.getId())
                     ? activityRepository.findByCustomerIdOrderByCreatedAtDesc(customerId)
                     : List.of();
@@ -158,7 +167,7 @@ public class CustomerReportScopeService {
     public boolean canViewContract(Long contractId, Authentication authentication) {
         User user = currentUser(authentication);
         String roleCode = roleCode(user);
-        if ("ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode) || "ACCOUNTANT".equals(roleCode)) {
+        if (ROLE_ADMIN.equals(roleCode) || ROLE_DIRECTOR.equals(roleCode) || ROLE_ACCOUNTANT.equals(roleCode)) {
             return true;
         }
 
@@ -193,18 +202,18 @@ public class CustomerReportScopeService {
         String roleCode = roleCode(user);
         Employee employee = currentEmployee(authentication);
 
-        if (canViewAll(roleCode) || "MARKETING".equals(roleCode)) {
+        if (canViewAll(roleCode) || ROLE_MARKETING.equals(roleCode)) {
             return customerRepository.findAllByOrderByCreatedAtDesc().stream().map(customer -> customer.getId()).toList();
         }
         if (employee == null) {
             return List.of();
         }
-        if ("SALES".equals(roleCode)) {
+        if (ROLE_SALES.equals(roleCode)) {
             return customerRepository.findByAssignedSalesIdOrderByCreatedAtDesc(user.getId()).stream()
                     .map(customer -> customer.getId())
                     .toList();
         }
-        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+        if (ROLE_MANAGER.equals(roleCode) || ROLE_SALES_MANAGER.equals(roleCode)) {
             List<Long> userIds = departmentSaleUserIds(user);
             return userIds.isEmpty()
                     ? List.of()
@@ -212,7 +221,7 @@ public class CustomerReportScopeService {
                             .map(customer -> customer.getId())
                             .toList();
         }
-        if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
+        if (ROLE_ADMIN_OFFICER.equals(roleCode) || ROLE_ADMINOFFICER.equals(roleCode)) {
             return customerRepository.findCustomersByAdminOfficerScopeOrderByCreatedAtDesc(
                             employee.getId(),
                             null,
@@ -221,7 +230,7 @@ public class CustomerReportScopeService {
                     .map(customer -> customer.getId())
                     .toList();
         }
-        if ("ACCOUNTANT".equals(roleCode)) {
+        if (ROLE_ACCOUNTANT.equals(roleCode)) {
             return customerRepository.findCustomersWithInvoicesOrderByCreatedAtDesc(null, employee.getId())
                     .stream()
                     .map(customer -> customer.getId())
@@ -237,7 +246,7 @@ public class CustomerReportScopeService {
         }
         return userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(user.getDepartmentId())
                 .stream()
-                .filter(deptUser -> "SALES".equals(roleCode(deptUser)))
+                .filter(deptUser -> ROLE_SALES.equals(roleCode(deptUser)))
                 .map(User::getEmployee)
                 .filter(employee -> employee != null && employee.getId() != null)
                 .map(Employee::getId)
@@ -245,16 +254,16 @@ public class CustomerReportScopeService {
     }
 
     private boolean canViewScopedContract(Contract contract, User user, Employee employee, String roleCode) {
-        if ("SALES".equals(roleCode)) {
+        if (ROLE_SALES.equals(roleCode)) {
             return contract.getSale() != null && Objects.equals(contract.getSale().getId(), employee.getId());
         }
-        if ("MANAGER".equals(roleCode) || "SALES_MANAGER".equals(roleCode)) {
+        if (ROLE_MANAGER.equals(roleCode) || ROLE_SALES_MANAGER.equals(roleCode)) {
             List<Long> employeeIds = departmentEmployeeIds(user);
             return !employeeIds.isEmpty()
                     && ((contract.getSale() != null && employeeIds.contains(contract.getSale().getId()))
                     || (contract.getAdminOfficer() != null && employeeIds.contains(contract.getAdminOfficer().getId())));
         }
-        if ("ADMIN_OFFICER".equals(roleCode) || "ADMINOFFICER".equals(roleCode)) {
+        if (ROLE_ADMIN_OFFICER.equals(roleCode) || ROLE_ADMINOFFICER.equals(roleCode)) {
             return (contract.getAdminOfficer() != null && Objects.equals(contract.getAdminOfficer().getId(), employee.getId()))
                     || ADMIN_OFFICER_POOLED_STATUSES.contains(contract.getStatus());
         }
@@ -280,7 +289,7 @@ public class CustomerReportScopeService {
         }
         return userRepository.findByDepartmentIdAndIsDeletedFalseOrderByFullNameAsc(user.getDepartmentId())
                 .stream()
-                .filter(deptUser -> "SALES".equals(roleCode(deptUser)))
+                .filter(deptUser -> ROLE_SALES.equals(roleCode(deptUser)))
                 .map(User::getId)
                 .toList();
     }
@@ -297,7 +306,7 @@ public class CustomerReportScopeService {
     }
 
     private boolean canViewAll(String roleCode) {
-        return "ADMIN".equals(roleCode) || "DIRECTOR".equals(roleCode);
+        return ROLE_ADMIN.equals(roleCode) || ROLE_DIRECTOR.equals(roleCode);
     }
 
     private User currentUser(Authentication authentication) {

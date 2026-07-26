@@ -1,6 +1,6 @@
 package com.group3.company_management.core.service.impl;
 
-import com.group3.company_management.core.dto   .CreateInvoiceRequest;
+import com.group3.company_management.core.dto.CreateInvoiceRequest;
 import com.group3.company_management.core.dto.InvoiceItemFormRow;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Employee;

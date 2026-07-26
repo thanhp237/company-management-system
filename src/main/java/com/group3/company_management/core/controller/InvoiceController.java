@@ -3,9 +3,12 @@ package com.group3.company_management.core.controller;
 import com.group3.company_management.core.dto.CreateInvoiceRequest;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Invoice;
+import com.group3.company_management.core.entity.PaymentSchedule;
 import com.group3.company_management.core.repository.ContractRepository;
+import com.group3.company_management.core.repository.UserRepository;
 import com.group3.company_management.core.service.CustomerReportScopeService;
 import com.group3.company_management.core.service.InvoiceService;
+import com.group3.company_management.core.service.VnPayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -13,26 +16,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import com.group3.company_management.core.entity.PaymentSchedule;
+
 import java.math.BigDecimal;
 import java.util.List;
+
 @Controller
 @RequestMapping("/invoices")
 @RequiredArgsConstructor
-
 @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN', 'DIRECTOR','CUSTOMER', 'MANAGER', 'SALES_MANAGER', 'SALES', 'ADMIN_OFFICER', 'ADMINOFFICER')")
-
-
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
     private final ContractRepository contractRepository;
-    private final com.group3.company_management.core.repository.UserRepository userRepository;
+    private final UserRepository userRepository;
     private final CustomerReportScopeService customerReportScopeService;
-    private final com.group3.company_management.core.service.VnPayService vnPayService;
-
+    private final VnPayService vnPayService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
@@ -344,8 +342,6 @@ public class InvoiceController {
         return "Invoice/detail";
     }
 
-
-
     @PostMapping("/{id}/confirm-payment")
     @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String confirmPayment(@PathVariable Long id, RedirectAttributes ra) {
@@ -443,7 +439,6 @@ public class InvoiceController {
 
         return "Invoice/print";
     }
-
 
     @PostMapping("/{id}/delete")
     @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")

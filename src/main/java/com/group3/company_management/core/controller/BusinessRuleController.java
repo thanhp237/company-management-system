@@ -27,6 +27,9 @@ import java.util.Comparator;
 public class BusinessRuleController {
 
     private static final String COMMISSION_RATE_KEY = "commissionRate";
+    private static final String ERROR_MESSAGE = "errorMessage";
+    private static final String REDIRECT_BUSINESS_RULES = "redirect:/business-rules";
+    private static final String VOUCHER_NOT_FOUND = "Không tìm thấy voucher.";
     private static final int DEFAULT_COMMISSION_RATE = 5;
 
     private final BusinessSettingRepository businessSettingRepository;
@@ -48,8 +51,8 @@ public class BusinessRuleController {
             RedirectAttributes redirectAttributes) {
 
         if (commissionRate == null || commissionRate < 0 || commissionRate > 100) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Tỷ lệ hoa hồng phải nằm trong khoảng 0-100%.");
-            return "redirect:/business-rules";
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE, "Tỷ lệ hoa hồng phải nằm trong khoảng 0-100%.");
+            return REDIRECT_BUSINESS_RULES;
         }
 
         BusinessSetting setting = businessSettingRepository.findById(COMMISSION_RATE_KEY)
@@ -62,7 +65,7 @@ public class BusinessRuleController {
         businessSettingRepository.save(setting);
 
         redirectAttributes.addFlashAttribute("successMessage", "Đã lưu tỷ lệ hoa hồng " + commissionRate + "%.");
-        return "redirect:/business-rules";
+        return REDIRECT_BUSINESS_RULES;
     }
 
     @PostMapping("/vouchers")
@@ -79,28 +82,28 @@ public class BusinessRuleController {
 
         String normalizedCode = normalizeVoucherCode(voucherCode);
         if (normalizedCode.isBlank()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Mã voucher không được bỏ trống.");
-            return "redirect:/business-rules";
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE, "Mã voucher không được bỏ trống.");
+            return REDIRECT_BUSINESS_RULES;
         }
         if (discountPercent == null
                 || discountPercent.compareTo(BigDecimal.ZERO) <= 0
                 || discountPercent.compareTo(BigDecimal.valueOf(100)) > 0) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Phần trăm giảm giá phải lớn hơn 0 và không vượt quá 100%.");
-            return "redirect:/business-rules";
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE, "Phần trăm giảm giá phải lớn hơn 0 và không vượt quá 100%.");
+            return REDIRECT_BUSINESS_RULES;
         }
         if (id == null && voucherRepository.existsByVoucherCodeIgnoreCase(normalizedCode)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Mã voucher đã tồn tại.");
-            return "redirect:/business-rules";
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE, "Mã voucher đã tồn tại.");
+            return REDIRECT_BUSINESS_RULES;
         }
 
         Voucher voucher = id == null
                 ? new Voucher()
-                : voucherRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy voucher."));
+                : voucherRepository.findById(id).orElseThrow(() -> new RuntimeException(VOUCHER_NOT_FOUND));
         if (id != null
                 && !voucher.getVoucherCode().equalsIgnoreCase(normalizedCode)
                 && voucherRepository.existsByVoucherCodeIgnoreCase(normalizedCode)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Mã voucher đã tồn tại.");
-            return "redirect:/business-rules";
+            redirectAttributes.addFlashAttribute(ERROR_MESSAGE, "Mã voucher đã tồn tại.");
+            return REDIRECT_BUSINESS_RULES;
         }
 
         voucher.setVoucherCode(normalizedCode);
@@ -113,19 +116,19 @@ public class BusinessRuleController {
         redirectAttributes.addFlashAttribute("successMessage", id == null
                 ? "Đã tạo voucher mới."
                 : "Đã cập nhật voucher.");
-        return "redirect:/business-rules";
+        return REDIRECT_BUSINESS_RULES;
     }
 
     @PostMapping("/vouchers/{id}/toggle")
     public String toggleVoucher(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Voucher voucher = voucherRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy voucher."));
+                .orElseThrow(() -> new RuntimeException(VOUCHER_NOT_FOUND));
         voucher.setActive(!Boolean.TRUE.equals(voucher.getActive()));
         voucherRepository.save(voucher);
         redirectAttributes.addFlashAttribute("successMessage", Boolean.TRUE.equals(voucher.getActive())
                 ? "Đã bật voucher."
                 : "Đã tắt voucher.");
-        return "redirect:/business-rules";
+        return REDIRECT_BUSINESS_RULES;
     }
 
     private String normalizeVoucherCode(String voucherCode) {

@@ -1,6 +1,9 @@
-<nav class="navbar app-navbar navbar-expand-lg sticky-top"
-     xmlns:th="http://www.thymeleaf.org"
-     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<th:block xmlns:th="http://www.thymeleaf.org"
+          xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<link rel="stylesheet" th:href="@{/css/roles/internal/app-shell.css}">
+<link rel="stylesheet" th:href="@{/css/features/notifications.css}">
+
+<nav class="navbar app-navbar navbar-expand-lg sticky-top">
     <div class="container-fluid app-navbar-inner">
         <a class="app-brand" href="/dashboard">
             <span class="app-brand-icon">
@@ -104,3 +107,4 @@
         }
     });
 </script>
+</th:block>

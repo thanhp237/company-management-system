@@ -1,13 +1,11 @@
 package com.group3.company_management.core.controller;
 
-import com.group3.company_management.core.entity.CustomerActivity;
 import com.group3.company_management.core.entity.Contract;
 import com.group3.company_management.core.entity.Opportunity;
 import com.group3.company_management.core.entity.Quotation;
 import com.group3.company_management.core.repository.ContractRepository;
 import com.group3.company_management.core.repository.QuotationRepository;
 import com.group3.company_management.core.service.OpportunityService;
-import com.group3.company_management.core.controller.CustomerActivityController;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
@@ -32,6 +30,11 @@ public class OpportunityController {
 
     private static final Set<String> QUOTATION_STAGES = Set.of("QUALIFIED", "PROPOSAL", "NEGOTIATION");
     private static final Set<String> CONTRACT_QUOTATION_STATUSES = Set.of("APPROVED", "ACCEPTED");
+    private static final String REDIRECT_CONTRACTS = "redirect:/contracts";
+    private static final String ROLE_SALES = "ROLE_SALES";
+    private static final String ROLE_MANAGER = "ROLE_MANAGER";
+    private static final String ROLE_SALES_MANAGER = "ROLE_SALES_MANAGER";
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
     private final OpportunityService opportunityService;
     private final QuotationRepository quotationRepository;
@@ -43,7 +46,7 @@ public class OpportunityController {
             Authentication authentication,
             Model model) {
         if (!canAccessPipeline(authentication)) {
-            return "redirect:/contracts";
+            return REDIRECT_CONTRACTS;
         }
         String username = authentication.getName();
         Page<Opportunity> opportunityPage = opportunityService.getPipelinePage(null, null, page, 10, username);
@@ -68,7 +71,7 @@ public class OpportunityController {
             Authentication authentication,
             Model model) {
         if (!canAccessPipeline(authentication)) {
-            return "redirect:/contracts";
+            return REDIRECT_CONTRACTS;
         }
         String username = authentication.getName();
         Page<Opportunity> opportunityPage = opportunityService.getPipelinePage(keyword, stage, page, 10, username);
@@ -93,7 +96,7 @@ public class OpportunityController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (!canAccessPipeline(authentication)) {
-            return "redirect:/contracts";
+            return REDIRECT_CONTRACTS;
         }
         try {
             String username = authentication.getName();
@@ -117,9 +120,6 @@ public class OpportunityController {
             model.addAttribute("quotationReadyForContract", quotationReadyForContract(existingQuotation));
             model.addAttribute("canAddActivity", !isClosedStage(opportunity.getStage()));
             return "pipeline/detail";
-
-            
-
         } catch (IllegalArgumentException exception) {
             redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/pipeline";
@@ -133,7 +133,7 @@ public class OpportunityController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (!canAccessPipeline(authentication)) {
-            return "redirect:/contracts";
+            return REDIRECT_CONTRACTS;
         }
         try {
             String username = authentication.getName();
@@ -161,7 +161,7 @@ public class OpportunityController {
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
         if (!canAccessPipeline(authentication)) {
-            return "redirect:/contracts";
+            return REDIRECT_CONTRACTS;
         }
         try {
             opportunityService.confirmEvaluation(id, authentication.getName());
@@ -173,18 +173,6 @@ public class OpportunityController {
         return "redirect:/pipeline/" + id;
     }
 
-// @PostMapping("/{id}/activity")
-//             public String updateActivityNote(
-//                 @PathVariable Long id,
-//                 @RequestParam String note) {
-        
-//                 activityService.updateActivityNote(id, note);
-        
-//                 return "redirect:/customer-activities/" + id;
-//         }
-    
-    
-
     @PostMapping("/{id}/stage")
     public String updateStage(
             @PathVariable Long id,
@@ -192,7 +180,7 @@ public class OpportunityController {
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
         if (!canAccessPipeline(authentication)) {
-            return "redirect:/contracts";
+            return REDIRECT_CONTRACTS;
         }
         try {
             opportunityService.updateStage(id, stage, authentication.getName());
@@ -213,11 +201,11 @@ public class OpportunityController {
         }
 
         return QUOTATION_STAGES.contains(opportunity.getStage().toUpperCase())
-                && hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_SALES_MANAGER", "ROLE_ADMIN");
+                && hasAnyRole(authentication, ROLE_SALES, ROLE_MANAGER, ROLE_SALES_MANAGER, ROLE_ADMIN);
     }
 
     private boolean canAccessPipeline(Authentication authentication) {
-        return hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_SALES_MANAGER", "ROLE_ADMIN");
+        return hasAnyRole(authentication, ROLE_SALES, ROLE_MANAGER, ROLE_SALES_MANAGER, ROLE_ADMIN);
     }
 
     private boolean hasAnyRole(Authentication authentication, String... roles) {
@@ -249,7 +237,7 @@ public class OpportunityController {
         }
         return "WON".equalsIgnoreCase(opportunity.getStage())
                 && quotationReadyForContract(quotation)
-                && hasAnyRole(authentication, "ROLE_SALES", "ROLE_MANAGER", "ROLE_SALES_MANAGER", "ROLE_ADMIN");
+                && hasAnyRole(authentication, ROLE_SALES, ROLE_MANAGER, ROLE_SALES_MANAGER, ROLE_ADMIN);
     }
 
     private boolean quotationReadyForContract(Quotation quotation) {
