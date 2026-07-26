@@ -99,6 +99,68 @@ public class QuotationServiceImpl implements QuotationService {
         return saved.getId();
     }
 
+    @Override
+    @Transactional
+    public Long updateQuotation(Long id, QuotationRequest request, String username) {
+        Quotation quotation = quotationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo giá"));
+
+        if (quotation.getStatus() == null || !"DRAFT".equalsIgnoreCase(quotation.getStatus())) {
+            throw new RuntimeException("Chỉ có thể chỉnh sửa báo giá ở trạng thái bản nháp (DRAFT)");
+        }
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản nhân viên"));
+        Long employeeId = user.getEmployee() != null ? user.getEmployee().getId() : null;
+        if (!canManageOpportunity(user)
+                && (employeeId == null || !employeeId.equals(quotation.getEmployeeId()))) {
+            throw new RuntimeException("Bạn không có quyền chỉnh sửa báo giá này");
+        }
+
+        quotation.setVoucherId(request.getVoucherId());
+        quotation.setNote(request.getNote());
+        quotation.setValidUntil(request.getValidUntil());
+
+        quotation.getDetails().clear();
+
+        BigDecimal subTotal = BigDecimal.ZERO;
+        List<QuotationDetailRequest> details = requireValidDetails(request.getDetails());
+
+        for (QuotationDetailRequest item : details) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+            if (!Boolean.TRUE.equals(product.getActive())) {
+                throw new RuntimeException("Sản phẩm đã ngừng hoạt động, không thể thêm vào báo giá");
+            }
+
+            BigDecimal unitPrice = product.getUnitPrice();
+            BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
+            BigDecimal totalPrice = unitPrice.multiply(quantity);
+
+            QuotationDetail detail = new QuotationDetail();
+            detail.setQuotation(quotation);
+            detail.setProduct(product);
+            detail.setServiceName(product.getName());
+            detail.setDescription(product.getDescription());
+            detail.setQuantity(item.getQuantity());
+            detail.setUnitPrice(unitPrice);
+            detail.setTotalPrice(totalPrice);
+
+            quotation.getDetails().add(detail);
+
+            subTotal = subTotal.add(totalPrice);
+        }
+
+        BigDecimal discountAmount = calculateDiscountAmount(request.getVoucherId(), subTotal);
+
+        quotation.setDiscountAmount(discountAmount);
+        quotation.setSubTotal(subTotal);
+        quotation.setFinalAmount(subTotal.subtract(discountAmount));
+
+        Quotation saved = quotationRepository.save(quotation);
+        return saved.getId();
+    }
+
     private List<QuotationDetailRequest> requireValidDetails(List<QuotationDetailRequest> details) {
         if (details == null || details.isEmpty()) {
             throw new RuntimeException("Báo giá phải có ít nhất một sản phẩm hợp lệ");
