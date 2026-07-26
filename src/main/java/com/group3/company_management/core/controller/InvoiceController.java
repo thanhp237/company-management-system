@@ -31,6 +31,7 @@ public class InvoiceController {
     private final ContractRepository contractRepository;
     private final com.group3.company_management.core.repository.UserRepository userRepository;
     private final CustomerReportScopeService customerReportScopeService;
+    private final com.group3.company_management.core.service.VnPayService vnPayService;
 
 
     @GetMapping
@@ -344,6 +345,18 @@ public class InvoiceController {
     }
 
 
+
+    @PostMapping("/{id}/confirm-payment")
+    @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
+    public String confirmPayment(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            vnPayService.confirmReviewedPayment(id);
+            ra.addFlashAttribute("successMessage", "Đã xác nhận hoàn tất thanh toán hóa đơn.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/invoices/detail/" + id;
+    }
     @PostMapping("/{id}/issue")
     @PreAuthorize("hasAnyRole('ACCOUNTANT', 'ADMIN')")
     public String issue(@PathVariable Long id, RedirectAttributes ra) {

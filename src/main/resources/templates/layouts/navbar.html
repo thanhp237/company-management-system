@@ -96,54 +96,11 @@
     </div>
 </nav>
 
+<script sec:authorize="isAuthenticated()" th:src="@{/js/notifications-realtime.js}"></script>
 <script sec:authorize="isAuthenticated()">
     document.addEventListener("DOMContentLoaded", function() {
-        loadBellNotifications();
+        if (window.AppNotifications) {
+            window.AppNotifications.initEmployee();
+        }
     });
-
-    function loadBellNotifications() {
-        fetch('/api/notifications/summary')
-            .then(response => response.json())
-            .then(data => {
-                const badge = document.getElementById('bell-badge-count');
-                const txtUnread = document.getElementById('quick-unread-txt');
-                const container = document.getElementById('bell-items-container');
-
-                if (data.unreadCount > 0) {
-                    badge.textContent = data.unreadCount;
-                    badge.classList.remove('d-none');
-                    txtUnread.textContent = data.unreadCount + ' chưa đọc';
-                } else {
-                    badge.classList.add('d-none');
-                    txtUnread.textContent = '0 chưa đọc';
-                }
-
-                if (data.notifications && data.notifications.length > 0) {
-                    let htmlOutput = '';
-                    data.notifications.forEach(item => {
-                        const unreadClass = !item.isRead ? 'fw-bold text-dark' : 'text-muted';
-                        const dotIcon = !item.isRead ? '<i class="fas fa-circle text-primary me-2" style="font-size:8px;"></i>' : '<i class="far fa-circle text-secondary me-2" style="font-size:8px;"></i>';
-                        const itemBg = !item.isRead ? 'background-color: #f8fafd;' : '';
-
-                        htmlOutput += `
-                            <li class="notification-item" style="${itemBg}" onclick="clickNotiInBell(${item.id})">
-                                <div class="${unreadClass} text-truncate">${dotIcon}${item.title}</div>
-                                <div class="notification-message text-truncate">${item.message}</div>
-                            </li>`;
-                    });
-                    container.innerHTML = htmlOutput;
-                } else {
-                    container.innerHTML = '<li><div class="notification-empty"><i class="far fa-bell-slash me-1"></i>Không có thông báo mới</div></li>';
-                }
-            })
-            .catch(err => console.error('Lỗi tải thông báo từ API:', err));
-    }
-
-    function clickNotiInBell(notiId) {
-        fetch('/api/notifications/' + notiId + '/read', { method: 'POST' })
-            .then(() => {
-                window.location.href = '/notifications';
-            })
-            .catch(err => console.error('Lỗi xử lý đọc thông báo:', err));
-    }
 </script>

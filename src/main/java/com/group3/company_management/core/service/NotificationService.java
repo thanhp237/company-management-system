@@ -7,6 +7,8 @@ public interface NotificationService {
     List<Notification> getNotificationsByUsername(String username);
     long getUnreadCount(String username);
     void markAsRead(Long notificationId);
+    boolean markAsReadForUsername(Long notificationId, String username);
+    boolean markAsReadForCustomer(Long notificationId, Long customerId);
     void createNotification(Long accountId, String title, String message); // Hàm để các tính năng khác gọi tự động bắn noti
     
     List<Notification> getNotificationsByCustomerId(Long customerId);
