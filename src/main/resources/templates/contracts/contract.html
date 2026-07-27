@@ -79,7 +79,7 @@
                             <span>Mã báo giá</span>
                             <strong>
                                 <span th:text="${contract.quotationCode != null ? contract.quotationCode : 'Chưa có'}">QT-001</span>
-                                <a th:if="${contract.quotationId != null}"
+                                <a sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')" th:if="${contract.quotationId != null}"
                                    th:href="@{/quotation/detail/{id}(id=${contract.quotationId})}">
                                     Xem
                                 </a>
@@ -642,6 +642,7 @@
                     </div>
 
                     <a class="contract-action-link"
+                       sec:authorize="hasAnyRole('SALES','SALES_MANAGER','MANAGER','ADMIN')"
                        th:if="${contract.quotationId != null}"
                        th:href="@{/quotation/detail/{id}(id=${contract.quotationId})}">
                         <i class="fas fa-file-invoice-dollar"></i>

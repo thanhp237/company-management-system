@@ -40,6 +40,8 @@ public class CustomerActivityController {
             Authentication authentication,
             Model model) {
 
+        java.util.List<com.group3.company_management.core.dto.CustomerResponse> visibleCustomers =
+                customerService.getAllCustomers();
         Page<CustomerActivity> activityPage =
                 customerReportScopeService.visibleActivityPage(
                         customerId,
@@ -63,16 +65,12 @@ public class CustomerActivityController {
                 "customerId",
                 customerId);
         if (customerId != null) {
-            try {
-                model.addAttribute(
-                        "customer",
-                        customerService.getCustomerById(customerId));
-            } catch (RuntimeException exception) {
-                model.addAttribute("errorMessage", exception.getMessage());
-                model.addAttribute("customerId", null);
-            }
+            final Long selectedCustomerId = customerId;
+            visibleCustomers.stream()
+                    .filter(customer -> selectedCustomerId.equals(customer.getId()))
+                    .findFirst()
+                    .ifPresent(customer -> model.addAttribute("customer", customer));
         }
-
         return "activity/list";
     }
 
